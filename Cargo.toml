@@ -4,3 +4,8 @@ version = "0.1.0"
 authors = ["Hiroki Teranishi <teranishihiroki@gmail.com>"]
 
 [dependencies]
+libc = "0.2"
+primitiv-sys = { path = "primitiv-sys" }
+
+[[example]]
+name = "xor"
