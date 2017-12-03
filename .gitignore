@@ -1,3 +1,4 @@
 /target/
+/primitiv-sys/target/
 **/*.rs.bk
 Cargo.lock
