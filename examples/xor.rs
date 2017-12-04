@@ -1,7 +1,7 @@
 extern crate primitiv;
 
 use primitiv::Device;
-// use primitiv::Graph;
+use primitiv::Graph;
 // use primitiv::Parameter;
 
 use primitiv::devices as D;
@@ -11,5 +11,8 @@ use primitiv::devices as D;
 
 fn main() {
     let dev = D::Naive::new();
-    D::Naive::set_default(&dev);
+    <D::Naive as Device>::set_default(&dev);
+
+    let g = Graph::new();
+    Graph::set_default(&g);
 }
