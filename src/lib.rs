@@ -1,6 +1,6 @@
 pub trait Wrap<T> {
     fn as_inner_ptr(&self) -> *const T;
-    fn as_inner_mut_ptr(&self) -> *mut T;
+    fn as_inner_mut_ptr(&mut self) -> *mut T;
 }
 
 macro_rules! impl_wrap {
@@ -10,7 +10,7 @@ macro_rules! impl_wrap {
                 self.inner
             }
 
-            fn as_inner_mut_ptr(&self) -> *mut _primitiv::$type {
+            fn as_inner_mut_ptr(&mut self) -> *mut _primitiv::$type {
                 self.inner
             }
         }
