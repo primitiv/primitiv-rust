@@ -51,6 +51,8 @@ mod graph;
 pub use graph::*;
 mod initializer;
 pub use initializer::*;
+mod parameter;
+pub use parameter::*;
 mod shape;
 pub use shape::*;
 
