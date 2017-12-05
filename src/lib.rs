@@ -58,6 +58,9 @@ mod shape;
 pub use shape::*;
 mod optimizer;
 pub use optimizer::*;
+pub mod operators;
+pub use operators::node_ops as node_operators;
+pub use operators::tensor_ops as tensor_operators;
 
 pub mod devices;
 pub mod initializers;
