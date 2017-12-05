@@ -1,7 +1,8 @@
 extern crate primitiv_sys as _primitiv;
 
 use std::ptr;
-use Device;
+use device;
+use device::{AnyDevice, Device};
 use Initializer;
 use Shape;
 use Wrap;
@@ -16,22 +17,34 @@ impl_new!(Parameter, primitiv_Parameter_new);
 impl_drop!(Parameter, primitiv_Parameter_delete);
 
 impl Parameter {
-    pub fn from_values<D: Device>(shape: &Shape, value: &[u64], device: Option<&mut D>) -> Self {
+    pub fn from_values(shape: &Shape, value: &[f32]) -> Self {
+        Self::from_values_with_device::<AnyDevice>(shape, value, None)
+    }
+
+    pub fn from_values_with_device<D: Device>(
+        shape: &Shape,
+        value: &[f32],
+        device: Option<&mut D>,
+    ) -> Self {
         unsafe {
             Parameter {
                 inner: _primitiv::primitiv_Parameter_new_with_values(
                     shape.as_inner_ptr(),
                     value.as_ptr() as *const _,
                     value.len(),
-                    match device {
-                        Some(device) => device.as_inner_mut_ptr(),
-                        None => ptr::null_mut(),
-                    },
+                    device.map(|d| d.as_inner_mut_ptr()).unwrap_or(
+                        ptr::null_mut(),
+                    ),
                 ),
             }
         }
     }
-    pub fn from_initializer<D: Device, I: Initializer>(
+
+    pub fn from_initializer<I: Initializer>(shape: &Shape, initializer: &I) -> Self {
+        Self::from_initializer_with_device::<AnyDevice, I>(shape, initializer, None)
+    }
+
+    pub fn from_initializer_with_device<D: Device, I: Initializer>(
         shape: &Shape,
         initializer: &I,
         device: Option<&mut D>,
@@ -41,10 +54,9 @@ impl Parameter {
                 inner: _primitiv::primitiv_Parameter_new_with_initializer(
                     shape.as_inner_ptr(),
                     initializer.as_inner_ptr(),
-                    match device {
-                        Some(device) => device.as_inner_mut_ptr(),
-                        None => ptr::null_mut(),
-                    },
+                    device.map(|d| d.as_inner_mut_ptr()).unwrap_or(
+                        ptr::null_mut(),
+                    ),
                 ),
             }
         }

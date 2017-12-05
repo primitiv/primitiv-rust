@@ -46,8 +46,7 @@ macro_rules! impl_drop {
     }
 }
 
-mod device;
-pub use device::*;
+pub mod device;
 mod graph;
 pub use graph::*;
 mod initializer;
