@@ -78,12 +78,12 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_update_batch" ] 
  pub fn primitiv_Shape_update_batch ( shape : * mut primitiv_Shape , batch : u32 , ) ; 
-} # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Tensor { _unused : [ u8 ; 0 ] } # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Node { pub g : * mut :: std :: os :: raw :: c_void , pub fid : u32 , pub vid : u32 , } # [ test ] fn bindgen_test_layout_primitiv_Node ( ) { assert_eq ! ( :: std :: mem :: size_of :: < primitiv_Node > ( ) , 16usize , concat ! ( "Size of: " , stringify ! ( primitiv_Node ) ) ) ; assert_eq ! ( :: std :: mem :: align_of :: < primitiv_Node > ( ) , 8usize , concat ! ( "Alignment of " , stringify ! ( primitiv_Node ) ) ) ; assert_eq ! ( unsafe { & ( * ( 0 as * const primitiv_Node ) ) . g as * const _ as usize } , 0usize , concat ! ( "Alignment of field: " , stringify ! ( primitiv_Node ) , "::" , stringify ! ( g ) ) ) ; assert_eq ! ( unsafe { & ( * ( 0 as * const primitiv_Node ) ) . fid as * const _ as usize } , 8usize , concat ! ( "Alignment of field: " , stringify ! ( primitiv_Node ) , "::" , stringify ! ( fid ) ) ) ; assert_eq ! ( unsafe { & ( * ( 0 as * const primitiv_Node ) ) . vid as * const _ as usize } , 12usize , concat ! ( "Alignment of field: " , stringify ! ( primitiv_Node ) , "::" , stringify ! ( vid ) ) ) ; } # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Graph { _unused : [ u8 ; 0 ] } extern "C" {
- # [ link_name = "\u{1}_primitiv_Node_construct" ] 
- pub fn primitiv_Node_construct ( ) -> primitiv_Node ; 
+} # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Tensor { _unused : [ u8 ; 0 ] } # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Node { _unused : [ u8 ; 0 ] } # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Graph { _unused : [ u8 ; 0 ] } extern "C" {
+ # [ link_name = "\u{1}_primitiv_Node_new" ] 
+ pub fn primitiv_Node_new ( ) -> * mut primitiv_Node ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_Node_construct_with_movement" ] 
- pub fn primitiv_Node_construct_with_movement ( node : * mut primitiv_Node , ) -> primitiv_Node ; 
+ # [ link_name = "\u{1}_primitiv_Node_new_with_movement" ] 
+ pub fn primitiv_Node_new_with_movement ( node : * mut primitiv_Node , ) -> * mut primitiv_Node ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Node_delete" ] 
  pub fn primitiv_Node_delete ( node : * mut primitiv_Node , ) ; 
