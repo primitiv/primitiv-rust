@@ -49,5 +49,8 @@ mod device;
 pub use device::*;
 mod graph;
 pub use graph::*;
+mod initializer;
+pub use initializer::*;
 
 pub mod devices;
+pub mod initializers;
