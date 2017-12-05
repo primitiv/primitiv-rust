@@ -55,6 +55,9 @@ mod parameter;
 pub use parameter::*;
 mod shape;
 pub use shape::*;
+mod optimizer;
+pub use optimizer::*;
 
 pub mod devices;
 pub mod initializers;
+pub mod optimizers;
