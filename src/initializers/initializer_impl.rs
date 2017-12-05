@@ -29,8 +29,8 @@ pub struct Identity {
 }
 
 impl_wrap!(Identity, primitiv_Initializer);
-impl_drop!(Identity, primitiv_Identity_delete);
 impl_new!(Identity, primitiv_Identity_new);
+impl_drop!(Identity, primitiv_Identity_delete);
 
 impl initializer::Initializer for Identity {}
 
