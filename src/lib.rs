@@ -24,9 +24,7 @@ macro_rules! impl_new {
                 unsafe {
                     let inner = _primitiv::$call();
                     assert!(!inner.is_null());
-                    $name {
-                        inner: inner,
-                    }
+                    $name { inner: inner }
                 }
             }
         }
@@ -37,9 +35,7 @@ macro_rules! impl_drop {
     ($name:ident, $call:ident) => {
         impl Drop for $name {
             fn drop(&mut self) {
-                unsafe {
-                    _primitiv::$call(self.inner);
-                }
+                unsafe { _primitiv::$call(self.inner); }
             }
         }
     }
