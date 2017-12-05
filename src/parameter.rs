@@ -16,7 +16,7 @@ impl_new!(Parameter, primitiv_Parameter_new);
 impl_drop!(Parameter, primitiv_Parameter_delete);
 
 impl Parameter {
-    pub fn from_values<T: Device>(shape: &Shape, value: &[u64], device: Option<&T>) -> Self {
+    pub fn from_values<D: Device>(shape: &Shape, value: &[u64], device: Option<&mut D>) -> Self {
         unsafe {
             Parameter {
                 inner: _primitiv::primitiv_Parameter_new_with_values(
@@ -34,7 +34,7 @@ impl Parameter {
     pub fn from_initializer<D: Device, I: Initializer>(
         shape: &Shape,
         initializer: &I,
-        device: Option<&D>,
+        device: Option<&mut D>,
     ) -> Self {
         unsafe {
             Parameter {
