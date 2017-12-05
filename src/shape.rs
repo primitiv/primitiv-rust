@@ -23,4 +23,8 @@ impl Shape {
             }
         }
     }
+
+    pub fn size(&self) -> u32 {
+        unsafe { _primitiv::primitiv_Shape_size(self.as_inner_ptr()) }
+    }
 }

@@ -1,7 +1,6 @@
 extern crate primitiv_sys as _primitiv;
 
 use std::ptr;
-use device;
 use device::{AnyDevice, Device};
 use Initializer;
 use Shape;

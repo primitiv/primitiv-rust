@@ -1,8 +1,10 @@
 extern crate primitiv_sys as _primitiv;
 
+use Shape;
 use Wrap;
 
-#[derive(Debug)]
+// #[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct Node {
     inner: *mut _primitiv::primitiv_Node,
 }
@@ -10,6 +12,23 @@ pub struct Node {
 impl_wrap!(Node, primitiv_Node);
 impl_new!(Node, primitiv_Node_new);
 impl_drop!(Node, primitiv_Node_delete);
+
+impl Node {
+    pub fn shape(&self) -> Shape {
+        unsafe {
+            Shape::from_inner_ptr(_primitiv::primitiv_Node_shape(self.as_inner_ptr()) as
+                *mut _)
+        }
+    }
+
+    pub fn to_vector(&self) -> Vec<f32> {
+        unsafe {
+            let num_elements = self.shape().size() as usize;
+            let array = _primitiv::primitiv_Node_to_array(self.as_inner_ptr());
+            Vec::from_raw_parts(array, num_elements, num_elements)
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct Graph {
