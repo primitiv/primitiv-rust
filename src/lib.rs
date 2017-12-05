@@ -56,6 +56,8 @@ mod parameter;
 pub use parameter::*;
 mod shape;
 pub use shape::*;
+mod tensor;
+pub use tensor::*;
 mod optimizer;
 pub use optimizer::*;
 pub mod operators;
