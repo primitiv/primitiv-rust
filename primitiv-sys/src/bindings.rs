@@ -11,10 +11,7 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
  pub fn primitiv_Shape_new ( ) -> * mut primitiv_Shape ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_new_with_dims" ] 
- pub fn primitiv_Shape_new_with_dims ( dims : * const u32 , n : usize , ) -> * mut primitiv_Shape ; 
-} extern "C" {
- # [ link_name = "\u{1}_primitiv_Shape_new_with_dims_batch" ] 
- pub fn primitiv_Shape_new_with_dims_batch ( dims : * const u32 , n : usize , batch : u32 , ) -> * mut primitiv_Shape ; 
+ pub fn primitiv_Shape_new_with_dims ( dims : * const u32 , n : usize , batch : u32 , ) -> * mut primitiv_Shape ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_delete" ] 
  pub fn primitiv_Shape_delete ( shape : * const primitiv_Shape , ) ; 
@@ -156,7 +153,43 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Graph_num_functions" ] 
  pub fn primitiv_Graph_num_functions ( graph : * const primitiv_Graph , ) -> u32 ; 
-} # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Initializer { _unused : [ u8 ; 0 ] } # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Model { _unused : [ u8 ; 0 ] } extern "C" {
+} # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Initializer { _unused : [ u8 ; 0 ] } extern "C" {
+ # [ link_name = "\u{1}_primitiv_Constant_new" ] 
+ pub fn primitiv_Constant_new ( k : f32 , ) -> * mut primitiv_Initializer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Constant_delete" ] 
+ pub fn primitiv_Constant_delete ( initializer : * mut primitiv_Initializer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Uniform_new" ] 
+ pub fn primitiv_Uniform_new ( lower : f32 , upper : f32 , ) -> * mut primitiv_Initializer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Uniform_delete" ] 
+ pub fn primitiv_Uniform_delete ( initializer : * mut primitiv_Initializer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Normal_new" ] 
+ pub fn primitiv_Normal_new ( mean : f32 , sd : f32 , ) -> * mut primitiv_Initializer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Normal_delete" ] 
+ pub fn primitiv_Normal_delete ( initializer : * mut primitiv_Initializer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Identity_new" ] 
+ pub fn primitiv_Identity_new ( ) -> * mut primitiv_Initializer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Identity_delete" ] 
+ pub fn primitiv_Identity_delete ( initializer : * mut primitiv_Initializer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_XavierUniform_new" ] 
+ pub fn primitiv_XavierUniform_new ( scale : f32 , ) -> * mut primitiv_Initializer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_XavierUniform_delete" ] 
+ pub fn primitiv_XavierUniform_delete ( initializer : * mut primitiv_Initializer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_XavierNormal_new" ] 
+ pub fn primitiv_XavierNormal_new ( scale : f32 , ) -> * mut primitiv_Initializer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_XavierNormal_delete" ] 
+ pub fn primitiv_XavierNormal_delete ( initializer : * mut primitiv_Initializer , ) ; 
+} # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Model { _unused : [ u8 ; 0 ] } extern "C" {
  # [ link_name = "\u{1}_primitiv_Naive_new" ] 
  pub fn primitiv_Naive_new ( ) -> * mut primitiv_Device ; 
 } extern "C" {
@@ -165,4 +198,169 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Naive_delete" ] 
  pub fn primitiv_Naive_delete ( device : * mut primitiv_Device , ) ; 
-} # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Parameter { _unused : [ u8 ; 0 ] } # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Optimizer { _unused : [ u8 ; 0 ] } pub type __builtin_va_list = [ __va_list_tag ; 1usize ] ; # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct __va_list_tag { pub gp_offset : :: std :: os :: raw :: c_uint , pub fp_offset : :: std :: os :: raw :: c_uint , pub overflow_arg_area : * mut :: std :: os :: raw :: c_void , pub reg_save_area : * mut :: std :: os :: raw :: c_void , } # [ test ] fn bindgen_test_layout___va_list_tag ( ) { assert_eq ! ( :: std :: mem :: size_of :: < __va_list_tag > ( ) , 24usize , concat ! ( "Size of: " , stringify ! ( __va_list_tag ) ) ) ; assert_eq ! ( :: std :: mem :: align_of :: < __va_list_tag > ( ) , 8usize , concat ! ( "Alignment of " , stringify ! ( __va_list_tag ) ) ) ; assert_eq ! ( unsafe { & ( * ( 0 as * const __va_list_tag ) ) . gp_offset as * const _ as usize } , 0usize , concat ! ( "Alignment of field: " , stringify ! ( __va_list_tag ) , "::" , stringify ! ( gp_offset ) ) ) ; assert_eq ! ( unsafe { & ( * ( 0 as * const __va_list_tag ) ) . fp_offset as * const _ as usize } , 4usize , concat ! ( "Alignment of field: " , stringify ! ( __va_list_tag ) , "::" , stringify ! ( fp_offset ) ) ) ; assert_eq ! ( unsafe { & ( * ( 0 as * const __va_list_tag ) ) . overflow_arg_area as * const _ as usize } , 8usize , concat ! ( "Alignment of field: " , stringify ! ( __va_list_tag ) , "::" , stringify ! ( overflow_arg_area ) ) ) ; assert_eq ! ( unsafe { & ( * ( 0 as * const __va_list_tag ) ) . reg_save_area as * const _ as usize } , 16usize , concat ! ( "Alignment of field: " , stringify ! ( __va_list_tag ) , "::" , stringify ! ( reg_save_area ) ) ) ; }
+} # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Parameter { _unused : [ u8 ; 0 ] } extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_new" ] 
+ pub fn primitiv_Parameter_new ( ) -> * mut primitiv_Parameter ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_new_with_values" ] 
+ pub fn primitiv_Parameter_new_with_values ( shape : * const primitiv_Shape , value : * const f32 , n : usize , device : * mut primitiv_Device , ) -> * mut primitiv_Parameter ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_new_with_initializer" ] 
+ pub fn primitiv_Parameter_new_with_initializer ( shape : * const primitiv_Shape , initializer : * const primitiv_Initializer , device : * mut primitiv_Device , ) -> * mut primitiv_Parameter ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_delete" ] 
+ pub fn primitiv_Parameter_delete ( parameter : * mut primitiv_Parameter , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_init_with_values" ] 
+ pub fn primitiv_Parameter_init_with_values ( parameter : * mut primitiv_Parameter , shape : * const primitiv_Shape , value : * const f32 , n : usize , device : * mut primitiv_Device , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_init_with_initializer" ] 
+ pub fn primitiv_Parameter_init_with_initializer ( parameter : * mut primitiv_Parameter , shape : * const primitiv_Shape , initializer : * const primitiv_Initializer , device : * mut primitiv_Device , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_load" ] 
+ pub fn primitiv_Parameter_load ( parameter : * mut primitiv_Parameter , path : * const :: std :: os :: raw :: c_char , with_stats : bool_ , device : * mut primitiv_Device , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_save" ] 
+ pub fn primitiv_Parameter_save ( parameter : * const primitiv_Parameter , path : * const :: std :: os :: raw :: c_char , with_stats : bool_ , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_valid" ] 
+ pub fn primitiv_Parameter_valid ( parameter : * const primitiv_Parameter , ) -> bool_ ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_reset_gradients" ] 
+ pub fn primitiv_Parameter_reset_gradients ( parameter : * mut primitiv_Parameter , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_add_stats" ] 
+ pub fn primitiv_Parameter_add_stats ( parameter : * mut primitiv_Parameter , name : * const :: std :: os :: raw :: c_char , shape : * const primitiv_Shape , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_has_stats" ] 
+ pub fn primitiv_Parameter_has_stats ( parameter : * mut primitiv_Parameter , name : * const :: std :: os :: raw :: c_char , ) -> bool_ ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_shape" ] 
+ pub fn primitiv_Parameter_shape ( parameter : * const primitiv_Parameter , ) -> * const primitiv_Shape ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_device" ] 
+ pub fn primitiv_Parameter_device ( parameter : * const primitiv_Parameter , ) -> * mut primitiv_Device ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_value" ] 
+ pub fn primitiv_Parameter_value ( parameter : * const primitiv_Parameter , ) -> * const primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_gradient" ] 
+ pub fn primitiv_Parameter_gradient ( parameter : * const primitiv_Parameter , ) -> * const primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Parameter_stats" ] 
+ pub fn primitiv_Parameter_stats ( parameter : * const primitiv_Parameter , name : * const :: std :: os :: raw :: c_char , ) -> * const primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_op_mean" ] 
+ pub fn primitiv_node_op_mean ( x : * const primitiv_Node , dim : u32 , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_op_mean" ] 
+ pub fn primitiv_tensor_op_mean ( x : * const primitiv_Tensor , dim : u32 , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_op_input" ] 
+ pub fn primitiv_node_op_input ( shape : * const primitiv_Shape , data : * const f32 , n : usize , device : * mut primitiv_Device , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_op_input" ] 
+ pub fn primitiv_tensor_op_input ( shape : * const primitiv_Shape , data : * const f32 , n : usize , device : * mut primitiv_Device , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_op_parameter" ] 
+ pub fn primitiv_node_op_parameter ( param : * mut primitiv_Parameter , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_op_parameter" ] 
+ pub fn primitiv_tensor_op_parameter ( param : * mut primitiv_Parameter , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_op_tanh" ] 
+ pub fn primitiv_node_op_tanh ( x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_op_tanh" ] 
+ pub fn primitiv_tensor_op_tanh ( x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_op_matmul" ] 
+ pub fn primitiv_node_op_matmul ( a : * const primitiv_Node , b : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_op_matmul" ] 
+ pub fn primitiv_tensor_op_matmul ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_op_batch_mean" ] 
+ pub fn primitiv_node_op_batch_mean ( x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_op_batch_mean" ] 
+ pub fn primitiv_tensor_op_batch_mean ( x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Optimizer { _unused : [ u8 ; 0 ] } extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_new" ] 
+ pub fn primitiv_Optimizer_new ( ) -> * mut primitiv_Optimizer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_delete" ] 
+ pub fn primitiv_Optimizer_delete ( optimizer : * mut primitiv_Optimizer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_load" ] 
+ pub fn primitiv_Optimizer_load ( optimizer : * mut primitiv_Optimizer , path : * const :: std :: os :: raw :: c_char , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_save" ] 
+ pub fn primitiv_Optimizer_save ( optimizer : * const primitiv_Optimizer , path : * const :: std :: os :: raw :: c_char , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_get_epoch" ] 
+ pub fn primitiv_Optimizer_get_epoch ( optimizer : * const primitiv_Optimizer , ) -> u32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_set_epoch" ] 
+ pub fn primitiv_Optimizer_set_epoch ( optimizer : * mut primitiv_Optimizer , epoch : u32 , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_get_learning_rate_scaling" ] 
+ pub fn primitiv_Optimizer_get_learning_rate_scaling ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_set_learning_rate_scaling" ] 
+ pub fn primitiv_Optimizer_set_learning_rate_scaling ( optimizer : * mut primitiv_Optimizer , scale : f32 , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_get_weight_decay" ] 
+ pub fn primitiv_Optimizer_get_weight_decay ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_set_weight_decay" ] 
+ pub fn primitiv_Optimizer_set_weight_decay ( optimizer : * mut primitiv_Optimizer , strength : f32 , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_get_gradient_clipping" ] 
+ pub fn primitiv_Optimizer_get_gradient_clipping ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_set_gradient_clipping" ] 
+ pub fn primitiv_Optimizer_set_gradient_clipping ( optimizer : * mut primitiv_Optimizer , threshold : f32 , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_add_parameter" ] 
+ pub fn primitiv_Optimizer_add_parameter ( optimizer : * mut primitiv_Optimizer , param : * mut primitiv_Parameter , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_add_model" ] 
+ pub fn primitiv_Optimizer_add_model ( optimizer : * mut primitiv_Optimizer , model : * const primitiv_Model , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_reset_gradients" ] 
+ pub fn primitiv_Optimizer_reset_gradients ( optimizer : * mut primitiv_Optimizer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_update" ] 
+ pub fn primitiv_Optimizer_update ( optimizer : * mut primitiv_Optimizer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_SGD_new" ] 
+ pub fn primitiv_SGD_new ( ) -> * mut primitiv_Optimizer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_SGD_new_with_eta" ] 
+ pub fn primitiv_SGD_new_with_eta ( eta : f32 , ) -> * mut primitiv_Optimizer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_SGD_delete" ] 
+ pub fn primitiv_SGD_delete ( optimizer : * mut primitiv_Optimizer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_SGD_eta" ] 
+ pub fn primitiv_SGD_eta ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_MomentumSGD_new" ] 
+ pub fn primitiv_MomentumSGD_new ( ) -> * mut primitiv_Optimizer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_MomentumSGD_new_with_eta" ] 
+ pub fn primitiv_MomentumSGD_new_with_eta ( eta : f32 , ) -> * mut primitiv_Optimizer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_MomentumSGD_new_with_eta_and_momentum" ] 
+ pub fn primitiv_MomentumSGD_new_with_eta_and_momentum ( eta : f32 , momentum : f32 , ) -> * mut primitiv_Optimizer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_MomentumSGD_delete" ] 
+ pub fn primitiv_MomentumSGD_delete ( optimizer : * mut primitiv_Optimizer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_MomentumSGD_eta" ] 
+ pub fn primitiv_MomentumSGD_eta ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_MomentumSGD_momentum" ] 
+ pub fn primitiv_MomentumSGD_momentum ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} pub type __builtin_va_list = [ __va_list_tag ; 1usize ] ; # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct __va_list_tag { pub gp_offset : :: std :: os :: raw :: c_uint , pub fp_offset : :: std :: os :: raw :: c_uint , pub overflow_arg_area : * mut :: std :: os :: raw :: c_void , pub reg_save_area : * mut :: std :: os :: raw :: c_void , } # [ test ] fn bindgen_test_layout___va_list_tag ( ) { assert_eq ! ( :: std :: mem :: size_of :: < __va_list_tag > ( ) , 24usize , concat ! ( "Size of: " , stringify ! ( __va_list_tag ) ) ) ; assert_eq ! ( :: std :: mem :: align_of :: < __va_list_tag > ( ) , 8usize , concat ! ( "Alignment of " , stringify ! ( __va_list_tag ) ) ) ; assert_eq ! ( unsafe { & ( * ( 0 as * const __va_list_tag ) ) . gp_offset as * const _ as usize } , 0usize , concat ! ( "Alignment of field: " , stringify ! ( __va_list_tag ) , "::" , stringify ! ( gp_offset ) ) ) ; assert_eq ! ( unsafe { & ( * ( 0 as * const __va_list_tag ) ) . fp_offset as * const _ as usize } , 4usize , concat ! ( "Alignment of field: " , stringify ! ( __va_list_tag ) , "::" , stringify ! ( fp_offset ) ) ) ; assert_eq ! ( unsafe { & ( * ( 0 as * const __va_list_tag ) ) . overflow_arg_area as * const _ as usize } , 8usize , concat ! ( "Alignment of field: " , stringify ! ( __va_list_tag ) , "::" , stringify ! ( overflow_arg_area ) ) ) ; assert_eq ! ( unsafe { & ( * ( 0 as * const __va_list_tag ) ) . reg_save_area as * const _ as usize } , 16usize , concat ! ( "Alignment of field: " , stringify ! ( __va_list_tag ) , "::" , stringify ! ( reg_save_area ) ) ) ; }
