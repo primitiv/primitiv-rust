@@ -4,13 +4,12 @@ use Wrap;
 
 #[derive(Debug)]
 pub struct Node {
-    node: _primitiv::primitiv_Node,
-    // inner: *mut _primitiv::primitiv_Graph,
+    inner: *mut _primitiv::primitiv_Node,
 }
 
-impl Drop for Node {
-    fn drop(&mut self) {}
-}
+impl_wrap!(Node, primitiv_Node);
+impl_new!(Node, primitiv_Node_new);
+impl_drop!(Node, primitiv_Node_delete);
 
 #[derive(Debug)]
 pub struct Graph {
@@ -22,9 +21,15 @@ impl_new!(Graph, primitiv_Graph_new);
 impl_drop!(Graph, primitiv_Graph_delete);
 
 impl Graph {
-    pub fn set_default(graph: &Self) {
+    pub fn clear(&mut self) {
         unsafe {
-            _primitiv::primitiv_Graph_set_default(graph.inner);
+            _primitiv::primitiv_Graph_clear(self.as_inner_mut_ptr());
+        }
+    }
+
+    pub fn set_default(graph: &mut Self) {
+        unsafe {
+            _primitiv::primitiv_Graph_set_default(graph.as_inner_mut_ptr());
         }
     }
 }
