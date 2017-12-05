@@ -1,3 +1,5 @@
+use std::fmt::{Debug, Display, Error, Formatter};
+
 pub trait Wrap<T> {
     fn from_inner_ptr(inner: *mut T) -> Self;
     fn as_inner_ptr(&self) -> *const T;
@@ -43,6 +45,47 @@ macro_rules! impl_drop {
                 unsafe { _primitiv::$call(self.inner); }
             }
         }
+    }
+}
+
+pub trait DataType: Default + Clone + Display + Debug + 'static + Into<f32> {}
+
+macro_rules! data_type {
+    ($rust_type:ty) => {
+        impl DataType for $rust_type {}
+        // impl Into<f32> for $rust_type {
+        //     fn into(self) -> f32 {
+        //         self as f32
+        //     }
+        // }
+        // impl Into<u32> for $rust_type {
+        //     fn into(self) -> u32 {
+        //         self as u32
+        //     }
+        // }
+    }
+}
+
+data_type!(f32);
+// data_type!(i8);
+// data_type!(i16);
+// data_type!(u8);
+// data_type!(u16);
+
+#[derive(Debug, Clone)]
+pub struct Expr<T: DataType> {
+    expr: T,
+}
+
+impl<T: DataType> Display for Expr<T> {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+        Display::fmt(&self.expr, f)
+    }
+}
+
+impl<T: DataType> From<T> for Expr<T> {
+    fn from(value: T) -> Self {
+        Expr { expr: value }
     }
 }
 

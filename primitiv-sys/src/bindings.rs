@@ -250,6 +250,78 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
  # [ link_name = "\u{1}_primitiv_Parameter_stats" ] 
  pub fn primitiv_Parameter_stats ( parameter : * const primitiv_Parameter , name : * const :: std :: os :: raw :: c_char , ) -> * const primitiv_Tensor ; 
 } extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_node_add_const" ] 
+ pub fn primitiv_op_node_add_const ( x : * const primitiv_Node , k : f32 , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_const_add_node" ] 
+ pub fn primitiv_op_const_add_node ( k : f32 , x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_node_add_node" ] 
+ pub fn primitiv_op_node_add_node ( a : * const primitiv_Node , b : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_node_sub_const" ] 
+ pub fn primitiv_op_node_sub_const ( x : * const primitiv_Node , k : f32 , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_const_sub_node" ] 
+ pub fn primitiv_op_const_sub_node ( k : f32 , x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_node_sub_node" ] 
+ pub fn primitiv_op_node_sub_node ( a : * const primitiv_Node , b : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_node_mul_const" ] 
+ pub fn primitiv_op_node_mul_const ( x : * const primitiv_Node , k : f32 , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_const_mul_node" ] 
+ pub fn primitiv_op_const_mul_node ( k : f32 , x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_node_mul_node" ] 
+ pub fn primitiv_op_node_mul_node ( a : * const primitiv_Node , b : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_node_div_const" ] 
+ pub fn primitiv_op_node_div_const ( x : * const primitiv_Node , k : f32 , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_const_div_node" ] 
+ pub fn primitiv_op_const_div_node ( k : f32 , x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_node_div_node" ] 
+ pub fn primitiv_op_node_div_node ( a : * const primitiv_Node , b : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_tensor_add_const" ] 
+ pub fn primitiv_op_tensor_add_const ( x : * const primitiv_Tensor , k : f32 , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_const_add_tensor" ] 
+ pub fn primitiv_op_const_add_tensor ( k : f32 , x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_tensor_add_tensor" ] 
+ pub fn primitiv_op_tensor_add_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_tensor_sub_const" ] 
+ pub fn primitiv_op_tensor_sub_const ( x : * const primitiv_Tensor , k : f32 , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_const_sub_tensor" ] 
+ pub fn primitiv_op_const_sub_tensor ( k : f32 , x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_tensor_sub_tensor" ] 
+ pub fn primitiv_op_tensor_sub_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_tensor_mul_const" ] 
+ pub fn primitiv_op_tensor_mul_const ( x : * const primitiv_Tensor , k : f32 , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_const_mul_tensor" ] 
+ pub fn primitiv_op_const_mul_tensor ( k : f32 , x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_tensor_mul_tensor" ] 
+ pub fn primitiv_op_tensor_mul_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_tensor_div_const" ] 
+ pub fn primitiv_op_tensor_div_const ( x : * const primitiv_Tensor , k : f32 , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_const_div_tensor" ] 
+ pub fn primitiv_op_const_div_tensor ( k : f32 , x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_op_tensor_div_tensor" ] 
+ pub fn primitiv_op_tensor_div_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_node_op_mean" ] 
  pub fn primitiv_node_op_mean ( x : * const primitiv_Node , dim : u32 , ) -> * mut primitiv_Node ; 
 } extern "C" {
