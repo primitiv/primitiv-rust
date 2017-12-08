@@ -7,8 +7,8 @@ use primitiv::Parameter;
 use primitiv::Shape;
 
 use primitiv::devices as D;
+use primitiv::functions as F;
 use primitiv::initializers as I;
-use primitiv::operators as F;
 use primitiv::optimizers as O;
 
 fn main() {

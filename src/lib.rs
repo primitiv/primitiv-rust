@@ -107,9 +107,9 @@ mod tensor;
 pub use tensor::*;
 mod optimizer;
 pub use optimizer::*;
-pub mod operators;
-pub use operators::node_ops as node_operators;
-pub use operators::tensor_ops as tensor_operators;
+pub mod functions;
+pub use functions::node_funcs as node_functions;
+pub use functions::tensor_funcs as tensor_functions;
 
 pub mod devices;
 pub mod initializers;

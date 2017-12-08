@@ -60,30 +60,30 @@ macro_rules! impl_bin_node_op {
 impl_bin_node_op!(
     Add,
     add,
-    primitiv_op_node_add_const,
-    primitiv_op_const_add_node,
-    primitiv_op_node_add_node
+    primitiv_node_func_node_add_const,
+    primitiv_node_func_const_add_node,
+    primitiv_node_func_node_add_node
 );
 impl_bin_node_op!(
     Sub,
     sub,
-    primitiv_op_node_sub_const,
-    primitiv_op_const_sub_node,
-    primitiv_op_node_sub_node
+    primitiv_node_func_node_sub_const,
+    primitiv_node_func_const_sub_node,
+    primitiv_node_func_node_sub_node
 );
 impl_bin_node_op!(
     Mul,
     mul,
-    primitiv_op_node_mul_const,
-    primitiv_op_const_mul_node,
-    primitiv_op_node_mul_node
+    primitiv_node_func_node_mul_const,
+    primitiv_node_func_const_mul_node,
+    primitiv_node_func_node_mul_node
 );
 impl_bin_node_op!(
     Div,
     div,
-    primitiv_op_node_div_const,
-    primitiv_op_const_div_node,
-    primitiv_op_node_div_node
+    primitiv_node_func_node_div_const,
+    primitiv_node_func_const_div_node,
+    primitiv_node_func_node_div_node
 );
 
 pub fn input(shape: &Shape, data: &[f32]) -> Node {
@@ -92,7 +92,7 @@ pub fn input(shape: &Shape, data: &[f32]) -> Node {
 
 pub fn input_with_device<D: Device>(shape: &Shape, data: &[f32], device: Option<&mut D>) -> Node {
     unsafe {
-        Node::from_inner_ptr(_primitiv::primitiv_node_op_input(
+        Node::from_inner_ptr(_primitiv::primitiv_node_func_input(
             shape.as_inner_ptr(),
             data.as_ptr() as *const _,
             data.len(),
@@ -105,19 +105,19 @@ pub fn input_with_device<D: Device>(shape: &Shape, data: &[f32], device: Option<
 
 pub fn parameter(param: &mut Parameter) -> Node {
     unsafe {
-        Node::from_inner_ptr(_primitiv::primitiv_node_op_parameter(
+        Node::from_inner_ptr(_primitiv::primitiv_node_func_parameter(
             param.as_inner_mut_ptr(),
         ))
     }
 }
 
 pub fn tanh(x: &Node) -> Node {
-    unsafe { Node::from_inner_ptr(_primitiv::primitiv_node_op_tanh(x.as_inner_ptr())) }
+    unsafe { Node::from_inner_ptr(_primitiv::primitiv_node_func_tanh(x.as_inner_ptr())) }
 }
 
 pub fn matmul(a: &Node, b: &Node) -> Node {
     unsafe {
-        Node::from_inner_ptr(_primitiv::primitiv_node_op_matmul(
+        Node::from_inner_ptr(_primitiv::primitiv_node_func_matmul(
             a.as_inner_ptr(),
             b.as_inner_ptr(),
         ))
