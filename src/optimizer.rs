@@ -15,4 +15,26 @@ pub trait Optimizer: Wrap<_primitiv::primitiv_Optimizer> {
             status.into_result().unwrap();
         }
     }
+
+    fn reset_gradients(&mut self) {
+        let mut status = Status::new();
+        unsafe {
+            _primitiv::safe_primitiv_Optimizer_reset_gradients(
+                self.as_inner_mut_ptr(),
+                status.as_inner_mut_ptr(),
+            );
+            status.into_result().unwrap();
+        }
+    }
+
+    fn update(&mut self) {
+        let mut status = Status::new();
+        unsafe {
+            _primitiv::safe_primitiv_Optimizer_update(
+                self.as_inner_mut_ptr(),
+                status.as_inner_mut_ptr(),
+            );
+            status.into_result().unwrap();
+        }
+    }
 }
