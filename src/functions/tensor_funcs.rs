@@ -1,5 +1,4 @@
-extern crate primitiv_sys as _primitiv;
-
+use primitiv_sys as _primitiv;
 use Tensor;
 use Parameter;
 use Wrap;

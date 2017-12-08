@@ -1,5 +1,4 @@
-extern crate primitiv_sys as _primitiv;
-
+use primitiv_sys as _primitiv;
 use std::ops;
 use std::ptr;
 use device::{AnyDevice, Device};
@@ -8,6 +7,7 @@ use Expr;
 use Node;
 use Parameter;
 use Shape;
+use Status;
 use Wrap;
 
 macro_rules! impl_bin_node_op {
@@ -20,11 +20,15 @@ macro_rules! impl_bin_node_op {
             type Output = Node;
 
             fn $op_fn(self, rhs: Expr<T>) -> Node {
+                let mut status = Status::new();
                 unsafe {
-                    Node::from_inner_ptr(_primitiv::$api_nc_fn(
+                    let node = Node::from_inner_ptr(_primitiv::$api_nc_fn(
                         self.as_inner_ptr(),
                         rhs.expr.into(),
-                    ))
+                        status.as_inner_mut_ptr(),
+                    ));
+                    status.into_result().unwrap();
+                    node
                 }
             }
         }
@@ -33,11 +37,15 @@ macro_rules! impl_bin_node_op {
             type Output = Node;
 
             fn $op_fn(self, rhs: Node) -> Node {
+                let mut status = Status::new();
                 unsafe {
-                    Node::from_inner_ptr(_primitiv::$api_cn_fn(
+                    let node = Node::from_inner_ptr(_primitiv::$api_cn_fn(
                         self.expr.into(),
                         rhs.as_inner_ptr(),
-                    ))
+                        status.as_inner_mut_ptr(),
+                    ));
+                    status.into_result().unwrap();
+                    node
                 }
             }
         }
@@ -46,11 +54,15 @@ macro_rules! impl_bin_node_op {
             type Output = Node;
 
             fn $op_fn(self, rhs: Node) -> Node {
+                let mut status = Status::new();
                 unsafe {
-                    Node::from_inner_ptr(_primitiv::$api_nn_fn(
+                    let node = Node::from_inner_ptr(_primitiv::$api_nn_fn(
                         self.as_inner_ptr(),
                         rhs.as_inner_ptr(),
-                    ))
+                        status.as_inner_mut_ptr(),
+                    ));
+                    status.into_result().unwrap();
+                    node
                 }
             }
         }
@@ -60,30 +72,30 @@ macro_rules! impl_bin_node_op {
 impl_bin_node_op!(
     Add,
     add,
-    primitiv_node_func_node_add_const,
-    primitiv_node_func_const_add_node,
-    primitiv_node_func_node_add_node
+    safe_primitiv_node_func_add_node_const,
+    safe_primitiv_node_func_add_const_node,
+    safe_primitiv_node_func_add_node_node
 );
 impl_bin_node_op!(
     Sub,
     sub,
-    primitiv_node_func_node_sub_const,
-    primitiv_node_func_const_sub_node,
-    primitiv_node_func_node_sub_node
+    safe_primitiv_node_func_subtract_node_const,
+    safe_primitiv_node_func_subtract_const_node,
+    safe_primitiv_node_func_subtract_node_node
 );
 impl_bin_node_op!(
     Mul,
     mul,
-    primitiv_node_func_node_mul_const,
-    primitiv_node_func_const_mul_node,
-    primitiv_node_func_node_mul_node
+    safe_primitiv_node_func_multiply_node_const,
+    safe_primitiv_node_func_multiply_const_node,
+    safe_primitiv_node_func_multiply_node_node
 );
 impl_bin_node_op!(
     Div,
     div,
-    primitiv_node_func_node_div_const,
-    primitiv_node_func_const_div_node,
-    primitiv_node_func_node_div_node
+    safe_primitiv_node_func_divide_node_const,
+    safe_primitiv_node_func_divide_const_node,
+    safe_primitiv_node_func_divide_node_node
 );
 
 pub fn input(shape: &Shape, data: &[f32]) -> Node {
@@ -91,35 +103,57 @@ pub fn input(shape: &Shape, data: &[f32]) -> Node {
 }
 
 pub fn input_with_device<D: Device>(shape: &Shape, data: &[f32], device: Option<&mut D>) -> Node {
+    let mut status = Status::new();
     unsafe {
-        Node::from_inner_ptr(_primitiv::primitiv_node_func_input(
+        let node = Node::from_inner_ptr(_primitiv::safe_primitiv_node_func_input(
             shape.as_inner_ptr(),
             data.as_ptr() as *const _,
             data.len(),
             device.map(|d| d.as_inner_mut_ptr()).unwrap_or(
                 ptr::null_mut(),
             ),
-        ))
+            ptr::null_mut(),
+            status.as_inner_mut_ptr(),
+        ));
+        status.into_result().unwrap();
+        node
     }
 }
 
 pub fn parameter(param: &mut Parameter) -> Node {
+    let mut status = Status::new();
     unsafe {
-        Node::from_inner_ptr(_primitiv::primitiv_node_func_parameter(
+        let node = Node::from_inner_ptr(_primitiv::safe_primitiv_node_func_parameter(
             param.as_inner_mut_ptr(),
-        ))
+            ptr::null_mut(),
+            status.as_inner_mut_ptr(),
+        ));
+        status.into_result().unwrap();
+        node
     }
 }
 
 pub fn tanh(x: &Node) -> Node {
-    unsafe { Node::from_inner_ptr(_primitiv::primitiv_node_func_tanh(x.as_inner_ptr())) }
+    let mut status = Status::new();
+    unsafe {
+        let node = Node::from_inner_ptr(_primitiv::safe_primitiv_node_func_tanh(
+            x.as_inner_ptr(),
+            status.as_inner_mut_ptr(),
+        ));
+        status.into_result().unwrap();
+        node
+    }
 }
 
 pub fn matmul(a: &Node, b: &Node) -> Node {
+    let mut status = Status::new();
     unsafe {
-        Node::from_inner_ptr(_primitiv::primitiv_node_func_matmul(
+        let node = Node::from_inner_ptr(_primitiv::safe_primitiv_node_func_matmul(
             a.as_inner_ptr(),
             b.as_inner_ptr(),
-        ))
+            status.as_inner_mut_ptr(),
+        ));
+        status.into_result().unwrap();
+        node
     }
 }

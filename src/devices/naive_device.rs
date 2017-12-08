@@ -1,7 +1,7 @@
-extern crate primitiv_sys as _primitiv;
-
-use Wrap;
+use primitiv_sys as _primitiv;
 use device;
+use Status;
+use Wrap;
 
 #[derive(Debug)]
 pub struct Naive {
@@ -9,7 +9,7 @@ pub struct Naive {
 }
 
 impl_wrap!(Naive, primitiv_Device);
-impl_new!(Naive, primitiv_Naive_new);
-impl_drop!(Naive, primitiv_Naive_delete);
+impl_new!(Naive, safe_primitiv_Naive_new);
+impl_drop!(Naive, safe_primitiv_Naive_delete);
 
 impl device::Device for Naive {}

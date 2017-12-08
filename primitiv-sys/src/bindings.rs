@@ -826,12 +826,6 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
  # [ link_name = "\u{1}_safe_primitiv_tensor_func_divide_tensor_tensor" ] 
  pub fn safe_primitiv_tensor_func_divide_tensor_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_node_func_mean" ] 
- pub fn primitiv_node_func_mean ( x : * const primitiv_Node , dim : u32 , ) -> * mut primitiv_Node ; 
-} extern "C" {
- # [ link_name = "\u{1}_primitiv_tensor_func_mean" ] 
- pub fn primitiv_tensor_func_mean ( x : * const primitiv_Tensor , dim : u32 , ) -> * mut primitiv_Tensor ; 
-} extern "C" {
  # [ link_name = "\u{1}_primitiv_node_func_input" ] 
  pub fn primitiv_node_func_input ( shape : * const primitiv_Shape , data : * const f32 , n : usize , dev : * mut primitiv_Device , g : * mut primitiv_Graph , ) -> * mut primitiv_Node ; 
 } extern "C" {
@@ -895,20 +889,50 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
  # [ link_name = "\u{1}_primitiv_node_func_tanh" ] 
  pub fn primitiv_node_func_tanh ( x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_tanh" ] 
+ pub fn safe_primitiv_node_func_tanh ( x : * const primitiv_Node , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_tensor_func_tanh" ] 
  pub fn primitiv_tensor_func_tanh ( x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_tanh" ] 
+ pub fn safe_primitiv_tensor_func_tanh ( x : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_node_func_matmul" ] 
  pub fn primitiv_node_func_matmul ( a : * const primitiv_Node , b : * const primitiv_Node , ) -> * mut primitiv_Node ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_matmul" ] 
+ pub fn safe_primitiv_node_func_matmul ( a : * const primitiv_Node , b : * const primitiv_Node , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_tensor_func_matmul" ] 
  pub fn primitiv_tensor_func_matmul ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_matmul" ] 
+ pub fn safe_primitiv_tensor_func_matmul ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_node_func_batch_mean" ] 
  pub fn primitiv_node_func_batch_mean ( x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_batch_mean" ] 
+ pub fn safe_primitiv_node_func_batch_mean ( x : * const primitiv_Node , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_tensor_func_batch_mean" ] 
  pub fn primitiv_tensor_func_batch_mean ( x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_batch_mean" ] 
+ pub fn safe_primitiv_tensor_func_batch_mean ( x : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_func_mean" ] 
+ pub fn primitiv_node_func_mean ( x : * const primitiv_Node , dim : u32 , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_mean" ] 
+ pub fn safe_primitiv_node_func_mean ( x : * const primitiv_Node , dim : u32 , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_func_mean" ] 
+ pub fn primitiv_tensor_func_mean ( x : * const primitiv_Tensor , dim : u32 , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_mean" ] 
+ pub fn safe_primitiv_tensor_func_mean ( x : * const primitiv_Tensor , dim : u32 , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
 } # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Optimizer { _unused : [ u8 ; 0 ] } extern "C" {
  # [ link_name = "\u{1}_primitiv_Optimizer_load" ] 
  pub fn primitiv_Optimizer_load ( optimizer : * mut primitiv_Optimizer , path : * const :: std :: os :: raw :: c_char , ) ; 

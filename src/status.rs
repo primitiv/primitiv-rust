@@ -33,6 +33,7 @@ fn prev_symbol(level: u32) -> Option<BacktraceSymbol> {
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Copy, Clone)]
 pub enum Code {
     Ok,
+    Error,
     Cancelled,
     Unknown,
     InvalidArgument,
@@ -56,22 +57,23 @@ impl Code {
     fn from_int(value: c_uint) -> Self {
         match value {
             0 => Code::Ok,
-            1 => Code::Cancelled,
-            2 => Code::Unknown,
-            3 => Code::InvalidArgument,
-            4 => Code::DeadlineExceeded,
-            5 => Code::NotFound,
-            6 => Code::AlreadyExists,
-            7 => Code::PermissionDenied,
-            8 => Code::ResourceExhausted,
-            9 => Code::FailedPrecondition,
-            10 => Code::Aborted,
-            11 => Code::OutOfRange,
-            12 => Code::Unimplemented,
-            13 => Code::Internal,
-            14 => Code::Unavailable,
-            15 => Code::DataLoss,
-            16 => Code::Unauthenticated,
+            1 => Code::Error,
+            2 => Code::Cancelled,
+            3 => Code::Unknown,
+            4 => Code::InvalidArgument,
+            5 => Code::DeadlineExceeded,
+            6 => Code::NotFound,
+            7 => Code::AlreadyExists,
+            8 => Code::PermissionDenied,
+            9 => Code::ResourceExhausted,
+            10 => Code::FailedPrecondition,
+            11 => Code::Aborted,
+            12 => Code::OutOfRange,
+            13 => Code::Unimplemented,
+            14 => Code::Internal,
+            15 => Code::Unavailable,
+            16 => Code::DataLoss,
+            17 => Code::Unauthenticated,
             c => Code::UnrecognizedEnumValue(c),
         }
     }
@@ -80,22 +82,23 @@ impl Code {
         match self {
             &Code::UnrecognizedEnumValue(c) => c, 
             &Code::Ok => 0,
-            &Code::Cancelled => 1,
-            &Code::Unknown => 2,
-            &Code::InvalidArgument => 3,
-            &Code::DeadlineExceeded => 4,
-            &Code::NotFound => 5,
-            &Code::AlreadyExists => 6,
-            &Code::PermissionDenied => 7,
-            &Code::ResourceExhausted => 8,
-            &Code::FailedPrecondition => 9,
-            &Code::Aborted => 10,
-            &Code::OutOfRange => 11,
-            &Code::Unimplemented => 12,
-            &Code::Internal => 13,
-            &Code::Unavailable => 14,
-            &Code::DataLoss => 15,
-            &Code::Unauthenticated => 16,
+            &Code::Error => 1,
+            &Code::Cancelled => 2,
+            &Code::Unknown => 3,
+            &Code::InvalidArgument => 4,
+            &Code::DeadlineExceeded => 5,
+            &Code::NotFound => 6,
+            &Code::AlreadyExists => 7,
+            &Code::PermissionDenied => 8,
+            &Code::ResourceExhausted => 9,
+            &Code::FailedPrecondition => 10,
+            &Code::Aborted => 11,
+            &Code::OutOfRange => 12,
+            &Code::Unimplemented => 13,
+            &Code::Internal => 14,
+            &Code::Unavailable => 15,
+            &Code::DataLoss => 16,
+            &Code::Unauthenticated => 17,
         }
     }
 
@@ -112,6 +115,7 @@ impl fmt::Display for Code {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
             &Code::Ok => f.write_str("Ok"),
+            &Code::Error => f.write_str("Error"),
             &Code::Cancelled => f.write_str("Cancelled"),
             &Code::Unknown => f.write_str("Unknown"),
             &Code::InvalidArgument => f.write_str("InvalidArgument"),
@@ -138,8 +142,24 @@ pub struct Status {
 }
 
 impl_wrap!(Status, primitiv_Status);
-impl_new!(Status, primitiv_Status_new);
-impl_drop!(Status, primitiv_Status_delete);
+
+impl Status {
+    pub fn new() -> Self {
+        unsafe {
+            let inner = _primitiv::primitiv_Status_new();
+            assert!(!inner.is_null());
+            Status { inner: inner }
+        }
+    }
+}
+
+impl Drop for Status {
+    fn drop(&mut self) {
+        unsafe {
+            _primitiv::primitiv_Status_delete(self.inner);
+        }
+    }
+}
 
 impl Status {
     pub fn new_set(code: Code, message: &str) -> Result<Status, NulError> {

@@ -1,6 +1,6 @@
-extern crate primitiv_sys as _primitiv;
-
+use primitiv_sys as _primitiv;
 use Shape;
+use Status;
 use Wrap;
 
 // #[derive(Copy, Clone, Debug)]
@@ -10,8 +10,8 @@ pub struct Node {
 }
 
 impl_wrap!(Node, primitiv_Node);
-impl_new!(Node, primitiv_Node_new);
-impl_drop!(Node, primitiv_Node_delete);
+impl_new!(Node, safe_primitiv_Node_new);
+impl_drop!(Node, safe_primitiv_Node_delete);
 
 impl Node {
     pub fn shape(&self) -> Shape {
@@ -22,9 +22,14 @@ impl Node {
     }
 
     pub fn to_vector(&self) -> Vec<f32> {
+        let mut status = Status::new();
         unsafe {
             let num_elements = self.shape().size() as usize;
-            let array = _primitiv::primitiv_Node_to_array(self.as_inner_ptr());
+            let array = _primitiv::safe_primitiv_Node_to_array(
+                self.as_inner_ptr(),
+                status.as_inner_mut_ptr(),
+            );
+            status.into_result().unwrap();
             Vec::from_raw_parts(array, num_elements, num_elements)
         }
     }
@@ -36,8 +41,8 @@ pub struct Graph {
 }
 
 impl_wrap!(Graph, primitiv_Graph);
-impl_new!(Graph, primitiv_Graph_new);
-impl_drop!(Graph, primitiv_Graph_delete);
+impl_new!(Graph, safe_primitiv_Graph_new);
+impl_drop!(Graph, safe_primitiv_Graph_delete);
 
 impl Graph {
     pub fn clear(&mut self) {
