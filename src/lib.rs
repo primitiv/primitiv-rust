@@ -1,3 +1,6 @@
+extern crate primitiv_sys;
+extern crate libc;
+
 use std::fmt::{Debug, Display, Error, Formatter};
 
 pub trait Wrap<T> {
@@ -98,6 +101,8 @@ mod parameter;
 pub use parameter::*;
 mod shape;
 pub use shape::*;
+mod status;
+pub use status::*;
 mod tensor;
 pub use tensor::*;
 mod optimizer;

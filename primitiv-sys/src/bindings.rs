@@ -78,6 +78,21 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_update_batch" ] 
  pub fn primitiv_Shape_update_batch ( shape : * mut primitiv_Shape , batch : u32 , ) ; 
+} pub const primitiv_Code_PRIMITIV_OK : primitiv_Code = 0 ; pub const primitiv_Code_PRIMITIV_ERROR : primitiv_Code = 1 ; pub const primitiv_Code_PRIMITIV_CANCELLED : primitiv_Code = 2 ; pub const primitiv_Code_PRIMITIV_UNKNOWN : primitiv_Code = 3 ; pub const primitiv_Code_PRIMITIV_INVALID_ARGUMENT : primitiv_Code = 4 ; pub const primitiv_Code_PRIMITIV_DEADLINE_EXCEEDED : primitiv_Code = 5 ; pub const primitiv_Code_PRIMITIV_NOT_FOUND : primitiv_Code = 6 ; pub const primitiv_Code_PRIMITIV_ALREADY_EXISTS : primitiv_Code = 7 ; pub const primitiv_Code_PRIMITIV_PERMISSION_DENIED : primitiv_Code = 8 ; pub const primitiv_Code_PRIMITIV_RESOURCE_EXHAUSTED : primitiv_Code = 9 ; pub const primitiv_Code_PRIMITIV_FAILED_PRECONDITION : primitiv_Code = 10 ; pub const primitiv_Code_PRIMITIV_ABORTED : primitiv_Code = 11 ; pub const primitiv_Code_PRIMITIV_OUT_OF_RANGE : primitiv_Code = 12 ; pub const primitiv_Code_PRIMITIV_UNIMPLEMENTED : primitiv_Code = 13 ; pub const primitiv_Code_PRIMITIV_INTERNAL : primitiv_Code = 14 ; pub const primitiv_Code_PRIMITIV_UNAVAILABLE : primitiv_Code = 15 ; pub const primitiv_Code_PRIMITIV_DATA_LOSS : primitiv_Code = 16 ; pub const primitiv_Code_PRIMITIV_UNAUTHENTICATED : primitiv_Code = 17 ; pub type primitiv_Code = :: std :: os :: raw :: c_uint ; # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Status { _unused : [ u8 ; 0 ] } extern "C" {
+ # [ link_name = "\u{1}_primitiv_Status_new" ] 
+ pub fn primitiv_Status_new ( ) -> * mut primitiv_Status ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Status_delete" ] 
+ pub fn primitiv_Status_delete ( status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Status_set_status" ] 
+ pub fn primitiv_Status_set_status ( status : * mut primitiv_Status , code : primitiv_Code , file : * const :: std :: os :: raw :: c_char , line : u32 , message : * const :: std :: os :: raw :: c_char , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Status_get_code" ] 
+ pub fn primitiv_Status_get_code ( status : * const primitiv_Status , ) -> primitiv_Code ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Status_get_message" ] 
+ pub fn primitiv_Status_get_message ( status : * const primitiv_Status , ) -> * const :: std :: os :: raw :: c_char ; 
 } # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Tensor { _unused : [ u8 ; 0 ] } # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Node { _unused : [ u8 ; 0 ] } # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Graph { _unused : [ u8 ; 0 ] } extern "C" {
  # [ link_name = "\u{1}_primitiv_Node_new" ] 
  pub fn primitiv_Node_new ( ) -> * mut primitiv_Node ; 
@@ -112,6 +127,9 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
  # [ link_name = "\u{1}_primitiv_Node_to_array" ] 
  pub fn primitiv_Node_to_array ( node : * const primitiv_Node , ) -> * mut f32 ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Node_to_array" ] 
+ pub fn safe_primitiv_Node_to_array ( node : * const primitiv_Node , status : * mut primitiv_Status , ) -> * mut f32 ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Node_argmax" ] 
  pub fn primitiv_Node_argmax ( node : * const primitiv_Node , dim : u32 , ) -> * mut u32 ; 
 } extern "C" {
@@ -120,6 +138,9 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Node_backward" ] 
  pub fn primitiv_Node_backward ( node : * const primitiv_Node , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Node_backward" ] 
+ pub fn safe_primitiv_Node_backward ( node : * const primitiv_Node , status : * mut primitiv_Status , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Graph_new" ] 
  pub fn primitiv_Graph_new ( ) -> * mut primitiv_Graph ; 

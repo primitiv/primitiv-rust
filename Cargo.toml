@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Hiroki Teranishi <teranishihiroki@gmail.com>"]
 
 [dependencies]
+backtrace = "0.3"
 libc = "0.2"
 primitiv-sys = { path = "primitiv-sys" }
 
