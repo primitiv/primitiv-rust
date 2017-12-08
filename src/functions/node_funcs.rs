@@ -157,3 +157,22 @@ pub fn matmul(a: &Node, b: &Node) -> Node {
         node
     }
 }
+
+pub mod batch {
+    use primitiv_sys as _primitiv;
+    use Node;
+    use Status;
+    use Wrap;
+
+    pub fn mean(x: &Node) -> Node {
+        let mut status = Status::new();
+        unsafe {
+            let node = Node::from_inner_ptr(_primitiv::safe_primitiv_node_func_batch_mean(
+                x.as_inner_ptr(),
+                status.as_inner_mut_ptr(),
+            ));
+            status.into_result().unwrap();
+            node
+        }
+    }
+}
