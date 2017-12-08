@@ -42,6 +42,8 @@ fn main() {
     Graph::set_default(&mut g);
 
     for i in 0..10 {
+        g.clear();
+
         let x = F::input(&Shape::from_dims(&[2], 4), &input_data);
         let w1 = F::parameter(&mut pw1);
         let b1 = F::parameter(&mut pb1);
@@ -51,7 +53,20 @@ fn main() {
         let y = F::matmul(&w2, &h) + b2;
 
         let y_val = y.to_vector();
+        println!("epoch {}:", i);
+        for j in 0..4 {
+            println!("  [{}]: {}", j, y_val[j]);
+        }
 
-        // g.clear();
+        let t = F::input(&Shape::from_dims(&[0], 4), &output_data);
+        let diff = t - y;
+        let loss = F::batch::mean(&(diff.clone() * diff));
+
+        let loss_val = loss.to_float();
+        println!("  loss: {}", loss_val);
+
+        optimizer.reset_gradients();
+        loss.backward();
+        optimizer.update();
     }
 }
