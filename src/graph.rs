@@ -3,7 +3,6 @@ use Shape;
 use Status;
 use Wrap;
 
-// #[derive(Copy, Clone, Debug)]
 #[derive(Clone, Debug)]
 pub struct Node {
     inner: *mut _primitiv::primitiv_Node,
@@ -21,6 +20,18 @@ impl Node {
         }
     }
 
+    pub fn to_float(&self) -> f32 {
+        let mut status = Status::new();
+        unsafe {
+            let value = _primitiv::safe_primitiv_Node_to_float(
+                self.as_inner_ptr(),
+                status.as_inner_mut_ptr(),
+            );
+            status.into_result().unwrap();
+            value
+        }
+    }
+
     pub fn to_vector(&self) -> Vec<f32> {
         let mut status = Status::new();
         unsafe {
@@ -31,6 +42,14 @@ impl Node {
             );
             status.into_result().unwrap();
             Vec::from_raw_parts(array, num_elements, num_elements)
+        }
+    }
+
+    pub fn backward(&self) {
+        let mut status = Status::new();
+        unsafe {
+            _primitiv::safe_primitiv_Node_backward(self.as_inner_ptr(), status.as_inner_mut_ptr());
+            status.into_result().unwrap();
         }
     }
 }
