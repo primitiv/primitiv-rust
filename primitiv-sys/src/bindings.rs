@@ -31,75 +31,249 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
  # [ link_name = "\u{1}_primitiv_Shape_new" ] 
  pub fn primitiv_Shape_new ( ) -> * mut primitiv_Shape ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_new" ] 
+ pub fn safe_primitiv_Shape_new ( status : * mut primitiv_Status , ) -> * mut primitiv_Shape ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_new_with_dims" ] 
  pub fn primitiv_Shape_new_with_dims ( dims : * const u32 , n : usize , batch : u32 , ) -> * mut primitiv_Shape ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_new_with_dims" ] 
+ pub fn safe_primitiv_Shape_new_with_dims ( dims : * const u32 , n : usize , batch : u32 , status : * mut primitiv_Status , ) -> * mut primitiv_Shape ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_delete" ] 
- pub fn primitiv_Shape_delete ( shape : * const primitiv_Shape , ) ; 
+ pub fn primitiv_Shape_delete ( shape : * mut primitiv_Shape , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_delete" ] 
+ pub fn safe_primitiv_Shape_delete ( shape : * mut primitiv_Shape , status : * mut primitiv_Status , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_op_getitem" ] 
  pub fn primitiv_Shape_op_getitem ( shape : * const primitiv_Shape , i : u32 , ) -> u32 ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_op_getitem" ] 
+ pub fn safe_primitiv_Shape_op_getitem ( shape : * const primitiv_Shape , i : u32 , status : * mut primitiv_Status , ) -> u32 ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_dims" ] 
  pub fn primitiv_Shape_dims ( shape : * const primitiv_Shape , ) -> * const u32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_dims" ] 
+ pub fn safe_primitiv_Shape_dims ( shape : * const primitiv_Shape , status : * mut primitiv_Status , ) -> * const u32 ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_depth" ] 
  pub fn primitiv_Shape_depth ( shape : * const primitiv_Shape , ) -> u32 ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_depth" ] 
+ pub fn safe_primitiv_Shape_depth ( shape : * const primitiv_Shape , status : * mut primitiv_Status , ) -> u32 ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_batch" ] 
  pub fn primitiv_Shape_batch ( shape : * const primitiv_Shape , ) -> u32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_batch" ] 
+ pub fn safe_primitiv_Shape_batch ( shape : * const primitiv_Shape , status : * mut primitiv_Status , ) -> u32 ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_volume" ] 
  pub fn primitiv_Shape_volume ( shape : * const primitiv_Shape , ) -> u32 ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_volume" ] 
+ pub fn safe_primitiv_Shape_volume ( shape : * const primitiv_Shape , status : * mut primitiv_Status , ) -> u32 ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_lower_volume" ] 
  pub fn primitiv_Shape_lower_volume ( shape : * const primitiv_Shape , dim : u32 , ) -> u32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_lower_volume" ] 
+ pub fn safe_primitiv_Shape_lower_volume ( shape : * const primitiv_Shape , dim : u32 , status : * mut primitiv_Status , ) -> u32 ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_size" ] 
  pub fn primitiv_Shape_size ( shape : * const primitiv_Shape , ) -> u32 ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_size" ] 
+ pub fn safe_primitiv_Shape_size ( shape : * const primitiv_Shape , status : * mut primitiv_Status , ) -> u32 ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_to_string" ] 
  pub fn primitiv_Shape_to_string ( shape : * const primitiv_Shape , ) -> * mut :: std :: os :: raw :: c_char ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_to_string" ] 
+ pub fn safe_primitiv_Shape_to_string ( shape : * const primitiv_Shape , status : * mut primitiv_Status , ) -> * mut :: std :: os :: raw :: c_char ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_op_eq" ] 
  pub fn primitiv_Shape_op_eq ( shape : * const primitiv_Shape , rhs : * const primitiv_Shape , ) -> bool_ ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_op_eq" ] 
+ pub fn safe_primitiv_Shape_op_eq ( shape : * const primitiv_Shape , rhs : * const primitiv_Shape , status : * mut primitiv_Status , ) -> bool_ ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_op_ne" ] 
  pub fn primitiv_Shape_op_ne ( shape : * const primitiv_Shape , rhs : * const primitiv_Shape , ) -> bool_ ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_op_ne" ] 
+ pub fn safe_primitiv_Shape_op_ne ( shape : * const primitiv_Shape , rhs : * const primitiv_Shape , status : * mut primitiv_Status , ) -> bool_ ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_has_batch" ] 
  pub fn primitiv_Shape_has_batch ( shape : * const primitiv_Shape , ) -> bool_ ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_has_batch" ] 
+ pub fn safe_primitiv_Shape_has_batch ( shape : * const primitiv_Shape , status : * mut primitiv_Status , ) -> bool_ ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_has_compatible_batch" ] 
  pub fn primitiv_Shape_has_compatible_batch ( shape : * const primitiv_Shape , rhs : * const primitiv_Shape , ) -> bool_ ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_has_compatible_batch" ] 
+ pub fn safe_primitiv_Shape_has_compatible_batch ( shape : * const primitiv_Shape , rhs : * const primitiv_Shape , status : * mut primitiv_Status , ) -> bool_ ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_is_scalar" ] 
  pub fn primitiv_Shape_is_scalar ( shape : * const primitiv_Shape , ) -> bool_ ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_is_scalar" ] 
+ pub fn safe_primitiv_Shape_is_scalar ( shape : * const primitiv_Shape , status : * mut primitiv_Status , ) -> bool_ ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_is_row_vector" ] 
  pub fn primitiv_Shape_is_row_vector ( shape : * const primitiv_Shape , ) -> bool_ ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_is_row_vector" ] 
+ pub fn safe_primitiv_Shape_is_row_vector ( shape : * const primitiv_Shape , status : * mut primitiv_Status , ) -> bool_ ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_is_matrix" ] 
  pub fn primitiv_Shape_is_matrix ( shape : * const primitiv_Shape , ) -> bool_ ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_is_matrix" ] 
+ pub fn safe_primitiv_Shape_is_matrix ( shape : * const primitiv_Shape , status : * mut primitiv_Status , ) -> bool_ ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_has_same_dims" ] 
  pub fn primitiv_Shape_has_same_dims ( shape : * const primitiv_Shape , rhs : * const primitiv_Shape , ) -> bool_ ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_has_same_dims" ] 
+ pub fn safe_primitiv_Shape_has_same_dims ( shape : * const primitiv_Shape , rhs : * const primitiv_Shape , status : * mut primitiv_Status , ) -> bool_ ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_has_same_loo_dims" ] 
  pub fn primitiv_Shape_has_same_loo_dims ( shape : * const primitiv_Shape , rhs : * const primitiv_Shape , dim : u32 , ) -> bool_ ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_has_same_loo_dims" ] 
+ pub fn safe_primitiv_Shape_has_same_loo_dims ( shape : * const primitiv_Shape , rhs : * const primitiv_Shape , dim : u32 , status : * mut primitiv_Status , ) -> bool_ ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_resize_dim" ] 
  pub fn primitiv_Shape_resize_dim ( shape : * const primitiv_Shape , dim : u32 , m : u32 , ) -> * mut primitiv_Shape ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_resize_dim" ] 
+ pub fn safe_primitiv_Shape_resize_dim ( shape : * const primitiv_Shape , dim : u32 , m : u32 , status : * mut primitiv_Status , ) -> * mut primitiv_Shape ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_resize_batch" ] 
  pub fn primitiv_Shape_resize_batch ( shape : * const primitiv_Shape , batch : u32 , ) -> * mut primitiv_Shape ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_resize_batch" ] 
+ pub fn safe_primitiv_Shape_resize_batch ( shape : * const primitiv_Shape , batch : u32 , status : * mut primitiv_Status , ) -> * mut primitiv_Shape ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_update_dim" ] 
  pub fn primitiv_Shape_update_dim ( shape : * mut primitiv_Shape , dim : u32 , m : u32 , ) ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_update_dim" ] 
+ pub fn safe_primitiv_Shape_update_dim ( shape : * mut primitiv_Shape , dim : u32 , m : u32 , status : * mut primitiv_Status , ) ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Shape_update_batch" ] 
  pub fn primitiv_Shape_update_batch ( shape : * mut primitiv_Shape , batch : u32 , ) ; 
-} # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Tensor { _unused : [ u8 ; 0 ] } # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Node { _unused : [ u8 ; 0 ] } # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Graph { _unused : [ u8 ; 0 ] } extern "C" {
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Shape_update_batch" ] 
+ pub fn safe_primitiv_Shape_update_batch ( shape : * mut primitiv_Shape , batch : u32 , status : * mut primitiv_Status , ) ; 
+} # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Tensor { _unused : [ u8 ; 0 ] } extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_new" ] 
+ pub fn primitiv_Tensor_new ( ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_new" ] 
+ pub fn safe_primitiv_Tensor_new ( status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_new_from_tensor" ] 
+ pub fn primitiv_Tensor_new_from_tensor ( tensor : * mut primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_new_from_tensor" ] 
+ pub fn safe_primitiv_Tensor_new_from_tensor ( tensor : * mut primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_delete" ] 
+ pub fn primitiv_Tensor_delete ( tensor : * mut primitiv_Tensor , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_delete" ] 
+ pub fn safe_primitiv_Tensor_delete ( tensor : * mut primitiv_Tensor , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_valid" ] 
+ pub fn primitiv_Tensor_valid ( tensor : * const primitiv_Tensor , ) -> bool_ ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_valid" ] 
+ pub fn safe_primitiv_Tensor_valid ( tensor : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> bool_ ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_shape" ] 
+ pub fn primitiv_Tensor_shape ( tensor : * const primitiv_Tensor , ) -> * mut primitiv_Shape ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_shape" ] 
+ pub fn safe_primitiv_Tensor_shape ( tensor : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Shape ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_device" ] 
+ pub fn primitiv_Tensor_device ( tensor : * const primitiv_Tensor , ) -> * mut primitiv_Device ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_device" ] 
+ pub fn safe_primitiv_Tensor_device ( tensor : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Device ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_to_float" ] 
+ pub fn primitiv_Tensor_to_float ( tensor : * const primitiv_Tensor , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_to_float" ] 
+ pub fn safe_primitiv_Tensor_to_float ( tensor : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_to_array" ] 
+ pub fn primitiv_Tensor_to_array ( tensor : * const primitiv_Tensor , ) -> * mut f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_to_array" ] 
+ pub fn safe_primitiv_Tensor_to_array ( tensor : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_argmax" ] 
+ pub fn primitiv_Tensor_argmax ( tensor : * const primitiv_Tensor , dim : u32 , ) -> * mut u32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_argmax" ] 
+ pub fn safe_primitiv_Tensor_argmax ( tensor : * const primitiv_Tensor , dim : u32 , status : * mut primitiv_Status , ) -> * mut u32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_argmin" ] 
+ pub fn primitiv_Tensor_argmin ( tensor : * const primitiv_Tensor , dim : u32 , ) -> * mut u32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_argmin" ] 
+ pub fn safe_primitiv_Tensor_argmin ( tensor : * const primitiv_Tensor , dim : u32 , status : * mut primitiv_Status , ) -> * mut u32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_reset" ] 
+ pub fn primitiv_Tensor_reset ( tensor : * mut primitiv_Tensor , k : f32 , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_reset" ] 
+ pub fn safe_primitiv_Tensor_reset ( tensor : * mut primitiv_Tensor , k : f32 , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_reset_by_array" ] 
+ pub fn primitiv_Tensor_reset_by_array ( tensor : * mut primitiv_Tensor , values : * const f32 , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_reset_by_array" ] 
+ pub fn safe_primitiv_Tensor_reset_by_array ( tensor : * mut primitiv_Tensor , values : * const f32 , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_reshape" ] 
+ pub fn primitiv_Tensor_reshape ( tensor : * const primitiv_Tensor , new_shape : * const primitiv_Shape , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_reshape" ] 
+ pub fn safe_primitiv_Tensor_reshape ( tensor : * const primitiv_Tensor , new_shape : * const primitiv_Shape , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_flatten" ] 
+ pub fn primitiv_Tensor_flatten ( tensor : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_flatten" ] 
+ pub fn safe_primitiv_Tensor_flatten ( tensor : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_inplace_multiply_const" ] 
+ pub fn primitiv_Tensor_inplace_multiply_const ( tensor : * mut primitiv_Tensor , k : f32 , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_inplace_multiply_const" ] 
+ pub fn safe_primitiv_Tensor_inplace_multiply_const ( tensor : * mut primitiv_Tensor , k : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_inplace_add" ] 
+ pub fn primitiv_Tensor_inplace_add ( tensor : * mut primitiv_Tensor , x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_inplace_add" ] 
+ pub fn safe_primitiv_Tensor_inplace_add ( tensor : * mut primitiv_Tensor , x : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Tensor_inplace_subtract" ] 
+ pub fn primitiv_Tensor_inplace_subtract ( tensor : * mut primitiv_Tensor , x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Tensor_inplace_subtract" ] 
+ pub fn safe_primitiv_Tensor_inplace_subtract ( tensor : * mut primitiv_Tensor , x : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Node { _unused : [ u8 ; 0 ] } # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Graph { _unused : [ u8 ; 0 ] } extern "C" {
  # [ link_name = "\u{1}_primitiv_Node_new" ] 
  pub fn primitiv_Node_new ( ) -> * mut primitiv_Node ; 
 } extern "C" {
@@ -253,38 +427,110 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
  # [ link_name = "\u{1}_primitiv_Constant_new" ] 
  pub fn primitiv_Constant_new ( k : f32 , ) -> * mut primitiv_Initializer ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Constant_new" ] 
+ pub fn safe_primitiv_Constant_new ( k : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Initializer ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Constant_delete" ] 
  pub fn primitiv_Constant_delete ( initializer : * mut primitiv_Initializer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Constant_delete" ] 
+ pub fn safe_primitiv_Constant_delete ( initializer : * mut primitiv_Initializer , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Constant_apply" ] 
+ pub fn primitiv_Constant_apply ( initializer : * const primitiv_Initializer , x : * mut primitiv_Tensor , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Constant_apply" ] 
+ pub fn safe_primitiv_Constant_apply ( initializer : * const primitiv_Initializer , x : * mut primitiv_Tensor , status : * mut primitiv_Status , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Uniform_new" ] 
  pub fn primitiv_Uniform_new ( lower : f32 , upper : f32 , ) -> * mut primitiv_Initializer ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Uniform_new" ] 
+ pub fn safe_primitiv_Uniform_new ( lower : f32 , upper : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Initializer ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Uniform_delete" ] 
  pub fn primitiv_Uniform_delete ( initializer : * mut primitiv_Initializer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Uniform_delete" ] 
+ pub fn safe_primitiv_Uniform_delete ( initializer : * mut primitiv_Initializer , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Uniform_apply" ] 
+ pub fn primitiv_Uniform_apply ( initializer : * const primitiv_Initializer , x : * mut primitiv_Tensor , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Uniform_apply" ] 
+ pub fn safe_primitiv_Uniform_apply ( initializer : * const primitiv_Initializer , x : * mut primitiv_Tensor , status : * mut primitiv_Status , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Normal_new" ] 
  pub fn primitiv_Normal_new ( mean : f32 , sd : f32 , ) -> * mut primitiv_Initializer ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Normal_new" ] 
+ pub fn safe_primitiv_Normal_new ( mean : f32 , sd : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Initializer ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Normal_delete" ] 
  pub fn primitiv_Normal_delete ( initializer : * mut primitiv_Initializer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Normal_delete" ] 
+ pub fn safe_primitiv_Normal_delete ( initializer : * mut primitiv_Initializer , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Normal_apply" ] 
+ pub fn primitiv_Normal_apply ( initializer : * const primitiv_Initializer , x : * mut primitiv_Tensor , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Normal_apply" ] 
+ pub fn safe_primitiv_Normal_apply ( initializer : * const primitiv_Initializer , x : * mut primitiv_Tensor , status : * mut primitiv_Status , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Identity_new" ] 
  pub fn primitiv_Identity_new ( ) -> * mut primitiv_Initializer ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Identity_new" ] 
+ pub fn safe_primitiv_Identity_new ( status : * mut primitiv_Status , ) -> * mut primitiv_Initializer ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Identity_delete" ] 
  pub fn primitiv_Identity_delete ( initializer : * mut primitiv_Initializer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Identity_delete" ] 
+ pub fn safe_primitiv_Identity_delete ( initializer : * mut primitiv_Initializer , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Identity_apply" ] 
+ pub fn primitiv_Identity_apply ( initializer : * const primitiv_Initializer , x : * mut primitiv_Tensor , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Identity_apply" ] 
+ pub fn safe_primitiv_Identity_apply ( initializer : * const primitiv_Initializer , x : * mut primitiv_Tensor , status : * mut primitiv_Status , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_XavierUniform_new" ] 
  pub fn primitiv_XavierUniform_new ( scale : f32 , ) -> * mut primitiv_Initializer ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_XavierUniform_new" ] 
+ pub fn safe_primitiv_XavierUniform_new ( scale : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Initializer ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_XavierUniform_delete" ] 
  pub fn primitiv_XavierUniform_delete ( initializer : * mut primitiv_Initializer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_XavierUniform_delete" ] 
+ pub fn safe_primitiv_XavierUniform_delete ( initializer : * mut primitiv_Initializer , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_XavierUniform_apply" ] 
+ pub fn primitiv_XavierUniform_apply ( initializer : * const primitiv_Initializer , x : * mut primitiv_Tensor , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_XavierUniform_apply" ] 
+ pub fn safe_primitiv_XavierUniform_apply ( initializer : * const primitiv_Initializer , x : * mut primitiv_Tensor , status : * mut primitiv_Status , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_XavierNormal_new" ] 
  pub fn primitiv_XavierNormal_new ( scale : f32 , ) -> * mut primitiv_Initializer ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_XavierNormal_new" ] 
+ pub fn safe_primitiv_XavierNormal_new ( scale : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Initializer ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_XavierNormal_delete" ] 
  pub fn primitiv_XavierNormal_delete ( initializer : * mut primitiv_Initializer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_XavierNormal_delete" ] 
+ pub fn safe_primitiv_XavierNormal_delete ( initializer : * mut primitiv_Initializer , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_XavierNormal_apply" ] 
+ pub fn primitiv_XavierNormal_apply ( initializer : * const primitiv_Initializer , x : * mut primitiv_Tensor , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_XavierNormal_apply" ] 
+ pub fn safe_primitiv_XavierNormal_apply ( initializer : * const primitiv_Initializer , x : * mut primitiv_Tensor , status : * mut primitiv_Status , ) ; 
 } # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Model { _unused : [ u8 ; 0 ] } extern "C" {
  # [ link_name = "\u{1}_primitiv_Naive_new" ] 
  pub fn primitiv_Naive_new ( ) -> * mut primitiv_Device ; 
@@ -313,125 +559,272 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
  # [ link_name = "\u{1}_primitiv_Parameter_new" ] 
  pub fn primitiv_Parameter_new ( ) -> * mut primitiv_Parameter ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_new" ] 
+ pub fn safe_primitiv_Parameter_new ( status : * mut primitiv_Status , ) -> * mut primitiv_Parameter ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Parameter_new_with_values" ] 
  pub fn primitiv_Parameter_new_with_values ( shape : * const primitiv_Shape , value : * const f32 , n : usize , device : * mut primitiv_Device , ) -> * mut primitiv_Parameter ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_new_with_values" ] 
+ pub fn safe_primitiv_Parameter_new_with_values ( shape : * const primitiv_Shape , value : * const f32 , n : usize , device : * mut primitiv_Device , status : * mut primitiv_Status , ) -> * mut primitiv_Parameter ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Parameter_new_with_initializer" ] 
  pub fn primitiv_Parameter_new_with_initializer ( shape : * const primitiv_Shape , initializer : * const primitiv_Initializer , device : * mut primitiv_Device , ) -> * mut primitiv_Parameter ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_new_with_initializer" ] 
+ pub fn safe_primitiv_Parameter_new_with_initializer ( shape : * const primitiv_Shape , initializer : * const primitiv_Initializer , device : * mut primitiv_Device , status : * mut primitiv_Status , ) -> * mut primitiv_Parameter ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Parameter_delete" ] 
  pub fn primitiv_Parameter_delete ( parameter : * mut primitiv_Parameter , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_delete" ] 
+ pub fn safe_primitiv_Parameter_delete ( parameter : * mut primitiv_Parameter , status : * mut primitiv_Status , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Parameter_init_with_values" ] 
  pub fn primitiv_Parameter_init_with_values ( parameter : * mut primitiv_Parameter , shape : * const primitiv_Shape , value : * const f32 , n : usize , device : * mut primitiv_Device , ) ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_init_with_values" ] 
+ pub fn safe_primitiv_Parameter_init_with_values ( parameter : * mut primitiv_Parameter , shape : * const primitiv_Shape , value : * const f32 , n : usize , device : * mut primitiv_Device , status : * mut primitiv_Status , ) ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Parameter_init_with_initializer" ] 
  pub fn primitiv_Parameter_init_with_initializer ( parameter : * mut primitiv_Parameter , shape : * const primitiv_Shape , initializer : * const primitiv_Initializer , device : * mut primitiv_Device , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_init_with_initializer" ] 
+ pub fn safe_primitiv_Parameter_init_with_initializer ( parameter : * mut primitiv_Parameter , shape : * const primitiv_Shape , initializer : * const primitiv_Initializer , device : * mut primitiv_Device , status : * mut primitiv_Status , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Parameter_load" ] 
  pub fn primitiv_Parameter_load ( parameter : * mut primitiv_Parameter , path : * const :: std :: os :: raw :: c_char , with_stats : bool_ , device : * mut primitiv_Device , ) ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_load" ] 
+ pub fn safe_primitiv_Parameter_load ( parameter : * mut primitiv_Parameter , path : * const :: std :: os :: raw :: c_char , with_stats : bool_ , device : * mut primitiv_Device , status : * mut primitiv_Status , ) ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Parameter_save" ] 
  pub fn primitiv_Parameter_save ( parameter : * const primitiv_Parameter , path : * const :: std :: os :: raw :: c_char , with_stats : bool_ , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_save" ] 
+ pub fn safe_primitiv_Parameter_save ( parameter : * const primitiv_Parameter , path : * const :: std :: os :: raw :: c_char , with_stats : bool_ , status : * mut primitiv_Status , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Parameter_valid" ] 
  pub fn primitiv_Parameter_valid ( parameter : * const primitiv_Parameter , ) -> bool_ ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_valid" ] 
+ pub fn safe_primitiv_Parameter_valid ( parameter : * const primitiv_Parameter , status : * mut primitiv_Status , ) -> bool_ ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Parameter_reset_gradients" ] 
  pub fn primitiv_Parameter_reset_gradients ( parameter : * mut primitiv_Parameter , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_reset_gradients" ] 
+ pub fn safe_primitiv_Parameter_reset_gradients ( parameter : * mut primitiv_Parameter , status : * mut primitiv_Status , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Parameter_add_stats" ] 
  pub fn primitiv_Parameter_add_stats ( parameter : * mut primitiv_Parameter , name : * const :: std :: os :: raw :: c_char , shape : * const primitiv_Shape , ) ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_add_stats" ] 
+ pub fn safe_primitiv_Parameter_add_stats ( parameter : * mut primitiv_Parameter , name : * const :: std :: os :: raw :: c_char , shape : * const primitiv_Shape , status : * mut primitiv_Status , ) ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Parameter_has_stats" ] 
  pub fn primitiv_Parameter_has_stats ( parameter : * mut primitiv_Parameter , name : * const :: std :: os :: raw :: c_char , ) -> bool_ ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_has_stats" ] 
+ pub fn safe_primitiv_Parameter_has_stats ( parameter : * mut primitiv_Parameter , name : * const :: std :: os :: raw :: c_char , status : * mut primitiv_Status , ) -> bool_ ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Parameter_shape" ] 
  pub fn primitiv_Parameter_shape ( parameter : * const primitiv_Parameter , ) -> * mut primitiv_Shape ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_shape" ] 
+ pub fn safe_primitiv_Parameter_shape ( parameter : * const primitiv_Parameter , status : * mut primitiv_Status , ) -> * mut primitiv_Shape ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Parameter_device" ] 
  pub fn primitiv_Parameter_device ( parameter : * const primitiv_Parameter , ) -> * mut primitiv_Device ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_device" ] 
+ pub fn safe_primitiv_Parameter_device ( parameter : * const primitiv_Parameter , status : * mut primitiv_Status , ) -> * mut primitiv_Device ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Parameter_value" ] 
  pub fn primitiv_Parameter_value ( parameter : * const primitiv_Parameter , ) -> * const primitiv_Tensor ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_value" ] 
+ pub fn safe_primitiv_Parameter_value ( parameter : * const primitiv_Parameter , status : * mut primitiv_Status , ) -> * const primitiv_Tensor ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Parameter_gradient" ] 
  pub fn primitiv_Parameter_gradient ( parameter : * const primitiv_Parameter , ) -> * const primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_gradient" ] 
+ pub fn safe_primitiv_Parameter_gradient ( parameter : * const primitiv_Parameter , status : * mut primitiv_Status , ) -> * const primitiv_Tensor ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Parameter_stats" ] 
  pub fn primitiv_Parameter_stats ( parameter : * const primitiv_Parameter , name : * const :: std :: os :: raw :: c_char , ) -> * const primitiv_Tensor ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_node_func_node_add_const" ] 
- pub fn primitiv_node_func_node_add_const ( x : * const primitiv_Node , k : f32 , ) -> * mut primitiv_Node ; 
+ # [ link_name = "\u{1}_safe_primitiv_Parameter_stats" ] 
+ pub fn safe_primitiv_Parameter_stats ( parameter : * const primitiv_Parameter , name : * const :: std :: os :: raw :: c_char , status : * mut primitiv_Status , ) -> * const primitiv_Tensor ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_node_func_const_add_node" ] 
- pub fn primitiv_node_func_const_add_node ( k : f32 , x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+ # [ link_name = "\u{1}_primitiv_node_func_positive" ] 
+ pub fn primitiv_node_func_positive ( x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_node_func_node_add_node" ] 
- pub fn primitiv_node_func_node_add_node ( a : * const primitiv_Node , b : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+ # [ link_name = "\u{1}_safe_primitiv_node_func_positive" ] 
+ pub fn safe_primitiv_node_func_positive ( x : * const primitiv_Node , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_node_func_node_sub_const" ] 
- pub fn primitiv_node_func_node_sub_const ( x : * const primitiv_Node , k : f32 , ) -> * mut primitiv_Node ; 
+ # [ link_name = "\u{1}_primitiv_tensor_func_positive" ] 
+ pub fn primitiv_tensor_func_positive ( x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_node_func_const_sub_node" ] 
- pub fn primitiv_node_func_const_sub_node ( k : f32 , x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_positive" ] 
+ pub fn safe_primitiv_tensor_func_positive ( x : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_node_func_node_sub_node" ] 
- pub fn primitiv_node_func_node_sub_node ( a : * const primitiv_Node , b : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+ # [ link_name = "\u{1}_primitiv_node_func_negative" ] 
+ pub fn primitiv_node_func_negative ( x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_node_func_node_mul_const" ] 
- pub fn primitiv_node_func_node_mul_const ( x : * const primitiv_Node , k : f32 , ) -> * mut primitiv_Node ; 
+ # [ link_name = "\u{1}_safe_primitiv_node_func_negative" ] 
+ pub fn safe_primitiv_node_func_negative ( x : * const primitiv_Node , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_node_func_const_mul_node" ] 
- pub fn primitiv_node_func_const_mul_node ( k : f32 , x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+ # [ link_name = "\u{1}_primitiv_tensor_func_negative" ] 
+ pub fn primitiv_tensor_func_negative ( x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_node_func_node_mul_node" ] 
- pub fn primitiv_node_func_node_mul_node ( a : * const primitiv_Node , b : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_negative" ] 
+ pub fn safe_primitiv_tensor_func_negative ( x : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_node_func_node_div_const" ] 
- pub fn primitiv_node_func_node_div_const ( x : * const primitiv_Node , k : f32 , ) -> * mut primitiv_Node ; 
+ # [ link_name = "\u{1}_primitiv_node_func_add_node_const" ] 
+ pub fn primitiv_node_func_add_node_const ( x : * const primitiv_Node , k : f32 , ) -> * mut primitiv_Node ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_node_func_const_div_node" ] 
- pub fn primitiv_node_func_const_div_node ( k : f32 , x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+ # [ link_name = "\u{1}_safe_primitiv_node_func_add_node_const" ] 
+ pub fn safe_primitiv_node_func_add_node_const ( x : * const primitiv_Node , k : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_node_func_node_div_node" ] 
- pub fn primitiv_node_func_node_div_node ( a : * const primitiv_Node , b : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+ # [ link_name = "\u{1}_primitiv_node_func_add_const_node" ] 
+ pub fn primitiv_node_func_add_const_node ( k : f32 , x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_tensor_func_tensor_add_const" ] 
- pub fn primitiv_tensor_func_tensor_add_const ( x : * const primitiv_Tensor , k : f32 , ) -> * mut primitiv_Tensor ; 
+ # [ link_name = "\u{1}_safe_primitiv_node_func_add_const_node" ] 
+ pub fn safe_primitiv_node_func_add_const_node ( k : f32 , x : * const primitiv_Node , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_tensor_func_const_add_tensor" ] 
- pub fn primitiv_tensor_func_const_add_tensor ( k : f32 , x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+ # [ link_name = "\u{1}_primitiv_node_func_add_node_node" ] 
+ pub fn primitiv_node_func_add_node_node ( a : * const primitiv_Node , b : * const primitiv_Node , ) -> * mut primitiv_Node ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_tensor_func_tensor_add_tensor" ] 
- pub fn primitiv_tensor_func_tensor_add_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+ # [ link_name = "\u{1}_safe_primitiv_node_func_add_node_node" ] 
+ pub fn safe_primitiv_node_func_add_node_node ( a : * const primitiv_Node , b : * const primitiv_Node , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_tensor_func_tensor_sub_const" ] 
- pub fn primitiv_tensor_func_tensor_sub_const ( x : * const primitiv_Tensor , k : f32 , ) -> * mut primitiv_Tensor ; 
+ # [ link_name = "\u{1}_primitiv_tensor_func_add_tensor_const" ] 
+ pub fn primitiv_tensor_func_add_tensor_const ( x : * const primitiv_Tensor , k : f32 , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_tensor_func_const_sub_tensor" ] 
- pub fn primitiv_tensor_func_const_sub_tensor ( k : f32 , x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_add_tensor_const" ] 
+ pub fn safe_primitiv_tensor_func_add_tensor_const ( x : * const primitiv_Tensor , k : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_tensor_func_tensor_sub_tensor" ] 
- pub fn primitiv_tensor_func_tensor_sub_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+ # [ link_name = "\u{1}_primitiv_tensor_func_add_const_tensor" ] 
+ pub fn primitiv_tensor_func_add_const_tensor ( k : f32 , x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_tensor_func_tensor_mul_const" ] 
- pub fn primitiv_tensor_func_tensor_mul_const ( x : * const primitiv_Tensor , k : f32 , ) -> * mut primitiv_Tensor ; 
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_add_const_tensor" ] 
+ pub fn safe_primitiv_tensor_func_add_const_tensor ( k : f32 , x : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_tensor_func_const_mul_tensor" ] 
- pub fn primitiv_tensor_func_const_mul_tensor ( k : f32 , x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+ # [ link_name = "\u{1}_primitiv_tensor_func_add_tensor_tensor" ] 
+ pub fn primitiv_tensor_func_add_tensor_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_tensor_func_tensor_mul_tensor" ] 
- pub fn primitiv_tensor_func_tensor_mul_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_add_tensor_tensor" ] 
+ pub fn safe_primitiv_tensor_func_add_tensor_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_tensor_func_tensor_div_const" ] 
- pub fn primitiv_tensor_func_tensor_div_const ( x : * const primitiv_Tensor , k : f32 , ) -> * mut primitiv_Tensor ; 
+ # [ link_name = "\u{1}_primitiv_node_func_subtract_node_const" ] 
+ pub fn primitiv_node_func_subtract_node_const ( x : * const primitiv_Node , k : f32 , ) -> * mut primitiv_Node ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_tensor_func_const_div_tensor" ] 
- pub fn primitiv_tensor_func_const_div_tensor ( k : f32 , x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+ # [ link_name = "\u{1}_safe_primitiv_node_func_subtract_node_const" ] 
+ pub fn safe_primitiv_node_func_subtract_node_const ( x : * const primitiv_Node , k : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_tensor_func_tensor_div_tensor" ] 
- pub fn primitiv_tensor_func_tensor_div_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+ # [ link_name = "\u{1}_primitiv_node_func_subtract_const_node" ] 
+ pub fn primitiv_node_func_subtract_const_node ( k : f32 , x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_subtract_const_node" ] 
+ pub fn safe_primitiv_node_func_subtract_const_node ( k : f32 , x : * const primitiv_Node , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_func_subtract_node_node" ] 
+ pub fn primitiv_node_func_subtract_node_node ( a : * const primitiv_Node , b : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_subtract_node_node" ] 
+ pub fn safe_primitiv_node_func_subtract_node_node ( a : * const primitiv_Node , b : * const primitiv_Node , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_func_subtract_tensor_const" ] 
+ pub fn primitiv_tensor_func_subtract_tensor_const ( x : * const primitiv_Tensor , k : f32 , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_subtract_tensor_const" ] 
+ pub fn safe_primitiv_tensor_func_subtract_tensor_const ( x : * const primitiv_Tensor , k : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_func_subtract_const_tensor" ] 
+ pub fn primitiv_tensor_func_subtract_const_tensor ( k : f32 , x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_subtract_const_tensor" ] 
+ pub fn safe_primitiv_tensor_func_subtract_const_tensor ( k : f32 , x : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_func_subtract_tensor_tensor" ] 
+ pub fn primitiv_tensor_func_subtract_tensor_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_subtract_tensor_tensor" ] 
+ pub fn safe_primitiv_tensor_func_subtract_tensor_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_func_multiply_node_const" ] 
+ pub fn primitiv_node_func_multiply_node_const ( x : * const primitiv_Node , k : f32 , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_multiply_node_const" ] 
+ pub fn safe_primitiv_node_func_multiply_node_const ( x : * const primitiv_Node , k : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_func_multiply_const_node" ] 
+ pub fn primitiv_node_func_multiply_const_node ( k : f32 , x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_multiply_const_node" ] 
+ pub fn safe_primitiv_node_func_multiply_const_node ( k : f32 , x : * const primitiv_Node , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_func_multiply_node_node" ] 
+ pub fn primitiv_node_func_multiply_node_node ( a : * const primitiv_Node , b : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_multiply_node_node" ] 
+ pub fn safe_primitiv_node_func_multiply_node_node ( a : * const primitiv_Node , b : * const primitiv_Node , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_func_multiply_tensor_const" ] 
+ pub fn primitiv_tensor_func_multiply_tensor_const ( x : * const primitiv_Tensor , k : f32 , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_multiply_tensor_const" ] 
+ pub fn safe_primitiv_tensor_func_multiply_tensor_const ( x : * const primitiv_Tensor , k : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_func_multiply_const_tensor" ] 
+ pub fn primitiv_tensor_func_multiply_const_tensor ( k : f32 , x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_multiply_const_tensor" ] 
+ pub fn safe_primitiv_tensor_func_multiply_const_tensor ( k : f32 , x : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_func_multiply_tensor_tensor" ] 
+ pub fn primitiv_tensor_func_multiply_tensor_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_multiply_tensor_tensor" ] 
+ pub fn safe_primitiv_tensor_func_multiply_tensor_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_func_divide_node_const" ] 
+ pub fn primitiv_node_func_divide_node_const ( x : * const primitiv_Node , k : f32 , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_divide_node_const" ] 
+ pub fn safe_primitiv_node_func_divide_node_const ( x : * const primitiv_Node , k : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_func_divide_const_node" ] 
+ pub fn primitiv_node_func_divide_const_node ( k : f32 , x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_divide_const_node" ] 
+ pub fn safe_primitiv_node_func_divide_const_node ( k : f32 , x : * const primitiv_Node , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_func_divide_node_node" ] 
+ pub fn primitiv_node_func_divide_node_node ( a : * const primitiv_Node , b : * const primitiv_Node , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_divide_node_node" ] 
+ pub fn safe_primitiv_node_func_divide_node_node ( a : * const primitiv_Node , b : * const primitiv_Node , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_func_divide_tensor_const" ] 
+ pub fn primitiv_tensor_func_divide_tensor_const ( x : * const primitiv_Tensor , k : f32 , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_divide_tensor_const" ] 
+ pub fn safe_primitiv_tensor_func_divide_tensor_const ( x : * const primitiv_Tensor , k : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_func_divide_const_tensor" ] 
+ pub fn primitiv_tensor_func_divide_const_tensor ( k : f32 , x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_divide_const_tensor" ] 
+ pub fn safe_primitiv_tensor_func_divide_const_tensor ( k : f32 , x : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_func_divide_tensor_tensor" ] 
+ pub fn primitiv_tensor_func_divide_tensor_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_divide_tensor_tensor" ] 
+ pub fn safe_primitiv_tensor_func_divide_tensor_tensor ( a : * const primitiv_Tensor , b : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_node_func_mean" ] 
  pub fn primitiv_node_func_mean ( x : * const primitiv_Node , dim : u32 , ) -> * mut primitiv_Node ; 
@@ -440,16 +833,64 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
  pub fn primitiv_tensor_func_mean ( x : * const primitiv_Tensor , dim : u32 , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_node_func_input" ] 
- pub fn primitiv_node_func_input ( shape : * const primitiv_Shape , data : * const f32 , n : usize , device : * mut primitiv_Device , ) -> * mut primitiv_Node ; 
+ pub fn primitiv_node_func_input ( shape : * const primitiv_Shape , data : * const f32 , n : usize , dev : * mut primitiv_Device , g : * mut primitiv_Graph , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_input" ] 
+ pub fn safe_primitiv_node_func_input ( shape : * const primitiv_Shape , data : * const f32 , n : usize , dev : * mut primitiv_Device , g : * mut primitiv_Graph , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_tensor_func_input" ] 
- pub fn primitiv_tensor_func_input ( shape : * const primitiv_Shape , data : * const f32 , n : usize , device : * mut primitiv_Device , ) -> * mut primitiv_Tensor ; 
+ pub fn primitiv_tensor_func_input ( shape : * const primitiv_Shape , data : * const f32 , n : usize , dev : * mut primitiv_Device , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_input" ] 
+ pub fn safe_primitiv_tensor_func_input ( shape : * const primitiv_Shape , data : * const f32 , n : usize , dev : * mut primitiv_Device , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_node_func_parameter" ] 
- pub fn primitiv_node_func_parameter ( param : * mut primitiv_Parameter , ) -> * mut primitiv_Node ; 
+ pub fn primitiv_node_func_parameter ( param : * mut primitiv_Parameter , g : * mut primitiv_Graph , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_parameter" ] 
+ pub fn safe_primitiv_node_func_parameter ( param : * mut primitiv_Parameter , g : * mut primitiv_Graph , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_tensor_func_parameter" ] 
  pub fn primitiv_tensor_func_parameter ( param : * mut primitiv_Parameter , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_parameter" ] 
+ pub fn safe_primitiv_tensor_func_parameter ( param : * mut primitiv_Parameter , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_func_copy" ] 
+ pub fn primitiv_node_func_copy ( x : * const primitiv_Node , dev : * mut primitiv_Device , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_copy" ] 
+ pub fn safe_primitiv_node_func_copy ( x : * const primitiv_Node , dev : * mut primitiv_Device , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_func_copy" ] 
+ pub fn primitiv_tensor_func_copy ( x : * const primitiv_Tensor , dev : * mut primitiv_Device , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_copy" ] 
+ pub fn safe_primitiv_tensor_func_copy ( x : * const primitiv_Tensor , dev : * mut primitiv_Device , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_func_pick" ] 
+ pub fn primitiv_node_func_pick ( x : * const primitiv_Node , ids : * const u32 , n : usize , dim : u32 , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_pick" ] 
+ pub fn safe_primitiv_node_func_pick ( x : * const primitiv_Node , ids : * const u32 , n : usize , dim : u32 , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_func_pick" ] 
+ pub fn primitiv_tensor_func_pick ( x : * const primitiv_Tensor , ids : * const u32 , n : usize , dim : u32 , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_pick" ] 
+ pub fn safe_primitiv_tensor_func_pick ( x : * const primitiv_Tensor , ids : * const u32 , n : usize , dim : u32 , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_node_func_slice" ] 
+ pub fn primitiv_node_func_slice ( x : * const primitiv_Node , dim : u32 , lower : u32 , upper : u32 , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_node_func_slice" ] 
+ pub fn safe_primitiv_node_func_slice ( x : * const primitiv_Node , dim : u32 , lower : u32 , upper : u32 , status : * mut primitiv_Status , ) -> * mut primitiv_Node ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_tensor_func_slice" ] 
+ pub fn primitiv_tensor_func_slice ( x : * const primitiv_Tensor , dim : u32 , lower : u32 , upper : u32 , ) -> * mut primitiv_Tensor ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_tensor_func_slice" ] 
+ pub fn safe_primitiv_tensor_func_slice ( x : * const primitiv_Tensor , dim : u32 , lower : u32 , upper : u32 , status : * mut primitiv_Status , ) -> * mut primitiv_Tensor ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_node_func_tanh" ] 
  pub fn primitiv_node_func_tanh ( x : * const primitiv_Node , ) -> * mut primitiv_Node ; 
@@ -469,81 +910,435 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
  # [ link_name = "\u{1}_primitiv_tensor_func_batch_mean" ] 
  pub fn primitiv_tensor_func_batch_mean ( x : * const primitiv_Tensor , ) -> * mut primitiv_Tensor ; 
 } # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_Optimizer { _unused : [ u8 ; 0 ] } extern "C" {
- # [ link_name = "\u{1}_primitiv_Optimizer_new" ] 
- pub fn primitiv_Optimizer_new ( ) -> * mut primitiv_Optimizer ; 
-} extern "C" {
- # [ link_name = "\u{1}_primitiv_Optimizer_delete" ] 
- pub fn primitiv_Optimizer_delete ( optimizer : * mut primitiv_Optimizer , ) ; 
-} extern "C" {
  # [ link_name = "\u{1}_primitiv_Optimizer_load" ] 
  pub fn primitiv_Optimizer_load ( optimizer : * mut primitiv_Optimizer , path : * const :: std :: os :: raw :: c_char , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Optimizer_load" ] 
+ pub fn safe_primitiv_Optimizer_load ( optimizer : * mut primitiv_Optimizer , path : * const :: std :: os :: raw :: c_char , status : * mut primitiv_Status , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Optimizer_save" ] 
  pub fn primitiv_Optimizer_save ( optimizer : * const primitiv_Optimizer , path : * const :: std :: os :: raw :: c_char , ) ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Optimizer_save" ] 
+ pub fn safe_primitiv_Optimizer_save ( optimizer : * const primitiv_Optimizer , path : * const :: std :: os :: raw :: c_char , status : * mut primitiv_Status , ) ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Optimizer_get_epoch" ] 
  pub fn primitiv_Optimizer_get_epoch ( optimizer : * const primitiv_Optimizer , ) -> u32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Optimizer_get_epoch" ] 
+ pub fn safe_primitiv_Optimizer_get_epoch ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> u32 ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Optimizer_set_epoch" ] 
  pub fn primitiv_Optimizer_set_epoch ( optimizer : * mut primitiv_Optimizer , epoch : u32 , ) ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Optimizer_set_epoch" ] 
+ pub fn safe_primitiv_Optimizer_set_epoch ( optimizer : * mut primitiv_Optimizer , epoch : u32 , status : * mut primitiv_Status , ) ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Optimizer_get_learning_rate_scaling" ] 
  pub fn primitiv_Optimizer_get_learning_rate_scaling ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Optimizer_get_learning_rate_scaling" ] 
+ pub fn safe_primitiv_Optimizer_get_learning_rate_scaling ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Optimizer_set_learning_rate_scaling" ] 
  pub fn primitiv_Optimizer_set_learning_rate_scaling ( optimizer : * mut primitiv_Optimizer , scale : f32 , ) ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Optimizer_set_learning_rate_scaling" ] 
+ pub fn safe_primitiv_Optimizer_set_learning_rate_scaling ( optimizer : * mut primitiv_Optimizer , scale : f32 , status : * mut primitiv_Status , ) ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Optimizer_get_weight_decay" ] 
  pub fn primitiv_Optimizer_get_weight_decay ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Optimizer_get_weight_decay" ] 
+ pub fn safe_primitiv_Optimizer_get_weight_decay ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Optimizer_set_weight_decay" ] 
  pub fn primitiv_Optimizer_set_weight_decay ( optimizer : * mut primitiv_Optimizer , strength : f32 , ) ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Optimizer_set_weight_decay" ] 
+ pub fn safe_primitiv_Optimizer_set_weight_decay ( optimizer : * mut primitiv_Optimizer , strength : f32 , status : * mut primitiv_Status , ) ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Optimizer_get_gradient_clipping" ] 
  pub fn primitiv_Optimizer_get_gradient_clipping ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Optimizer_get_gradient_clipping" ] 
+ pub fn safe_primitiv_Optimizer_get_gradient_clipping ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Optimizer_set_gradient_clipping" ] 
  pub fn primitiv_Optimizer_set_gradient_clipping ( optimizer : * mut primitiv_Optimizer , threshold : f32 , ) ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Optimizer_set_gradient_clipping" ] 
+ pub fn safe_primitiv_Optimizer_set_gradient_clipping ( optimizer : * mut primitiv_Optimizer , threshold : f32 , status : * mut primitiv_Status , ) ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Optimizer_add_parameter" ] 
  pub fn primitiv_Optimizer_add_parameter ( optimizer : * mut primitiv_Optimizer , param : * mut primitiv_Parameter , ) ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Optimizer_add_parameter" ] 
+ pub fn safe_primitiv_Optimizer_add_parameter ( optimizer : * mut primitiv_Optimizer , param : * mut primitiv_Parameter , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_add_parameters" ] 
+ pub fn primitiv_Optimizer_add_parameters ( optimizer : * mut primitiv_Optimizer , params : * mut * mut primitiv_Parameter , n : usize , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Optimizer_add_parameters" ] 
+ pub fn safe_primitiv_Optimizer_add_parameters ( optimizer : * mut primitiv_Optimizer , params : * mut * mut primitiv_Parameter , n : usize , status : * mut primitiv_Status , ) ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Optimizer_add_model" ] 
- pub fn primitiv_Optimizer_add_model ( optimizer : * mut primitiv_Optimizer , model : * const primitiv_Model , ) ; 
+ pub fn primitiv_Optimizer_add_model ( optimizer : * mut primitiv_Optimizer , model : * mut primitiv_Model , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Optimizer_add_model" ] 
+ pub fn safe_primitiv_Optimizer_add_model ( optimizer : * mut primitiv_Optimizer , model : * mut primitiv_Model , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Optimizer_add_models" ] 
+ pub fn primitiv_Optimizer_add_models ( optimizer : * mut primitiv_Optimizer , models : * mut * mut primitiv_Model , n : usize , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Optimizer_add_models" ] 
+ pub fn safe_primitiv_Optimizer_add_models ( optimizer : * mut primitiv_Optimizer , models : * mut * mut primitiv_Model , n : usize , status : * mut primitiv_Status , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Optimizer_reset_gradients" ] 
  pub fn primitiv_Optimizer_reset_gradients ( optimizer : * mut primitiv_Optimizer , ) ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Optimizer_reset_gradients" ] 
+ pub fn safe_primitiv_Optimizer_reset_gradients ( optimizer : * mut primitiv_Optimizer , status : * mut primitiv_Status , ) ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_Optimizer_update" ] 
  pub fn primitiv_Optimizer_update ( optimizer : * mut primitiv_Optimizer , ) ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_SGD_new" ] 
- pub fn primitiv_SGD_new ( ) -> * mut primitiv_Optimizer ; 
+ # [ link_name = "\u{1}_safe_primitiv_Optimizer_update" ] 
+ pub fn safe_primitiv_Optimizer_update ( optimizer : * mut primitiv_Optimizer , status : * mut primitiv_Status , ) ; 
+} # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_StrIntMap { _unused : [ u8 ; 0 ] } # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct primitiv_StrFloatMap { _unused : [ u8 ; 0 ] } extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrIntMap_new" ] 
+ pub fn primitiv_StrIntMap_new ( ) -> * mut primitiv_StrIntMap ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_SGD_new_with_eta" ] 
- pub fn primitiv_SGD_new_with_eta ( eta : f32 , ) -> * mut primitiv_Optimizer ; 
+ # [ link_name = "\u{1}_safe_primitiv_StrIntMap_new" ] 
+ pub fn safe_primitiv_StrIntMap_new ( status : * mut primitiv_Status , ) -> * mut primitiv_StrIntMap ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrIntMap_delete" ] 
+ pub fn primitiv_StrIntMap_delete ( map : * mut primitiv_StrIntMap , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrIntMap_delete" ] 
+ pub fn safe_primitiv_StrIntMap_delete ( map : * mut primitiv_StrIntMap , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrIntMap_put" ] 
+ pub fn primitiv_StrIntMap_put ( map : * mut primitiv_StrIntMap , key : * const :: std :: os :: raw :: c_char , value : u32 , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrIntMap_put" ] 
+ pub fn safe_primitiv_StrIntMap_put ( map : * mut primitiv_StrIntMap , key : * const :: std :: os :: raw :: c_char , value : u32 , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrIntMap_get" ] 
+ pub fn primitiv_StrIntMap_get ( map : * const primitiv_StrIntMap , key : * const :: std :: os :: raw :: c_char , ) -> u32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrIntMap_get" ] 
+ pub fn safe_primitiv_StrIntMap_get ( map : * const primitiv_StrIntMap , key : * const :: std :: os :: raw :: c_char , status : * mut primitiv_Status , ) -> u32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrIntMap_remove" ] 
+ pub fn primitiv_StrIntMap_remove ( map : * mut primitiv_StrIntMap , key : * const :: std :: os :: raw :: c_char , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrIntMap_remove" ] 
+ pub fn safe_primitiv_StrIntMap_remove ( map : * mut primitiv_StrIntMap , key : * const :: std :: os :: raw :: c_char , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrIntMap_has" ] 
+ pub fn primitiv_StrIntMap_has ( map : * const primitiv_StrIntMap , key : * const :: std :: os :: raw :: c_char , ) -> bool_ ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrIntMap_has" ] 
+ pub fn safe_primitiv_StrIntMap_has ( map : * const primitiv_StrIntMap , key : * const :: std :: os :: raw :: c_char , status : * mut primitiv_Status , ) -> bool_ ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrIntMap_keys" ] 
+ pub fn primitiv_StrIntMap_keys ( map : * mut primitiv_StrIntMap , ) -> * const * const :: std :: os :: raw :: c_char ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrIntMap_keys" ] 
+ pub fn safe_primitiv_StrIntMap_keys ( map : * mut primitiv_StrIntMap , status : * mut primitiv_Status , ) -> * const * const :: std :: os :: raw :: c_char ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrIntMap_values" ] 
+ pub fn primitiv_StrIntMap_values ( map : * mut primitiv_StrIntMap , ) -> * const u32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrIntMap_values" ] 
+ pub fn safe_primitiv_StrIntMap_values ( map : * mut primitiv_StrIntMap , status : * mut primitiv_Status , ) -> * const u32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrIntMap_clear" ] 
+ pub fn primitiv_StrIntMap_clear ( map : * mut primitiv_StrIntMap , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrIntMap_clear" ] 
+ pub fn safe_primitiv_StrIntMap_clear ( map : * mut primitiv_StrIntMap , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrFloatMap_new" ] 
+ pub fn primitiv_StrFloatMap_new ( ) -> * mut primitiv_StrFloatMap ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrFloatMap_new" ] 
+ pub fn safe_primitiv_StrFloatMap_new ( status : * mut primitiv_Status , ) -> * mut primitiv_StrFloatMap ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrFloatMap_delete" ] 
+ pub fn primitiv_StrFloatMap_delete ( map : * mut primitiv_StrFloatMap , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrFloatMap_delete" ] 
+ pub fn safe_primitiv_StrFloatMap_delete ( map : * mut primitiv_StrFloatMap , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrFloatMap_put" ] 
+ pub fn primitiv_StrFloatMap_put ( map : * mut primitiv_StrFloatMap , key : * const :: std :: os :: raw :: c_char , value : f32 , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrFloatMap_put" ] 
+ pub fn safe_primitiv_StrFloatMap_put ( map : * mut primitiv_StrFloatMap , key : * const :: std :: os :: raw :: c_char , value : f32 , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrFloatMap_get" ] 
+ pub fn primitiv_StrFloatMap_get ( map : * const primitiv_StrFloatMap , key : * const :: std :: os :: raw :: c_char , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrFloatMap_get" ] 
+ pub fn safe_primitiv_StrFloatMap_get ( map : * const primitiv_StrFloatMap , key : * const :: std :: os :: raw :: c_char , status : * mut primitiv_Status , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrFloatMap_remove" ] 
+ pub fn primitiv_StrFloatMap_remove ( map : * mut primitiv_StrFloatMap , key : * const :: std :: os :: raw :: c_char , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrFloatMap_remove" ] 
+ pub fn safe_primitiv_StrFloatMap_remove ( map : * mut primitiv_StrFloatMap , key : * const :: std :: os :: raw :: c_char , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrFloatMap_has" ] 
+ pub fn primitiv_StrFloatMap_has ( map : * const primitiv_StrFloatMap , key : * const :: std :: os :: raw :: c_char , ) -> bool_ ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrFloatMap_has" ] 
+ pub fn safe_primitiv_StrFloatMap_has ( map : * const primitiv_StrFloatMap , key : * const :: std :: os :: raw :: c_char , status : * mut primitiv_Status , ) -> bool_ ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrFloatMap_keys" ] 
+ pub fn primitiv_StrFloatMap_keys ( map : * mut primitiv_StrFloatMap , ) -> * const * const :: std :: os :: raw :: c_char ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrFloatMap_keys" ] 
+ pub fn safe_primitiv_StrFloatMap_keys ( map : * mut primitiv_StrFloatMap , status : * mut primitiv_Status , ) -> * const * const :: std :: os :: raw :: c_char ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrFloatMap_values" ] 
+ pub fn primitiv_StrFloatMap_values ( map : * mut primitiv_StrFloatMap , ) -> * const f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrFloatMap_values" ] 
+ pub fn safe_primitiv_StrFloatMap_values ( map : * mut primitiv_StrFloatMap , status : * mut primitiv_Status , ) -> * const f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_StrFloatMap_clear" ] 
+ pub fn primitiv_StrFloatMap_clear ( map : * mut primitiv_StrFloatMap , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_StrFloatMap_clear" ] 
+ pub fn safe_primitiv_StrFloatMap_clear ( map : * mut primitiv_StrFloatMap , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_SGD_new" ] 
+ pub fn primitiv_SGD_new ( eta : f32 , ) -> * mut primitiv_Optimizer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_SGD_new" ] 
+ pub fn safe_primitiv_SGD_new ( eta : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Optimizer ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_SGD_delete" ] 
  pub fn primitiv_SGD_delete ( optimizer : * mut primitiv_Optimizer , ) ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_SGD_delete" ] 
+ pub fn safe_primitiv_SGD_delete ( optimizer : * mut primitiv_Optimizer , status : * mut primitiv_Status , ) ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_SGD_eta" ] 
  pub fn primitiv_SGD_eta ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_SGD_eta" ] 
+ pub fn safe_primitiv_SGD_eta ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_SGD_get_configs" ] 
+ pub fn primitiv_SGD_get_configs ( optimizer : * const primitiv_Optimizer , uint_configs : * mut primitiv_StrIntMap , float_configs : * mut primitiv_StrFloatMap , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_SGD_get_configs" ] 
+ pub fn safe_primitiv_SGD_get_configs ( optimizer : * const primitiv_Optimizer , uint_configs : * mut primitiv_StrIntMap , float_configs : * mut primitiv_StrFloatMap , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_SGD_set_configs" ] 
+ pub fn primitiv_SGD_set_configs ( optimizer : * mut primitiv_Optimizer , uint_configs : * const primitiv_StrIntMap , float_configs : * const primitiv_StrFloatMap , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_SGD_set_configs" ] 
+ pub fn safe_primitiv_SGD_set_configs ( optimizer : * mut primitiv_Optimizer , uint_configs : * const primitiv_StrIntMap , float_configs : * const primitiv_StrFloatMap , status : * mut primitiv_Status , ) ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_MomentumSGD_new" ] 
- pub fn primitiv_MomentumSGD_new ( ) -> * mut primitiv_Optimizer ; 
+ pub fn primitiv_MomentumSGD_new ( eta : f32 , momentum : f32 , ) -> * mut primitiv_Optimizer ; 
 } extern "C" {
- # [ link_name = "\u{1}_primitiv_MomentumSGD_new_with_eta" ] 
- pub fn primitiv_MomentumSGD_new_with_eta ( eta : f32 , ) -> * mut primitiv_Optimizer ; 
-} extern "C" {
- # [ link_name = "\u{1}_primitiv_MomentumSGD_new_with_eta_and_momentum" ] 
- pub fn primitiv_MomentumSGD_new_with_eta_and_momentum ( eta : f32 , momentum : f32 , ) -> * mut primitiv_Optimizer ; 
+ # [ link_name = "\u{1}_safe_primitiv_MomentumSGD_new" ] 
+ pub fn safe_primitiv_MomentumSGD_new ( eta : f32 , momentum : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Optimizer ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_MomentumSGD_delete" ] 
  pub fn primitiv_MomentumSGD_delete ( optimizer : * mut primitiv_Optimizer , ) ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_MomentumSGD_delete" ] 
+ pub fn safe_primitiv_MomentumSGD_delete ( optimizer : * mut primitiv_Optimizer , status : * mut primitiv_Status , ) ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_MomentumSGD_eta" ] 
  pub fn primitiv_MomentumSGD_eta ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
 } extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_MomentumSGD_eta" ] 
+ pub fn safe_primitiv_MomentumSGD_eta ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
+} extern "C" {
  # [ link_name = "\u{1}_primitiv_MomentumSGD_momentum" ] 
  pub fn primitiv_MomentumSGD_momentum ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_MomentumSGD_momentum" ] 
+ pub fn safe_primitiv_MomentumSGD_momentum ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_MomentumSGD_get_configs" ] 
+ pub fn primitiv_MomentumSGD_get_configs ( optimizer : * const primitiv_Optimizer , uint_configs : * mut primitiv_StrIntMap , float_configs : * mut primitiv_StrFloatMap , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_MomentumSGD_get_configs" ] 
+ pub fn safe_primitiv_MomentumSGD_get_configs ( optimizer : * const primitiv_Optimizer , uint_configs : * mut primitiv_StrIntMap , float_configs : * mut primitiv_StrFloatMap , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_MomentumSGD_set_configs" ] 
+ pub fn primitiv_MomentumSGD_set_configs ( optimizer : * mut primitiv_Optimizer , uint_configs : * const primitiv_StrIntMap , float_configs : * const primitiv_StrFloatMap , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_MomentumSGD_set_configs" ] 
+ pub fn safe_primitiv_MomentumSGD_set_configs ( optimizer : * mut primitiv_Optimizer , uint_configs : * const primitiv_StrIntMap , float_configs : * const primitiv_StrFloatMap , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_AdaGrad_new" ] 
+ pub fn primitiv_AdaGrad_new ( eta : f32 , eps : f32 , ) -> * mut primitiv_Optimizer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_AdaGrad_new" ] 
+ pub fn safe_primitiv_AdaGrad_new ( eta : f32 , eps : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Optimizer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_AdaGrad_delete" ] 
+ pub fn primitiv_AdaGrad_delete ( optimizer : * mut primitiv_Optimizer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_AdaGrad_delete" ] 
+ pub fn safe_primitiv_AdaGrad_delete ( optimizer : * mut primitiv_Optimizer , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_AdaGrad_eta" ] 
+ pub fn primitiv_AdaGrad_eta ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_AdaGrad_eta" ] 
+ pub fn safe_primitiv_AdaGrad_eta ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_AdaGrad_eps" ] 
+ pub fn primitiv_AdaGrad_eps ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_AdaGrad_eps" ] 
+ pub fn safe_primitiv_AdaGrad_eps ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_AdaGrad_get_configs" ] 
+ pub fn primitiv_AdaGrad_get_configs ( optimizer : * const primitiv_Optimizer , uint_configs : * mut primitiv_StrIntMap , float_configs : * mut primitiv_StrFloatMap , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_AdaGrad_get_configs" ] 
+ pub fn safe_primitiv_AdaGrad_get_configs ( optimizer : * const primitiv_Optimizer , uint_configs : * mut primitiv_StrIntMap , float_configs : * mut primitiv_StrFloatMap , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_AdaGrad_set_configs" ] 
+ pub fn primitiv_AdaGrad_set_configs ( optimizer : * mut primitiv_Optimizer , uint_configs : * const primitiv_StrIntMap , float_configs : * const primitiv_StrFloatMap , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_AdaGrad_set_configs" ] 
+ pub fn safe_primitiv_AdaGrad_set_configs ( optimizer : * mut primitiv_Optimizer , uint_configs : * const primitiv_StrIntMap , float_configs : * const primitiv_StrFloatMap , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_RMSProp_new" ] 
+ pub fn primitiv_RMSProp_new ( eta : f32 , alpha : f32 , eps : f32 , ) -> * mut primitiv_Optimizer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_RMSProp_new" ] 
+ pub fn safe_primitiv_RMSProp_new ( eta : f32 , alpha : f32 , eps : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Optimizer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_RMSProp_delete" ] 
+ pub fn primitiv_RMSProp_delete ( optimizer : * mut primitiv_Optimizer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_RMSProp_delete" ] 
+ pub fn safe_primitiv_RMSProp_delete ( optimizer : * mut primitiv_Optimizer , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_RMSProp_eta" ] 
+ pub fn primitiv_RMSProp_eta ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_RMSProp_eta" ] 
+ pub fn safe_primitiv_RMSProp_eta ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_RMSProp_alpha" ] 
+ pub fn primitiv_RMSProp_alpha ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_RMSProp_alpha" ] 
+ pub fn safe_primitiv_RMSProp_alpha ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_RMSProp_eps" ] 
+ pub fn primitiv_RMSProp_eps ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_RMSProp_eps" ] 
+ pub fn safe_primitiv_RMSProp_eps ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_RMSProp_get_configs" ] 
+ pub fn primitiv_RMSProp_get_configs ( optimizer : * const primitiv_Optimizer , uint_configs : * mut primitiv_StrIntMap , float_configs : * mut primitiv_StrFloatMap , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_RMSProp_get_configs" ] 
+ pub fn safe_primitiv_RMSProp_get_configs ( optimizer : * const primitiv_Optimizer , uint_configs : * mut primitiv_StrIntMap , float_configs : * mut primitiv_StrFloatMap , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_RMSProp_set_configs" ] 
+ pub fn primitiv_RMSProp_set_configs ( optimizer : * mut primitiv_Optimizer , uint_configs : * const primitiv_StrIntMap , float_configs : * const primitiv_StrFloatMap , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_RMSProp_set_configs" ] 
+ pub fn safe_primitiv_RMSProp_set_configs ( optimizer : * mut primitiv_Optimizer , uint_configs : * const primitiv_StrIntMap , float_configs : * const primitiv_StrFloatMap , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_AdaDelta_new" ] 
+ pub fn primitiv_AdaDelta_new ( rho : f32 , eps : f32 , ) -> * mut primitiv_Optimizer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_AdaDelta_new" ] 
+ pub fn safe_primitiv_AdaDelta_new ( rho : f32 , eps : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Optimizer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_AdaDelta_delete" ] 
+ pub fn primitiv_AdaDelta_delete ( optimizer : * mut primitiv_Optimizer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_AdaDelta_delete" ] 
+ pub fn safe_primitiv_AdaDelta_delete ( optimizer : * mut primitiv_Optimizer , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_AdaDelta_rho" ] 
+ pub fn primitiv_AdaDelta_rho ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_AdaDelta_rho" ] 
+ pub fn safe_primitiv_AdaDelta_rho ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_AdaDelta_eps" ] 
+ pub fn primitiv_AdaDelta_eps ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_AdaDelta_eps" ] 
+ pub fn safe_primitiv_AdaDelta_eps ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_AdaDelta_get_configs" ] 
+ pub fn primitiv_AdaDelta_get_configs ( optimizer : * const primitiv_Optimizer , uint_configs : * mut primitiv_StrIntMap , float_configs : * mut primitiv_StrFloatMap , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_AdaDelta_get_configs" ] 
+ pub fn safe_primitiv_AdaDelta_get_configs ( optimizer : * const primitiv_Optimizer , uint_configs : * mut primitiv_StrIntMap , float_configs : * mut primitiv_StrFloatMap , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_AdaDelta_set_configs" ] 
+ pub fn primitiv_AdaDelta_set_configs ( optimizer : * mut primitiv_Optimizer , uint_configs : * const primitiv_StrIntMap , float_configs : * const primitiv_StrFloatMap , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_AdaDelta_set_configs" ] 
+ pub fn safe_primitiv_AdaDelta_set_configs ( optimizer : * mut primitiv_Optimizer , uint_configs : * const primitiv_StrIntMap , float_configs : * const primitiv_StrFloatMap , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Adam_new" ] 
+ pub fn primitiv_Adam_new ( alpha : f32 , beta1 : f32 , beta2 : f32 , eps : f32 , ) -> * mut primitiv_Optimizer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Adam_new" ] 
+ pub fn safe_primitiv_Adam_new ( alpha : f32 , beta1 : f32 , beta2 : f32 , eps : f32 , status : * mut primitiv_Status , ) -> * mut primitiv_Optimizer ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Adam_delete" ] 
+ pub fn primitiv_Adam_delete ( optimizer : * mut primitiv_Optimizer , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Adam_delete" ] 
+ pub fn safe_primitiv_Adam_delete ( optimizer : * mut primitiv_Optimizer , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Adam_alpha" ] 
+ pub fn primitiv_Adam_alpha ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Adam_alpha" ] 
+ pub fn safe_primitiv_Adam_alpha ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Adam_beta1" ] 
+ pub fn primitiv_Adam_beta1 ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Adam_beta1" ] 
+ pub fn safe_primitiv_Adam_beta1 ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Adam_beta2" ] 
+ pub fn primitiv_Adam_beta2 ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Adam_beta2" ] 
+ pub fn safe_primitiv_Adam_beta2 ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Adam_eps" ] 
+ pub fn primitiv_Adam_eps ( optimizer : * const primitiv_Optimizer , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Adam_eps" ] 
+ pub fn safe_primitiv_Adam_eps ( optimizer : * const primitiv_Optimizer , status : * mut primitiv_Status , ) -> f32 ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Adam_get_configs" ] 
+ pub fn primitiv_Adam_get_configs ( optimizer : * const primitiv_Optimizer , uint_configs : * mut primitiv_StrIntMap , float_configs : * mut primitiv_StrFloatMap , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Adam_get_configs" ] 
+ pub fn safe_primitiv_Adam_get_configs ( optimizer : * const primitiv_Optimizer , uint_configs : * mut primitiv_StrIntMap , float_configs : * mut primitiv_StrFloatMap , status : * mut primitiv_Status , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_primitiv_Adam_set_configs" ] 
+ pub fn primitiv_Adam_set_configs ( optimizer : * mut primitiv_Optimizer , uint_configs : * const primitiv_StrIntMap , float_configs : * const primitiv_StrFloatMap , ) ; 
+} extern "C" {
+ # [ link_name = "\u{1}_safe_primitiv_Adam_set_configs" ] 
+ pub fn safe_primitiv_Adam_set_configs ( optimizer : * mut primitiv_Optimizer , uint_configs : * const primitiv_StrIntMap , float_configs : * const primitiv_StrFloatMap , status : * mut primitiv_Status , ) ; 
 } pub type __builtin_va_list = [ __va_list_tag ; 1usize ] ; # [ repr ( C ) ] # [ derive ( Debug , Copy , Clone ) ] pub struct __va_list_tag { pub gp_offset : :: std :: os :: raw :: c_uint , pub fp_offset : :: std :: os :: raw :: c_uint , pub overflow_arg_area : * mut :: std :: os :: raw :: c_void , pub reg_save_area : * mut :: std :: os :: raw :: c_void , } # [ test ] fn bindgen_test_layout___va_list_tag ( ) { assert_eq ! ( :: std :: mem :: size_of :: < __va_list_tag > ( ) , 24usize , concat ! ( "Size of: " , stringify ! ( __va_list_tag ) ) ) ; assert_eq ! ( :: std :: mem :: align_of :: < __va_list_tag > ( ) , 8usize , concat ! ( "Alignment of " , stringify ! ( __va_list_tag ) ) ) ; assert_eq ! ( unsafe { & ( * ( 0 as * const __va_list_tag ) ) . gp_offset as * const _ as usize } , 0usize , concat ! ( "Alignment of field: " , stringify ! ( __va_list_tag ) , "::" , stringify ! ( gp_offset ) ) ) ; assert_eq ! ( unsafe { & ( * ( 0 as * const __va_list_tag ) ) . fp_offset as * const _ as usize } , 4usize , concat ! ( "Alignment of field: " , stringify ! ( __va_list_tag ) , "::" , stringify ! ( fp_offset ) ) ) ; assert_eq ! ( unsafe { & ( * ( 0 as * const __va_list_tag ) ) . overflow_arg_area as * const _ as usize } , 8usize , concat ! ( "Alignment of field: " , stringify ! ( __va_list_tag ) , "::" , stringify ! ( overflow_arg_area ) ) ) ; assert_eq ! ( unsafe { & ( * ( 0 as * const __va_list_tag ) ) . reg_save_area as * const _ as usize } , 16usize , concat ! ( "Alignment of field: " , stringify ! ( __va_list_tag ) , "::" , stringify ! ( reg_save_area ) ) ) ; }
