@@ -2,3 +2,6 @@
 /primitiv-sys/target/
 **/*.rs.bk
 Cargo.lock
+/examples/*/*.config
+/examples/*/*.parama
+/examples/*/data

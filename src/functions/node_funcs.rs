@@ -206,6 +206,19 @@ pub fn parameter(param: &mut Parameter) -> Node {
     }
 }
 
+pub fn matmul<N: AsRef<Node>>(a: N, b: N) -> Node {
+    let mut status = Status::new();
+    unsafe {
+        let node = Node::from_inner_ptr(_primitiv::safe_primitiv_node_func_matmul(
+            a.as_ref().as_inner_ptr(),
+            b.as_ref().as_inner_ptr(),
+            status.as_inner_mut_ptr(),
+        ));
+        status.into_result().unwrap();
+        node
+    }
+}
+
 pub fn tanh<N: AsRef<Node>>(x: N) -> Node {
     let mut status = Status::new();
     unsafe {
@@ -218,12 +231,42 @@ pub fn tanh<N: AsRef<Node>>(x: N) -> Node {
     }
 }
 
-pub fn matmul<N: AsRef<Node>>(a: N, b: N) -> Node {
+pub fn relu<N: AsRef<Node>>(x: N) -> Node {
     let mut status = Status::new();
     unsafe {
-        let node = Node::from_inner_ptr(_primitiv::safe_primitiv_node_func_matmul(
-            a.as_ref().as_inner_ptr(),
-            b.as_ref().as_inner_ptr(),
+        let node = Node::from_inner_ptr(_primitiv::safe_primitiv_node_func_relu(
+            x.as_ref().as_inner_ptr(),
+            status.as_inner_mut_ptr(),
+        ));
+        status.into_result().unwrap();
+        node
+    }
+}
+
+pub fn softmax_cross_entropy<N: AsRef<Node>>(x: N, ids: &[u32], dim: u32) -> Node {
+    let mut status = Status::new();
+    unsafe {
+        let node = Node::from_inner_ptr(
+            _primitiv::safe_primitiv_node_func_softmax_cross_entropy_with_array(
+                x.as_ref().as_inner_ptr(),
+                ids.as_ptr() as *const _,
+                ids.len(),
+                dim,
+                status.as_inner_mut_ptr(),
+            ),
+        );
+        status.into_result().unwrap();
+        node
+    }
+}
+
+pub fn dropout<N: AsRef<Node>>(x: N, rate: f32, enabled: bool) -> Node {
+    let mut status = Status::new();
+    unsafe {
+        let node = Node::from_inner_ptr(_primitiv::safe_primitiv_node_func_dropout(
+            x.as_ref().as_inner_ptr(),
+            rate,
+            enabled as u8,
             status.as_inner_mut_ptr(),
         ));
         status.into_result().unwrap();

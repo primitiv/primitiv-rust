@@ -8,5 +8,12 @@ backtrace = "0.3"
 libc = "0.2"
 primitiv-sys = { path = "primitiv-sys" }
 
+[dev-dependencies]
+rand = "0.3"
+
 [[example]]
 name = "xor"
+
+[[example]]
+name = "mnist"
+path = "examples/mnist/mnist.rs"
