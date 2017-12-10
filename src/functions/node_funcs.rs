@@ -2,29 +2,27 @@ use primitiv_sys as _primitiv;
 use std::ops;
 use std::ptr;
 use device::{AnyDevice, Device};
-use DataType;
-use Expr;
 use Node;
 use Parameter;
 use Shape;
 use Status;
 use Wrap;
 
-macro_rules! impl_bin_node_op {
-    ($name:ident,
+macro_rules! impl_node_scalar_op {
+    ($scalar:ty,
+     $name:ident,
      $op_fn:ident,
      $api_nc_fn:ident,
-     $api_cn_fn:ident,
-     $api_nn_fn:ident) => {
-        impl<T: DataType> ops::$name<Expr<T>> for Node {
+     $api_cn_fn:ident) => {
+        impl ops::$name<$scalar> for Node {
             type Output = Node;
 
-            fn $op_fn(self, rhs: Expr<T>) -> Node {
+            fn $op_fn(self, rhs: $scalar) -> Node {
                 let mut status = Status::new();
                 unsafe {
                     let node = Node::from_inner_ptr(_primitiv::$api_nc_fn(
                         self.as_inner_ptr(),
-                        rhs.expr.into(),
+                        rhs as f32,
                         status.as_inner_mut_ptr(),
                     ));
                     status.into_result().unwrap();
@@ -33,14 +31,14 @@ macro_rules! impl_bin_node_op {
             }
         }
 
-        impl<T: DataType> ops::$name<Node> for Expr<T> {
+        impl ops::$name<Node> for $scalar {
             type Output = Node;
 
             fn $op_fn(self, rhs: Node) -> Node {
                 let mut status = Status::new();
                 unsafe {
                     let node = Node::from_inner_ptr(_primitiv::$api_cn_fn(
-                        self.expr.into(),
+                        self as f32,
                         rhs.as_inner_ptr(),
                         status.as_inner_mut_ptr(),
                     ));
@@ -49,6 +47,25 @@ macro_rules! impl_bin_node_op {
                 }
             }
         }
+    }
+}
+
+macro_rules! impl_bin_node_op {
+    ($name:ident,
+     $op_fn:ident,
+     $api_nc_fn:ident,
+     $api_cn_fn:ident,
+     $api_nn_fn:ident) => {
+        impl_node_scalar_op!(i8, $name, $op_fn, $api_nc_fn, $api_cn_fn);
+        impl_node_scalar_op!(u8, $name, $op_fn, $api_nc_fn, $api_cn_fn);
+        impl_node_scalar_op!(i16, $name, $op_fn, $api_nc_fn, $api_cn_fn);
+        impl_node_scalar_op!(u16, $name, $op_fn, $api_nc_fn, $api_cn_fn);
+        impl_node_scalar_op!(i32, $name, $op_fn, $api_nc_fn, $api_cn_fn);
+        impl_node_scalar_op!(u32, $name, $op_fn, $api_nc_fn, $api_cn_fn);
+        impl_node_scalar_op!(i64, $name, $op_fn, $api_nc_fn, $api_cn_fn);
+        impl_node_scalar_op!(u64, $name, $op_fn, $api_nc_fn, $api_cn_fn);
+        impl_node_scalar_op!(f32, $name, $op_fn, $api_nc_fn, $api_cn_fn);
+        impl_node_scalar_op!(f64, $name, $op_fn, $api_nc_fn, $api_cn_fn);
 
         impl ops::$name<Node> for Node {
             type Output = Node;
