@@ -37,3 +37,41 @@ impl Shape {
         }
     }
 }
+
+macro_rules! impl_array_into_shape {
+    ($num:expr) => {
+        impl Into<Shape> for [u32; $num] {
+            fn into(self) -> Shape {
+                Shape::from_dims(&self, 1)
+            }
+        }
+    }
+}
+impl_array_into_shape!(0);
+impl_array_into_shape!(1);
+impl_array_into_shape!(2);
+impl_array_into_shape!(3);
+impl_array_into_shape!(4);
+impl_array_into_shape!(5);
+impl_array_into_shape!(6);
+impl_array_into_shape!(7);
+impl_array_into_shape!(8);
+
+macro_rules! impl_tuple_into_shape {
+    ($num:expr) => {
+        impl Into<Shape> for ([u32; $num], u32) {
+            fn into(self) -> Shape {
+                Shape::from_dims(&self.0, self.1)
+            }
+        }
+    }
+}
+impl_tuple_into_shape!(0);
+impl_tuple_into_shape!(1);
+impl_tuple_into_shape!(2);
+impl_tuple_into_shape!(3);
+impl_tuple_into_shape!(4);
+impl_tuple_into_shape!(5);
+impl_tuple_into_shape!(6);
+impl_tuple_into_shape!(7);
+impl_tuple_into_shape!(8);

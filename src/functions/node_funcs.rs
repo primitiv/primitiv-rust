@@ -167,15 +167,19 @@ impl_bin_node_op!(
     safe_primitiv_node_func_divide_node_node
 );
 
-pub fn input(shape: &Shape, data: &[f32]) -> Node {
-    input_with_device::<AnyDevice>(shape, data, None)
+pub fn input<S: Into<Shape>>(shape: S, data: &[f32]) -> Node {
+    input_with_device::<S, AnyDevice>(shape, data, None)
 }
 
-pub fn input_with_device<D: Device>(shape: &Shape, data: &[f32], device: Option<&mut D>) -> Node {
+pub fn input_with_device<S: Into<Shape>, D: Device>(
+    shape: S,
+    data: &[f32],
+    device: Option<&mut D>,
+) -> Node {
     let mut status = Status::new();
     unsafe {
         let node = Node::from_inner_ptr(_primitiv::safe_primitiv_node_func_input(
-            shape.as_inner_ptr(),
+            shape.into().as_inner_ptr(),
             data.as_ptr() as *const _,
             data.len(),
             device.map(|d| d.as_inner_mut_ptr()).unwrap_or(

@@ -15,10 +15,10 @@ fn main() {
     let mut dev = D::Naive::new();
     device::set_default(&mut dev);
 
-    let mut pw1 = Parameter::from_initializer(&Shape::from_dims(&[8, 2], 1), &I::XavierUniform::new(1.0));
-    let mut pb1 = Parameter::from_initializer(&Shape::from_dims(&[8], 1), &I::Constant::new(0.0));
-    let mut pw2 = Parameter::from_initializer(&Shape::from_dims(&[1, 8], 1), &I::XavierUniform::new(1.0));
-    let mut pb2 = Parameter::from_initializer(&Shape::from_dims(&[], 1), &I::Constant::new(0.0));
+    let mut pw1 = Parameter::from_initializer([8, 2], &I::XavierUniform::new(1.0));
+    let mut pb1 = Parameter::from_initializer([8], &I::Constant::new(0.0));
+    let mut pw2 = Parameter::from_initializer([1, 8], &I::XavierUniform::new(1.0));
+    let mut pb2 = Parameter::from_initializer([], &I::Constant::new(0.0));
 
     let mut optimizer = O::SGD::new(0.1);
 
@@ -44,7 +44,7 @@ fn main() {
     for i in 0..10 {
         g.clear();
 
-        let x = F::input(&Shape::from_dims(&[2], 4), &input_data);
+        let x = F::input(([2], 4), &input_data);
         let w1 = F::parameter(&mut pw1);
         let b1 = F::parameter(&mut pb1);
         let w2 = F::parameter(&mut pw2);
@@ -58,7 +58,7 @@ fn main() {
             println!("  [{}]: {}", j, y_val[j]);
         }
 
-        let t = F::input(&Shape::from_dims(&[], 4), &output_data);
+        let t = F::input(([], 4), &output_data);
         let diff = t - y;
         let loss = F::batch::mean(&diff * &diff);
 
