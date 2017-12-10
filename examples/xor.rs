@@ -49,8 +49,8 @@ fn main() {
         let b1 = F::parameter(&mut pb1);
         let w2 = F::parameter(&mut pw2);
         let b2 = F::parameter(&mut pb2);
-        let h = F::tanh(&(F::matmul(&w1, &x) + b1));
-        let y = F::matmul(&w2, &h) + b2;
+        let h = F::tanh(F::matmul(w1, x) + b1);
+        let y = F::matmul(w2, h) + b2;
 
         let y_val = y.to_vector();
         println!("epoch {}:", i);
@@ -60,7 +60,7 @@ fn main() {
 
         let t = F::input(&Shape::from_dims(&[], 4), &output_data);
         let diff = t - y;
-        let loss = F::batch::mean(&(diff.clone() * diff));
+        let loss = F::batch::mean(&diff * &diff);
 
         let loss_val = loss.to_float();
         println!("  loss: {}", loss_val);

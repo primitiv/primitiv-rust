@@ -83,6 +83,58 @@ macro_rules! impl_bin_node_op {
                 }
             }
         }
+
+        impl<'a> ops::$name<Node> for &'a Node {
+            type Output = Node;
+
+            fn $op_fn(self, rhs: Node) -> Node {
+                let mut status = Status::new();
+                unsafe {
+                    let node = Node::from_inner_ptr(_primitiv::$api_nn_fn(
+                        self.as_inner_ptr(),
+                        rhs.as_inner_ptr(),
+                        status.as_inner_mut_ptr(),
+                    ));
+                    status.into_result().unwrap();
+                    node
+                }
+            }
+        }
+
+        impl<'a> ops::$name<&'a Node> for Node {
+            type Output = Node;
+
+            fn $op_fn(self, rhs: &'a Node) -> Node {
+                let mut status = Status::new();
+                unsafe {
+                    let node = Node::from_inner_ptr(_primitiv::$api_nn_fn(
+                        self.as_inner_ptr(),
+                        rhs.as_inner_ptr(),
+                        status.as_inner_mut_ptr(),
+                    ));
+                    status.into_result().unwrap();
+                    node
+                }
+            }
+        }
+
+        impl<'a, 'b> ops::$name<&'a Node> for &'b Node {
+            type Output = Node;
+
+            fn $op_fn(self, rhs: &'a Node) -> Node {
+                let mut status = Status::new();
+                unsafe {
+                    let node = Node::from_inner_ptr(_primitiv::$api_nn_fn(
+                        self.as_inner_ptr(),
+                        rhs.as_inner_ptr(),
+                        status.as_inner_mut_ptr(),
+                    ));
+                    status.into_result().unwrap();
+                    node
+                }
+            }
+        }
+
     }
 }
 
@@ -150,11 +202,11 @@ pub fn parameter(param: &mut Parameter) -> Node {
     }
 }
 
-pub fn tanh(x: &Node) -> Node {
+pub fn tanh<N: AsRef<Node>>(x: N) -> Node {
     let mut status = Status::new();
     unsafe {
         let node = Node::from_inner_ptr(_primitiv::safe_primitiv_node_func_tanh(
-            x.as_inner_ptr(),
+            x.as_ref().as_inner_ptr(),
             status.as_inner_mut_ptr(),
         ));
         status.into_result().unwrap();
@@ -162,12 +214,12 @@ pub fn tanh(x: &Node) -> Node {
     }
 }
 
-pub fn matmul(a: &Node, b: &Node) -> Node {
+pub fn matmul<N: AsRef<Node>>(a: N, b: N) -> Node {
     let mut status = Status::new();
     unsafe {
         let node = Node::from_inner_ptr(_primitiv::safe_primitiv_node_func_matmul(
-            a.as_inner_ptr(),
-            b.as_inner_ptr(),
+            a.as_ref().as_inner_ptr(),
+            b.as_ref().as_inner_ptr(),
             status.as_inner_mut_ptr(),
         ));
         status.into_result().unwrap();
@@ -181,11 +233,11 @@ pub mod batch {
     use Status;
     use Wrap;
 
-    pub fn mean(x: &Node) -> Node {
+    pub fn mean<N: AsRef<Node>>(x: N) -> Node {
         let mut status = Status::new();
         unsafe {
             let node = Node::from_inner_ptr(_primitiv::safe_primitiv_node_func_batch_mean(
-                x.as_inner_ptr(),
+                x.as_ref().as_inner_ptr(),
                 status.as_inner_mut_ptr(),
             ));
             status.into_result().unwrap();

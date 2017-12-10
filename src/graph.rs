@@ -57,6 +57,13 @@ impl Node {
     }
 }
 
+impl AsRef<Node> for Node {
+    #[inline]
+    fn as_ref(&self) -> &Node {
+        self
+    }
+}
+
 #[derive(Debug)]
 pub struct Graph {
     inner: *mut _primitiv::primitiv_Graph,
