@@ -10,7 +10,7 @@ pub struct Node {
 
 impl_wrap!(Node, primitiv_Node);
 impl_new!(Node, safe_primitiv_Node_new);
-impl_drop!(Node, safe_primitiv_Node_delete);
+// impl_drop!(Node, safe_primitiv_Node_delete);
 
 impl Node {
     pub fn shape(&self) -> Shape {
@@ -35,13 +35,16 @@ impl Node {
     pub fn to_vector(&self) -> Vec<f32> {
         let mut status = Status::new();
         unsafe {
-            let num_elements = self.shape().size() as usize;
-            let array = _primitiv::safe_primitiv_Node_to_array(
+            // Use a vector as a C-style array because it must be a contiguous array actually.
+            // See: https://doc.rust-lang.org/book/first-edition/vectors.html
+            let mut v = vec![0f32; self.shape().size()];
+            _primitiv::safe_primitiv_Node_to_array(
                 self.as_inner_ptr(),
+                v.as_mut_ptr(),
                 status.as_inner_mut_ptr(),
             );
             status.into_result().unwrap();
-            Vec::from_raw_parts(array, num_elements, num_elements)
+            v
         }
     }
 

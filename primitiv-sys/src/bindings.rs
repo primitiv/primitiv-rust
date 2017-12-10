@@ -215,10 +215,10 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
  pub fn safe_primitiv_Tensor_to_float ( tensor : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> f32 ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Tensor_to_array" ] 
- pub fn primitiv_Tensor_to_array ( tensor : * const primitiv_Tensor , ) -> * mut f32 ; 
+ pub fn primitiv_Tensor_to_array ( tensor : * const primitiv_Tensor , array : * mut f32 , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_safe_primitiv_Tensor_to_array" ] 
- pub fn safe_primitiv_Tensor_to_array ( tensor : * const primitiv_Tensor , status : * mut primitiv_Status , ) -> * mut f32 ; 
+ pub fn safe_primitiv_Tensor_to_array ( tensor : * const primitiv_Tensor , array : * mut f32 , status : * mut primitiv_Status , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Tensor_argmax" ] 
  pub fn primitiv_Tensor_argmax ( tensor : * const primitiv_Tensor , dim : u32 , ) -> * mut u32 ; 
@@ -335,10 +335,10 @@ pub const __bool_true_false_are_defined : :: std :: os :: raw :: c_uint = 1 ; pu
  pub fn safe_primitiv_Node_to_float ( node : * const primitiv_Node , status : * mut primitiv_Status , ) -> f32 ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Node_to_array" ] 
- pub fn primitiv_Node_to_array ( node : * const primitiv_Node , ) -> * mut f32 ; 
+ pub fn primitiv_Node_to_array ( node : * const primitiv_Node , array : * mut f32 , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_safe_primitiv_Node_to_array" ] 
- pub fn safe_primitiv_Node_to_array ( node : * const primitiv_Node , status : * mut primitiv_Status , ) -> * mut f32 ; 
+ pub fn safe_primitiv_Node_to_array ( node : * const primitiv_Node , array : * mut f32 , status : * mut primitiv_Status , ) ; 
 } extern "C" {
  # [ link_name = "\u{1}_primitiv_Node_argmax" ] 
  pub fn primitiv_Node_argmax ( node : * const primitiv_Node , dim : u32 , ) -> * mut u32 ; 

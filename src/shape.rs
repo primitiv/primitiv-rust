@@ -27,13 +27,13 @@ impl Shape {
         }
     }
 
-    pub fn size(&self) -> u32 {
+    pub fn size(&self) -> usize {
         let mut status = Status::new();
         unsafe {
             let size =
                 _primitiv::safe_primitiv_Shape_size(self.as_inner_ptr(), status.as_inner_mut_ptr());
             status.into_result().unwrap();
-            size
+            size as usize
         }
     }
 }
