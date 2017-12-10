@@ -58,7 +58,7 @@ fn main() {
             println!("  [{}]: {}", j, y_val[j]);
         }
 
-        let t = F::input(&Shape::from_dims(&[0], 4), &output_data);
+        let t = F::input(&Shape::from_dims(&[], 4), &output_data);
         let diff = t - y;
         let loss = F::batch::mean(&(diff.clone() * diff));
 
