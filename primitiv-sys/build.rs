@@ -23,6 +23,7 @@ fn build() -> Result<(), Box<Error>> {
     println!("cargo:rustc-link-search={}", lib_dir);
 
     let bindings = bindgen::Builder::default()
+        .clang_arg(format!("-I{}", include_dir))
         .header(include_dir + "/primitiv_c/api.h")
         .rustfmt_bindings(false)
         .generate_comments(false)
