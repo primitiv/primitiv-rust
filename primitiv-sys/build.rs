@@ -22,16 +22,21 @@ fn build() -> Result<(), Box<Error>> {
     println!("cargo:rustc-link-lib=dylib=primitiv_c");
     println!("cargo:rustc-link-search={}", lib_dir);
 
-    let bindings = bindgen::Builder::default()
+    let mut builder = bindgen::Builder::default()
         .clang_arg(format!("-I{}", include_dir))
-        .header(include_dir + "/primitiv_c/api.h")
+        .header(format!("{}/primitiv_c/api.h", include_dir))
         .rustfmt_bindings(false)
-        .generate_comments(false)
-        .generate()
-        .expect("Unable to generate bindings");
+        .generate_comments(false);
 
-    bindings.write_to_file("src/bindings.rs").expect(
-        "Couldn't write bindings!",
-    );
+    if cfg!(feature = "cuda") {
+        builder = builder
+            .header(format!("{}/primitiv_c/api_cuda.h", include_dir));
+    }
+
+    builder
+        .generate()
+        .expect("Unable to generate bindings")
+        .write_to_file("src/bindings.rs")
+        .expect("Couldn't write bindings!");
     Ok(())
 }
