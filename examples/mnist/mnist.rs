@@ -51,10 +51,10 @@ fn load_labels<P: AsRef<Path>>(filename: P, n: u32) -> Vec<u8> {
 fn main() {
     let train_inputs = load_images("data/train-images-idx3-ubyte", NUM_TRAIN_SAMPLES);
     let train_labels = load_labels("data/train-labels-idx1-ubyte", NUM_TRAIN_SAMPLES);
-    let test_inputs = load_images("data/t10k-images-idx3-ubyte", NUM_TRAIN_SAMPLES);
-    let test_labels = load_images("data/t10k-labels-idx1-ubyte", NUM_TRAIN_SAMPLES);
+    let test_inputs = load_images("data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES);
+    let test_labels = load_labels("data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
 
-    let mut dev = D::Naive::new();
+    let mut dev = D::Naive::new();  // let mut dev = D::CUDA::new(0);
     device::set_default(&mut dev);
 
     let mut pw1 = Parameter::from_initializer([NUM_HIDDEN_UNITS, NUM_INPUT_UNITS], &I::XavierUniform::new(1.0));
@@ -116,7 +116,7 @@ fn main() {
         let mut match_ = 0;
 
         for batch in 0..NUM_TEST_BATCHES {
-            print!("\rrTesting... {} / {}", batch + 1, NUM_TEST_BATCHES);
+            print!("\rTesting... {} / {}", batch + 1, NUM_TEST_BATCHES);
             let mut inputs: Vec<f32> = Vec::with_capacity((BATCH_SIZE * NUM_INPUT_UNITS) as usize);
             let from = (batch * BATCH_SIZE * NUM_INPUT_UNITS) as usize;
             let to = ((batch + 1) * BATCH_SIZE * NUM_INPUT_UNITS) as usize;
@@ -144,6 +144,6 @@ fn main() {
         }
 
         let accuracy = 100.0 * match_ as f32 / NUM_TEST_SAMPLES as f32;
-        println!("epoch {}: accuracy: {:.2}%", epoch, accuracy);
+        println!("\nepoch {}: accuracy: {:.2}%", epoch, accuracy);
     }
 }

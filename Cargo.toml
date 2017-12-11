@@ -11,6 +11,9 @@ primitiv-sys = { path = "primitiv-sys" }
 [dev-dependencies]
 rand = "0.3"
 
+[features]
+cuda = ["primitiv-sys/cuda"]
+
 [[example]]
 name = "xor"
 

@@ -1,6 +1,6 @@
 /target/
 /primitiv-sys/target/
-/primitiv-sys/src/bindgen.rs
+/primitiv-sys/src/bindings.rs
 **/*.rs.bk
 Cargo.lock
 /examples/*/*.config
