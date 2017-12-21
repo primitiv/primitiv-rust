@@ -93,12 +93,12 @@ macro_rules! impl_drop {
 pub mod device;
 mod graph;
 pub use graph::*;
-// mod initializer;
-// pub use initializer::*;
-// mod parameter;
-// pub use parameter::*;
-// mod shape;
-// pub use shape::*;
+mod initializer;
+pub use initializer::*;
+mod parameter;
+pub use parameter::*;
+mod shape;
+pub use shape::*;
 mod status;
 pub use status::*;
 // mod tensor;
