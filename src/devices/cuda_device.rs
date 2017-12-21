@@ -1,26 +1,29 @@
 use primitiv_sys as _primitiv;
+use ApiResult;
 use device;
-use Status;
+use Result;
 use Wrap;
 
 #[derive(Debug)]
 pub struct CUDA {
     inner: *mut _primitiv::primitiv_Device,
+    owned: bool,
 }
 
-impl_wrap!(CUDA, primitiv_Device);
-impl_drop!(CUDA, safe_primitiv_Naive_delete);
-
-impl device::Device for CUDA {}
+impl_device!(CUDA);
 
 impl CUDA {
-    pub fn new(device_id: u32) -> Self {
+    /*
+    pub fn new(device_id: u32) -> Result<Self> {
         let mut status = Status::new();
         unsafe {
             let inner = _primitiv::safe_primitiv_CUDA_new(device_id, status.as_inner_mut_ptr());
             status.into_result().unwrap();
             assert!(!inner.is_null());
-            CUDA { inner: inner }
+            CUDA {
+                inner: inner,
+                owned: true,
+            }
         }
     }
 
@@ -43,4 +46,5 @@ impl CUDA {
             status.into_result().unwrap();
         }
     }
+    */
 }
