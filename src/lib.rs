@@ -80,7 +80,7 @@ macro_rules! impl_drop {
     ($name:ident, $call:ident) => {
         impl Drop for $name {
             fn drop(&mut self) {
-                if (self.is_owned()) {
+                if self.is_owned() {
                     unsafe {
                         _primitiv::$call(self.inner);
                     }
@@ -101,10 +101,10 @@ mod shape;
 pub use shape::*;
 mod status;
 pub use status::*;
-// mod tensor;
-// pub use tensor::*;
-// mod optimizer;
-// pub use optimizer::*;
+mod tensor;
+pub use tensor::*;
+mod optimizer;
+pub use optimizer::*;
 // pub mod functions;
 // pub use functions::node_funcs as node_functions;
 // pub use functions::tensor_funcs as tensor_functions;

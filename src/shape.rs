@@ -1,7 +1,7 @@
 use primitiv_sys as _primitiv;
 use std::ptr;
-use Result;
 use ApiResult;
+use Result;
 use Wrap;
 
 #[derive(Debug)]

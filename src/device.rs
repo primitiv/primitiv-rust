@@ -7,23 +7,16 @@ use std::ptr;
 /// `Device` trait
 pub trait Device: Wrap<_primitiv::primitiv_Device> {}
 
-/*
 #[derive(Debug)]
 pub struct AnyDevice {
     inner: *mut _primitiv::primitiv_Device,
+    owned: bool,
 }
 
 impl_wrap!(AnyDevice, primitiv_Device);
-
-impl Drop for AnyDevice {
-    fn drop(&mut self) {
-        // An AnyDevice instance does not call internal destructor
-        // because its inner is actually reference and it does not own a device instance.
-    }
-}
+impl_drop!(AnyDevice, primitiv_Device_delete);
 
 impl Device for AnyDevice {}
-*/
 
 /*
 pub fn get_default() -> Result<AnyDevice> {

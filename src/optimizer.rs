@@ -1,40 +1,41 @@
 use primitiv_sys as _primitiv;
+use ApiResult;
 use Parameter;
-use Status;
+use Result;
 use Wrap;
 
 pub trait Optimizer: Wrap<_primitiv::primitiv_Optimizer> {
-    fn add_parameter(&mut self, param: &mut Parameter) {
-        let mut status = Status::new();
+    fn add_parameter(&mut self, param: &mut Parameter) -> Result<()> {
         unsafe {
-            _primitiv::safe_primitiv_Optimizer_add_parameter(
-                self.as_inner_mut_ptr(),
-                param.as_inner_mut_ptr(),
-                status.as_inner_mut_ptr(),
-            );
-            status.into_result().unwrap();
+            Result::from_api_status(
+                _primitiv::primitiv_Optimizer_add_parameter(
+                    self.as_inner_mut_ptr(),
+                    param.as_inner_mut_ptr(),
+                ),
+                (),
+            )
         }
     }
 
-    fn reset_gradients(&mut self) {
-        let mut status = Status::new();
+    fn reset_gradients(&mut self) -> Result<()> {
         unsafe {
-            _primitiv::safe_primitiv_Optimizer_reset_gradients(
-                self.as_inner_mut_ptr(),
-                status.as_inner_mut_ptr(),
-            );
-            status.into_result().unwrap();
+            Result::from_api_status(
+                _primitiv::primitiv_Optimizer_reset_gradients(
+                    self.as_inner_mut_ptr(),
+                ),
+                (),
+            )
         }
     }
 
-    fn update(&mut self) {
-        let mut status = Status::new();
+    fn update(&mut self) -> Result<()> {
         unsafe {
-            _primitiv::safe_primitiv_Optimizer_update(
-                self.as_inner_mut_ptr(),
-                status.as_inner_mut_ptr(),
-            );
-            status.into_result().unwrap();
+            Result::from_api_status(
+                _primitiv::primitiv_Optimizer_update(
+                    self.as_inner_mut_ptr(),
+                ),
+                (),
+            )
         }
     }
 }
