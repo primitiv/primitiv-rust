@@ -137,6 +137,14 @@ impl Status {
     //      }
     //      */
     //
+
+    pub fn code(&self) -> Code {
+        self.code
+    }
+
+    pub fn message(&self) -> &str {
+        self.message.as_str()
+    }
 }
 
 /*
@@ -231,23 +239,24 @@ impl Display for Status {
         f.write_str(message)
     }
 }
+*/
 
 impl Debug for Status {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{{inner:{:?}, ", self.as_inner_ptr())?;
         write!(f, "{}: ", self.code())?;
-        let messsage = unsafe {
-            match CStr::from_ptr(_primitiv::primitiv_Status_get_message(self.as_inner_ptr()))
-                .to_str() {
-                Ok(s) => s,
-                Err(_) => "<invalid UTF-8 in message>",
-            }
-        };
-        f.write_str(messsage)?;
+        // let messsage = unsafe {
+        //     match CStr::from_ptr(_primitiv::primitiv_Status_get_message(self.as_inner_ptr()))
+        //         .to_str() {
+        //         Ok(s) => s,
+        //         Err(_) => "<invalid UTF-8 in message>",
+        //     }
+        // };
+        f.write_str(self.message())?;
         write!(f, "}}")?;
         Ok(())
     }
 }
+/*
 
 impl From<NulError> for Status {
     fn from(_e: NulError) -> Self {
