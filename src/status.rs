@@ -12,6 +12,7 @@ use std::fmt::Display;
 use std::fmt::Formatter;
 use std::fmt;
 use std::mem;
+use std::result;
 use std::str::Utf8Error;
 use Wrap;
 
@@ -34,22 +35,6 @@ fn prev_symbol(level: u32) -> Option<BacktraceSymbol> {
 pub enum Code {
     Ok,
     Error,
-    Cancelled,
-    Unknown,
-    InvalidArgument,
-    DeadlineExceeded,
-    NotFound,
-    AlreadyExists,
-    PermissionDenied,
-    ResourceExhausted,
-    FailedPrecondition,
-    Aborted,
-    OutOfRange,
-    Unimplemented,
-    Internal,
-    Unavailable,
-    DataLoss,
-    Unauthenticated,
     UnrecognizedEnumValue(c_uint),
 }
 
@@ -58,22 +43,6 @@ impl Code {
         match value {
             0 => Code::Ok,
             1 => Code::Error,
-            2 => Code::Cancelled,
-            3 => Code::Unknown,
-            4 => Code::InvalidArgument,
-            5 => Code::DeadlineExceeded,
-            6 => Code::NotFound,
-            7 => Code::AlreadyExists,
-            8 => Code::PermissionDenied,
-            9 => Code::ResourceExhausted,
-            10 => Code::FailedPrecondition,
-            11 => Code::Aborted,
-            12 => Code::OutOfRange,
-            13 => Code::Unimplemented,
-            14 => Code::Internal,
-            15 => Code::Unavailable,
-            16 => Code::DataLoss,
-            17 => Code::Unauthenticated,
             c => Code::UnrecognizedEnumValue(c),
         }
     }
@@ -83,30 +52,14 @@ impl Code {
             &Code::UnrecognizedEnumValue(c) => c, 
             &Code::Ok => 0,
             &Code::Error => 1,
-            &Code::Cancelled => 2,
-            &Code::Unknown => 3,
-            &Code::InvalidArgument => 4,
-            &Code::DeadlineExceeded => 5,
-            &Code::NotFound => 6,
-            &Code::AlreadyExists => 7,
-            &Code::PermissionDenied => 8,
-            &Code::ResourceExhausted => 9,
-            &Code::FailedPrecondition => 10,
-            &Code::Aborted => 11,
-            &Code::OutOfRange => 12,
-            &Code::Unimplemented => 13,
-            &Code::Internal => 14,
-            &Code::Unavailable => 15,
-            &Code::DataLoss => 16,
-            &Code::Unauthenticated => 17,
         }
     }
 
-    fn to_c(&self) -> _primitiv::primitiv_Code {
+    fn to_c(&self) -> _primitiv::primitiv_Status {
         unsafe { mem::transmute(self.to_int()) }
     }
 
-    fn from_c(value: _primitiv::primitiv_Code) -> Self {
+    fn from_c(value: _primitiv::primitiv_Status) -> Self {
         Self::from_int(value as c_uint)
     }
 }
@@ -116,27 +69,77 @@ impl fmt::Display for Code {
         match self {
             &Code::Ok => f.write_str("Ok"),
             &Code::Error => f.write_str("Error"),
-            &Code::Cancelled => f.write_str("Cancelled"),
-            &Code::Unknown => f.write_str("Unknown"),
-            &Code::InvalidArgument => f.write_str("InvalidArgument"),
-            &Code::DeadlineExceeded => f.write_str("DeadlineExceeded"),
-            &Code::NotFound => f.write_str("NotFound"),
-            &Code::AlreadyExists => f.write_str("AlreadyExists"),
-            &Code::PermissionDenied => f.write_str("PermissionDenied"),
-            &Code::ResourceExhausted => f.write_str("ResourceExhausted"),
-            &Code::FailedPrecondition => f.write_str("FailedPrecondition"),
-            &Code::Aborted => f.write_str("Aborted"),
-            &Code::OutOfRange => f.write_str("OutOfRange"),
-            &Code::Unimplemented => f.write_str("Unimplemented"),
-            &Code::Internal => f.write_str("Internal"),
-            &Code::Unavailable => f.write_str("Unavailable"),
-            &Code::DataLoss => f.write_str("DataLoss"),
-            &Code::Unauthenticated => f.write_str("Unauthenticated"),
             &Code::UnrecognizedEnumValue(c) => write!(f, "UnrecognizedEnumValue({})", c),
         }
     }
 }
 
+pub struct Status {
+    code: Code,
+    message: String,
+}
+
+//  macro_rules! into_result {
+//      ($expr:expr, $retval:ident) => {
+//          let code: Code::from_int($expr);
+//          match code {
+//              Code::Ok => Ok($retval),
+//              _ => Err(Status::new(code, _primitiv::primitiv_Status_get_message()),
+//          }
+//      }
+//  }
+//
+
+// trait FromApi<T> {
+//     fn from_api_status<T>(status: c_uint, ok_val: T) -> Self;
+// }
+pub trait ApiResult<T, E> {
+    fn from_api_status(status: c_uint, ok_val: T) -> result::Result<T, E>;
+}
+
+impl<T> ApiResult<T, Status> for result::Result<T, Status> {
+    fn from_api_status(status: c_uint, ok_val: T) -> Self {
+        let code = Code::from_int(status);
+        match code {
+            Code::Ok => Ok(ok_val),
+            _ => unsafe {
+                Err(Status::new(
+                    code,
+                    CStr::from_ptr(_primitiv::primitiv_Status_get_message())
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                ))
+            },
+        }
+    }
+}
+
+pub type Result<T> = result::Result<T, Status>;
+
+impl Status {
+    pub fn new(code: Code, message: String) -> Self {
+        Status {
+            code: code,
+            message: message,
+        }
+        // unsafe {
+        //     let inner = _primitiv::primitiv_Status_new();
+        //     assert!(!inner.is_null());
+        //     Status { inner: inner }
+        // }
+    }
+    //
+    //      /*
+    //      fn from_code<T>(code: Code) -> Result<T, Self> {
+    //  _primitiv::primitiv_Status_get_message()
+    //          Status {}
+    //      }
+    //      */
+    //
+}
+
+/*
 pub struct Status {
     inner: *mut _primitiv::primitiv_Status,
 }
@@ -273,3 +276,4 @@ impl Error for Status {
         None
     }
 }
+*/

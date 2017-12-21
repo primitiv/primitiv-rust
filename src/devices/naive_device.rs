@@ -3,6 +3,7 @@ use device;
 use Status;
 use Wrap;
 
+/// Device class for the naive function implementations on CPU.
 #[derive(Debug)]
 pub struct Naive {
     inner: *mut _primitiv::primitiv_Device,

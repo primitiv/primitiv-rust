@@ -1,6 +1,9 @@
 use primitiv_sys as _primitiv;
-use Shape;
+// use Shape;
 use Status;
+use Result;
+use ApiResult;
+// use Code;
 use Wrap;
 
 #[derive(Clone, Debug)]
@@ -8,11 +11,43 @@ pub struct Node {
     inner: *mut _primitiv::primitiv_Node,
 }
 
-impl_wrap!(Node, primitiv_Node);
-impl_new!(Node, safe_primitiv_Node_new);
-// impl_drop!(Node, safe_primitiv_Node_delete);
+impl_wrap_owned!(Node, primitiv_Node);
+impl_drop!(Node, primitiv_Node_delete);
 
 impl Node {
+    /// Creates a new Node object.
+    pub fn new() -> Self {
+        unsafe { Node { inner: _primitiv::primitiv_Node_new() } }
+    }
+
+    /// Returns whether the node is valid or not.
+    pub fn valid(&self) -> bool {
+        unsafe { _primitiv::primitiv_Node_valid(self.as_inner_ptr()) == 1 }
+    }
+
+    /// Returns the operator ID.
+    pub fn operator_id(&self) -> Result<u32> {
+        unsafe {
+            let id: u32 = 0;
+            Result::from_api_status(
+                _primitiv::primitiv_Node_operator_id(self.as_inner_ptr(), id as *mut _),
+                id,
+            )
+        }
+    }
+
+    /// Returns the value ID of the operator.
+    pub fn value_id(&self) -> Result<u32> {
+        unsafe {
+            let id: u32 = 0;
+            Result::from_api_status(
+                _primitiv::primitiv_Node_value_id(self.as_inner_ptr(), id as *mut _),
+                id,
+            )
+        }
+    }
+
+    /*
     pub fn shape(&self) -> Shape {
         unsafe {
             Shape::from_inner_ptr(_primitiv::primitiv_Node_shape(self.as_inner_ptr()) as
@@ -55,7 +90,18 @@ impl Node {
             status.into_result().unwrap();
         }
     }
+
+    */
 }
+
+/*
+impl From<Node> for Node {
+    fn from(Node: node) -> Self {
+        let mut device_ptr: *mut _primitiv::primitiv_Device = ptr::null_mut();
+        let status = _primitiv::primitiv_Device_get_default(&mut device_ptr);
+    }
+}
+*/
 
 impl AsRef<Node> for Node {
     #[inline]
@@ -67,11 +113,12 @@ impl AsRef<Node> for Node {
 #[derive(Debug)]
 pub struct Graph {
     inner: *mut _primitiv::primitiv_Graph,
+    owned: bool,
 }
 
 impl_wrap!(Graph, primitiv_Graph);
-impl_new!(Graph, safe_primitiv_Graph_new);
-impl_drop!(Graph, safe_primitiv_Graph_delete);
+impl_new!(Graph, primitiv_Graph_new);
+impl_drop!(Graph, primitiv_Graph_delete);
 
 impl Graph {
     pub fn clear(&mut self) {
