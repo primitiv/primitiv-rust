@@ -27,7 +27,8 @@ make [-j <threads>]
 
 # build primitiv-rust
 cd ../../
-git clone https://github.com/primitiv/primitiv-rust/
+git clone --branch develop https://github.com/primitiv/primitiv-rust/
+cd primitiv-rust
 [PRIMITIV_INCLUDE_DIR=/path/to/work/primitiv PRIMITIV_LIBRARY_DIR=/path/to/work/primitiv/build/primitiv] cargo build [--features cuda]
 
 # try xor example
