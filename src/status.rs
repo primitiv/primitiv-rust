@@ -112,22 +112,15 @@ impl<T> ApiResult<T, Status> for result::Result<T, Status> {
         match code {
             Code::Ok => Ok(ok_val),
             _ => unsafe {
-                let size: u32 = 0;
-                let s = _primitiv::primitivGetMessage(ptr::null_mut(), size as *mut _);
+                let mut size: usize = 0;
+                let s = _primitiv::primitivGetMessage(ptr::null_mut(), &mut size as *mut _);
                 assert!(Code::is_ok(s));
-                // let buffer = Vec<c_char>::with_capacity(size as usize)
-                // let buffer = Vec<c_char>::with_capacity(size as usize)
-                let buffer = CString::new(Vec::with_capacity(size as usize)).unwrap().into_raw();
-                let s = _primitiv::primitivGetMessage(buffer, size as *mut _);
+                let buffer = CString::new(Vec::with_capacity(size)).unwrap().into_raw();
+                let s = _primitiv::primitivGetMessage(buffer, &mut size as *mut _);
                 assert!(Code::is_ok(s));
                 Err(Status::new(
                     code,
                     CString::from_raw(buffer).into_string().unwrap(),
-
-                    // CStr::from_ptr()
-                    //     .to_str()
-                    //     .unwrap()
-                    //     .to_string(),
                 ))
             },
         }
