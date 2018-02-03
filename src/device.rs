@@ -1,23 +1,26 @@
 use primitiv_sys as _primitiv;
+
+use ApiResult;
+use Result;
 use Status;
 use Wrap;
 
 use std::ptr;
 
 /// `Device` trait
-pub trait Device: Wrap<_primitiv::primitiv_Device> {}
+pub trait Device: Wrap<_primitiv::primitivDevice_t> {}
 
 macro_rules! impl_device {
     ($name:ident) => {
-        impl_wrap!($name, primitiv_Device);
-        impl_drop!($name, primitiv_Device_delete);
+        impl_wrap!($name, primitivDevice_t);
+        impl_drop!($name, primitivDeleteDevice);
         impl Device for $name {}
     }
 }
 
 #[derive(Debug)]
 pub struct AnyDevice {
-    inner: *mut _primitiv::primitiv_Device,
+    inner: *mut _primitiv::primitivDevice_t,
     owned: bool,
 }
 
@@ -25,6 +28,6 @@ impl_device!(AnyDevice);
 
 pub fn set_default<D: Device>(device: &mut D) {
     unsafe {
-        _primitiv::primitiv_Device_set_default(device.as_inner_mut_ptr());
+        check_api_status!(_primitiv::primitivSetDefaultDevice(device.as_mut_ptr()));
     }
 }

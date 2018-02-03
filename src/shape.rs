@@ -6,45 +6,54 @@ use Wrap;
 
 #[derive(Debug)]
 pub struct Shape {
-    inner: *mut _primitiv::primitiv_Shape,
+    inner: *mut _primitiv::primitivShape_t,
 }
 
-impl_wrap_owned!(Shape, primitiv_Shape);
-impl_drop!(Shape, primitiv_Shape_delete);
+impl_wrap_owned!(Shape, primitivShape_t);
+impl_drop!(Shape, primitivDeleteShape);
 
 impl Shape {
     pub fn new() -> Self {
-        unsafe { Shape { inner: _primitiv::primitiv_Shape_new() } }
+        unsafe {
+            let mut shape_ptr: *mut _primitiv::primitivShape_t = ptr::null_mut();
+            check_api_status!(_primitiv::primitivCreateShape(&mut shape_ptr));
+            assert!(!shape_ptr.is_null());
+            Shape { inner: shape_ptr }
+        }
     }
 
-    pub fn from_dims(dims: &[u32], batch: u32) -> Result<Self> {
+    pub fn from_dims(dims: &[u32], batch: u32) -> Self {
         unsafe {
-            let mut shape_ptr: *mut _primitiv::primitiv_Shape = ptr::null_mut();
-            Result::from_api_status(
-                _primitiv::primitiv_Shape_new_with_dims(
+            let mut shape_ptr: *mut _primitiv::primitivShape_t = ptr::null_mut();
+            check_api_status!(
+                _primitiv::primitivCreateShapeWithDims(
                     dims.as_ptr() as *const _,
                     dims.len(),
                     batch,
                     &mut shape_ptr,
-                ),
-                shape_ptr,
-            ).map(|ptr| {
-                assert!(!ptr.is_null());
-                Shape { inner: ptr }
-            })
+                )
+            );
+            //     shape_ptr,
+            // ).map(|ptr| {
+            //     assert!(!ptr.is_null());
+            //     Shape { inner: ptr }
+            // })
+            Shape { inner: shape_ptr }
         }
     }
 
+    /*
     pub fn size(&self) -> usize {
         unsafe { _primitiv::primitiv_Shape_size(self.as_inner_ptr()) as usize }
     }
+    */
 }
 
 macro_rules! impl_array_into_shape {
     ($num:expr) => {
         impl Into<Shape> for [u32; $num] {
             fn into(self) -> Shape {
-                Shape::from_dims(&self, 1).unwrap()
+                Shape::from_dims(&self, 1)
             }
         }
     }
@@ -63,7 +72,7 @@ macro_rules! impl_tuple_into_shape {
     ($num:expr) => {
         impl Into<Shape> for ([u32; $num], u32) {
             fn into(self) -> Shape {
-                Shape::from_dims(&self.0, self.1).unwrap()
+                Shape::from_dims(&self.0, self.1)
             }
         }
     }
