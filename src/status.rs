@@ -12,6 +12,8 @@ use std::fmt::Display;
 use std::fmt::Formatter;
 use std::fmt;
 use std::mem;
+use std::os::raw::c_char;
+use std::ptr;
 use std::result;
 use std::str::Utf8Error;
 use Wrap;
@@ -42,7 +44,7 @@ impl Code {
     fn from_int(value: c_uint) -> Self {
         match value {
             0 => Code::Ok,
-            1 => Code::Error,
+            4294967295 => Code::Error,
             c => Code::UnrecognizedEnumValue(c),
         }
     }
@@ -51,16 +53,23 @@ impl Code {
         match self {
             &Code::UnrecognizedEnumValue(c) => c, 
             &Code::Ok => 0,
-            &Code::Error => 1,
+            &Code::Error => 4294967295,
         }
     }
 
-    fn to_c(&self) -> _primitiv::primitiv_Status {
+    fn to_c(&self) -> _primitiv::PRIMITIV_C_STATUS {
         unsafe { mem::transmute(self.to_int()) }
     }
 
-    fn from_c(value: _primitiv::primitiv_Status) -> Self {
+    fn from_c(value: _primitiv::PRIMITIV_C_STATUS) -> Self {
         Self::from_int(value as c_uint)
+    }
+
+    fn is_ok(value: c_uint) -> bool {
+        match value {
+            0 => true,
+            _ => false,
+        }
     }
 }
 
@@ -103,15 +112,31 @@ impl<T> ApiResult<T, Status> for result::Result<T, Status> {
         match code {
             Code::Ok => Ok(ok_val),
             _ => unsafe {
+                let size: u32 = 0;
+                let s = _primitiv::primitivGetMessage(ptr::null_mut(), size as *mut _);
+                assert!(Code::is_ok(s));
+                // let buffer = Vec<c_char>::with_capacity(size as usize)
+                // let buffer = Vec<c_char>::with_capacity(size as usize)
+                let buffer = CString::new(Vec::with_capacity(size as usize)).unwrap().into_raw();
+                let s = _primitiv::primitivGetMessage(buffer, size as *mut _);
+                assert!(Code::is_ok(s));
                 Err(Status::new(
                     code,
-                    CStr::from_ptr(_primitiv::primitiv_Status_get_message())
-                        .to_str()
-                        .unwrap()
-                        .to_string(),
+                    CString::from_raw(buffer).into_string().unwrap(),
+
+                    // CStr::from_ptr()
+                    //     .to_str()
+                    //     .unwrap()
+                    //     .to_string(),
                 ))
             },
         }
+    }
+}
+
+macro_rules! check_api_status {
+    ($status:expr) => {
+        Result::from_api_status($status, 0).unwrap();
     }
 }
 
