@@ -233,3 +233,10 @@ impl Tensor {
         }
     }
 }
+
+impl AsRef<Tensor> for Tensor {
+    #[inline]
+    fn as_ref(&self) -> &Tensor {
+        self
+    }
+}
