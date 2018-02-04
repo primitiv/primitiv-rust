@@ -44,7 +44,7 @@ impl Shape {
     }
 
     /// Returns the size of the i-th dimension.
-    fn at(&self, i: u32) -> u32 {
+    pub fn at(&self, i: u32) -> u32 {
         unsafe {
             let mut retval: u32 = 0;
             check_api_status!(_primitiv::primitivGetShapeDimSize(
@@ -139,7 +139,7 @@ impl Shape {
     }
 
     /// Checks whether the shape has minibatch or not.
-    fn has_batch(&self) -> bool {
+    pub fn has_batch(&self) -> bool {
         unsafe {
             let mut retval: u32 = 0;
             check_api_status!(_primitiv::primitivHasShapeBatch(
@@ -151,7 +151,7 @@ impl Shape {
     }
 
     /// Checks whether two batch size is compatible (broadcastable) or not.
-    fn has_compatible_batch(&self, other: &Shape) -> bool {
+    pub fn has_compatible_batch(&self, other: &Shape) -> bool {
         unsafe {
             let mut retval: u32 = 0;
             check_api_status!(_primitiv::primitivHasShapeCompatibleBatch(
@@ -164,7 +164,7 @@ impl Shape {
     }
 
     /// Checks whether the shape is a scalar or not.
-    fn is_scalar(&self) -> bool {
+    pub fn is_scalar(&self) -> bool {
         unsafe {
             let mut retval: u32 = 0;
             check_api_status!(_primitiv::primitivIsShapeScalar(
@@ -176,7 +176,7 @@ impl Shape {
     }
 
     /// Checks whether the shape is a column vector or not.
-    fn is_column_vector(&self) -> bool {
+    pub fn is_column_vector(&self) -> bool {
         unsafe {
             let mut retval: u32 = 0;
             check_api_status!(_primitiv::primitivIsShapeColumnVector(
@@ -188,7 +188,7 @@ impl Shape {
     }
 
     /// Checks whether the shape is a vector or a matrix, or not.
-    fn is_matrix(&self) -> bool {
+    pub fn is_matrix(&self) -> bool {
         unsafe {
             let mut retval: u32 = 0;
             check_api_status!(_primitiv::primitivIsShapeMatrix(
@@ -200,7 +200,7 @@ impl Shape {
     }
 
     /// Checks whether two shapes have completely same dimensions.
-    fn has_same_dims(&self, other: &Shape) -> bool {
+    pub fn has_same_dims(&self, other: &Shape) -> bool {
         unsafe {
             let mut retval: u32 = 0;
             check_api_status!(_primitiv::primitivHasShapeSameDims(
@@ -213,7 +213,7 @@ impl Shape {
     }
 
     /// Checks whether two shapes have same dimensions without an axis. (LOO: leave one out)
-    fn has_same_loo_dims(&self, other: &Shape, dim: u32) -> bool {
+    pub fn has_same_loo_dims(&self, other: &Shape, dim: u32) -> bool {
         unsafe {
             let mut retval: u32 = 0;
             check_api_status!(_primitiv::primitivHasShapeSameLooDims(
@@ -227,7 +227,7 @@ impl Shape {
     }
 
     /// Creates a new shape which have one different dimension.
-    fn resize_dim(&self, dim: u32, m: u32) -> Shape {
+    pub fn resize_dim(&self, dim: u32, m: u32) -> Shape {
         unsafe {
             let mut shape_ptr: *mut _primitiv::primitivShape_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivResizeShapeDim(
@@ -241,7 +241,7 @@ impl Shape {
     }
 
     /// Creates a new shape which have specified batch size.
-    fn resize_batch(&self, batch: u32) -> Shape {
+    pub fn resize_batch(&self, batch: u32) -> Shape {
         unsafe {
             let mut shape_ptr: *mut _primitiv::primitivShape_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivResizeShapeBatch(
@@ -254,14 +254,14 @@ impl Shape {
     }
 
     /// Directly updates a specified dimension.
-    fn update_dim(&mut self, dim: u32, m: u32) {
+    pub fn update_dim(&mut self, dim: u32, m: u32) {
         unsafe {
             check_api_status!(_primitiv::primitivUpdateShapeDim(self.as_mut_ptr(), dim, m));
         }
     }
 
     /// Directly updates the batch size.
-    fn update_batch(&mut self, batch: u32) {
+    pub fn update_batch(&mut self, batch: u32) {
         unsafe {
             check_api_status!(_primitiv::primitivUpdateShapeBatchSize(
                 self.as_mut_ptr(),
