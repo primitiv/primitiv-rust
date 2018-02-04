@@ -10,13 +10,15 @@ use Tensor;
 use Wrap;
 
 /// Pointer of a node in the computation graph.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Node {
     inner: *mut _primitiv::primitivNode_t,
 }
 
 impl_wrap_owned!(Node, primitivNode_t);
 impl_drop!(Node, primitivDeleteNode);
+
+// TODO: impl Clone
 
 impl Node {
     /// Creates a new Node object.
@@ -33,7 +35,10 @@ impl Node {
     pub fn graph(&self, node: &Node) -> Graph {
         unsafe {
             let mut graph_ptr: *mut _primitiv::primitivGraph_t = ptr::null_mut();
-            check_api_status!(_primitiv::primitivGetGraphFromNode(self.as_ptr(), &mut graph_ptr));
+            check_api_status!(_primitiv::primitivGetGraphFromNode(
+                self.as_ptr(),
+                &mut graph_ptr,
+            ));
             Graph::from_raw(graph_ptr as *mut _, false)
         }
     }
@@ -42,7 +47,10 @@ impl Node {
     pub fn valid(&self) -> bool {
         unsafe {
             let mut retval: u32 = 0;
-            check_api_status!(_primitiv::primitivIsValidNode(self.as_ptr(), &mut retval as *mut _));
+            check_api_status!(_primitiv::primitivIsValidNode(
+                self.as_ptr(),
+                &mut retval as *mut _,
+            ));
             retval == 1
         }
     }
@@ -51,7 +59,10 @@ impl Node {
     pub fn operator_id(&self) -> u32 {
         unsafe {
             let mut retval: u32 = 0;
-            check_api_status!(_primitiv::primitivGetNodeOperatorId(self.as_ptr(), &mut retval as *mut _));
+            check_api_status!(_primitiv::primitivGetNodeOperatorId(
+                self.as_ptr(),
+                &mut retval as *mut _,
+            ));
             retval
         }
     }
@@ -60,7 +71,10 @@ impl Node {
     pub fn value_id(&self) -> u32 {
         unsafe {
             let mut retval: u32 = 0;
-            check_api_status!(_primitiv::primitivGetNodeValueId(self.as_ptr(), &mut retval as *mut _));
+            check_api_status!(_primitiv::primitivGetNodeValueId(
+                self.as_ptr(),
+                &mut retval as *mut _,
+            ));
             retval
         }
     }
@@ -69,27 +83,38 @@ impl Node {
     pub fn shape(&self) -> Shape {
         unsafe {
             let mut shape_ptr: *mut _primitiv::primitivShape_t = ptr::null_mut();
-            check_api_status!(_primitiv::primitivGetNodeShape(self.as_ptr(), &mut shape_ptr));
+            check_api_status!(_primitiv::primitivGetNodeShape(
+                self.as_ptr(),
+                &mut shape_ptr,
+            ));
             Shape::from_raw(shape_ptr as *mut _, true)
         }
     }
 
     /// Returns device of the node.
-    pub fn device(&self, node: &Node) -> AnyDevice {
+    pub fn device(&self) -> AnyDevice {
         unsafe {
             let mut device_ptr: *mut _primitiv::primitivDevice_t = ptr::null_mut();
-            check_api_status!(_primitiv::primitivGetDeviceFromNode(self.as_ptr(), &mut device_ptr));
+            check_api_status!(_primitiv::primitivGetDeviceFromNode(
+                self.as_ptr(),
+                &mut device_ptr,
+            ));
             AnyDevice::from_raw(device_ptr as *mut _, false)
         }
     }
 
     /// Calculates the value of this node and returns a float.
     ///
-    /// Remark: This function calls Graph::forward() internally. This function can be used only when the Node has a scalar and non-minibatched shape (i.e., shape() == Shape()).
+    /// Remark: This function calls Graph::forward() internally.
+    /// This function can be used only when the Node has a scalar and non-minibatched shape
+    /// (i.e., shape() == Shape())
     pub fn to_float(&self) -> f32 {
         unsafe {
             let mut retval: f32 = 0.0;
-            check_api_status!(_primitiv::primitivEvaluateNodeAsFloat(self.as_ptr(), &mut retval as *mut _));
+            check_api_status!(_primitiv::primitivEvaluateNodeAsFloat(
+                self.as_ptr(),
+                &mut retval as *mut _,
+            ));
             retval
         }
     }
@@ -100,9 +125,17 @@ impl Node {
             // Use a vector as a C-style array because it must be a contiguous array actually.
             // See: https://doc.rust-lang.org/book/first-edition/vectors.html
             let mut size: usize = 0;
-            check_api_status!(_primitiv::primitivEvaluateNodeAsArray(self.as_ptr(), ptr::null_mut(), &mut size as *mut _));
+            check_api_status!(_primitiv::primitivEvaluateNodeAsArray(
+                self.as_ptr(),
+                ptr::null_mut(),
+                &mut size as *mut _,
+            ));
             let mut retval = vec![0f32; size];
-            check_api_status!(_primitiv::primitivEvaluateNodeAsArray(self.as_ptr(), retval.as_mut_ptr(), &mut size as *mut _));
+            check_api_status!(_primitiv::primitivEvaluateNodeAsArray(
+                self.as_ptr(),
+                retval.as_mut_ptr(),
+                &mut size as *mut _,
+            ));
             retval
         }
     }
@@ -111,9 +144,19 @@ impl Node {
     pub fn argmax(&self, dim: u32) -> Vec<u32> {
         unsafe {
             let mut size: usize = 0;
-            check_api_status!(_primitiv::primitivGetNodeArgmax(self.as_ptr(), dim, ptr::null_mut(), &mut size as *mut _));
+            check_api_status!(_primitiv::primitivGetNodeArgmax(
+                self.as_ptr(),
+                dim,
+                ptr::null_mut(),
+                &mut size as *mut _,
+            ));
             let mut retval = vec![0u32; size];
-            check_api_status!(_primitiv::primitivGetNodeArgmax(self.as_ptr(), dim, retval.as_mut_ptr(), &mut size as *mut _));
+            check_api_status!(_primitiv::primitivGetNodeArgmax(
+                self.as_ptr(),
+                dim,
+                retval.as_mut_ptr(),
+                &mut size as *mut _,
+            ));
             retval
         }
     }
@@ -122,9 +165,19 @@ impl Node {
     pub fn argmin(&self, dim: u32) -> Vec<u32> {
         unsafe {
             let mut size: usize = 0;
-            check_api_status!(_primitiv::primitivGetNodeArgmin(self.as_ptr(), dim, ptr::null_mut(), &mut size as *mut _));
+            check_api_status!(_primitiv::primitivGetNodeArgmin(
+                self.as_ptr(),
+                dim,
+                ptr::null_mut(),
+                &mut size as *mut _,
+            ));
             let mut retval = vec![0u32; size];
-            check_api_status!(_primitiv::primitivGetNodeArgmin(self.as_ptr(), dim, retval.as_mut_ptr(), &mut size as *mut _));
+            check_api_status!(_primitiv::primitivGetNodeArgmin(
+                self.as_ptr(),
+                dim,
+                retval.as_mut_ptr(),
+                &mut size as *mut _,
+            ));
             retval
         }
     }
@@ -155,14 +208,16 @@ impl_wrap!(Graph, primitivGraph_t);
 impl_drop!(Graph, primitivDeleteGraph);
 
 impl Graph {
-
     /// Creates a new Graph object.
     pub fn new() -> Self {
         unsafe {
             let mut inner: *mut _primitiv::primitivGraph_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivCreateGraph(&mut inner));
             assert!(!inner.is_null());
-            Graph { inner: inner, owned: true }
+            Graph {
+                inner: inner,
+                owned: true,
+            }
         }
     }
 
@@ -175,7 +230,8 @@ impl Graph {
 
     /// Clear all operators in the graph.
     ///
-    /// Remark: After calling this method, all Node objects supplied by the graph itself is invalidated.
+    /// Remark: After calling this method, all Node objects supplied by the graph itself is
+    /// invalidated.
     pub fn clear(&mut self) {
         unsafe {
             check_api_status!(_primitiv::primitivClearGraph(self.as_mut_ptr()));
@@ -186,7 +242,11 @@ impl Graph {
     pub fn forward(&mut self, node: &Node) -> Tensor {
         unsafe {
             let mut tensor_ptr: *const _primitiv::primitivTensor_t = ptr::null_mut();
-            check_api_status!(_primitiv::primitivExecuteGraphForward(self.as_mut_ptr(), node.as_ptr(), &mut tensor_ptr));
+            check_api_status!(_primitiv::primitivExecuteGraphForward(
+                self.as_mut_ptr(),
+                node.as_ptr(),
+                &mut tensor_ptr,
+            ));
             Tensor::from_raw(tensor_ptr as *mut _, false)
         }
     }
@@ -194,7 +254,10 @@ impl Graph {
     /// Calculates the backpropagation.
     pub fn backward(&mut self, node: &Node) {
         unsafe {
-            check_api_status!(_primitiv::primitivExecuteGraphBackward(self.as_mut_ptr(), node.as_ptr()));
+            check_api_status!(_primitiv::primitivExecuteGraphBackward(
+                self.as_mut_ptr(),
+                node.as_ptr(),
+            ));
         }
     }
 
@@ -202,7 +265,11 @@ impl Graph {
     pub fn get_shape(&self, node: &Node) -> Shape {
         unsafe {
             let mut shape_ptr: *mut _primitiv::primitivShape_t = ptr::null_mut();
-            check_api_status!(_primitiv::primitivGetGraphShape(self.as_ptr(), node.as_ptr(), &mut shape_ptr));
+            check_api_status!(_primitiv::primitivGetGraphShape(
+                self.as_ptr(),
+                node.as_ptr(),
+                &mut shape_ptr,
+            ));
             Shape::from_raw(shape_ptr as *mut _, true)
         }
     }
@@ -211,7 +278,11 @@ impl Graph {
     pub fn get_device(&self, node: &Node) -> AnyDevice {
         unsafe {
             let mut device_ptr: *mut _primitiv::primitivDevice_t = ptr::null_mut();
-            check_api_status!(_primitiv::primitivGetDeviceFromGraph(self.as_ptr(), node.as_ptr(), &mut device_ptr));
+            check_api_status!(_primitiv::primitivGetDeviceFromGraph(
+                self.as_ptr(),
+                node.as_ptr(),
+                &mut device_ptr,
+            ));
             AnyDevice::from_raw(device_ptr as *mut _, false)
         }
     }
@@ -227,9 +298,19 @@ impl Graph {
             let format_c = CString::new(format).unwrap();
             let format_ptr = format_c.as_ptr();
             let mut size: usize = 0;
-            check_api_status!(_primitiv::primitivDumpGraph(self.as_ptr(), format_ptr, ptr::null_mut(), &mut size as *mut _));
+            check_api_status!(_primitiv::primitivDumpGraph(
+                self.as_ptr(),
+                format_ptr,
+                ptr::null_mut(),
+                &mut size as *mut _,
+            ));
             let buffer = CString::new(Vec::with_capacity(size)).unwrap().into_raw();
-            check_api_status!(_primitiv::primitivDumpGraph(self.as_ptr(), format_ptr, buffer, &mut size as *mut _));
+            check_api_status!(_primitiv::primitivDumpGraph(
+                self.as_ptr(),
+                format_ptr,
+                buffer,
+                &mut size as *mut _,
+            ));
             CString::from_raw(buffer).into_string().unwrap()
         }
     }
@@ -238,7 +319,10 @@ impl Graph {
     pub fn num_operators(&self) -> u32 {
         unsafe {
             let mut retval: u32 = 0;
-            check_api_status!(_primitiv::primitivGetGraphNumOperators(self.as_ptr(), &mut retval as *mut _));
+            check_api_status!(_primitiv::primitivGetGraphNumOperators(
+                self.as_ptr(),
+                &mut retval as *mut _,
+            ));
             retval
         }
     }
