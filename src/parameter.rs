@@ -48,7 +48,7 @@ impl Parameter {
             let mut parameter_ptr: *mut _primitiv::primitivParameter_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivCreateParameterWithValues(
                 shape.into().as_ptr(),
-                value.as_ptr() as *const _,
+                value.as_ptr(),
                 value.len(),
                 device.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
                 &mut parameter_ptr,
@@ -104,7 +104,7 @@ impl Parameter {
             check_api_status!(_primitiv::primitivInitializeParameterWithValues(
                 self.as_mut_ptr(),
                 shape.into().as_ptr(),
-                value.as_ptr() as *const _,
+                value.as_ptr(),
                 value.len(),
                 device.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
             ));

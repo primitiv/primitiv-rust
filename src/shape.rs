@@ -34,7 +34,7 @@ impl Shape {
         unsafe {
             let mut shape_ptr: *mut _primitiv::primitivShape_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivCreateShapeWithDims(
-                dims.as_ptr() as *const _,
+                dims.as_ptr(),
                 dims.len(),
                 batch,
                 &mut shape_ptr,
