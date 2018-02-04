@@ -38,7 +38,8 @@ impl Node {
                 self.as_ptr(),
                 &mut graph_ptr,
             ));
-            Graph::from_raw(graph_ptr as *mut _, false)
+            assert!(!graph_ptr.is_null());
+            Graph::from_raw(graph_ptr, false)
         }
     }
 
@@ -86,7 +87,8 @@ impl Node {
                 self.as_ptr(),
                 &mut shape_ptr,
             ));
-            Shape::from_raw(shape_ptr as *mut _, true)
+            assert!(!shape_ptr.is_null());
+            Shape::from_raw(shape_ptr, true)
         }
     }
 
@@ -98,7 +100,8 @@ impl Node {
                 self.as_ptr(),
                 &mut device_ptr,
             ));
-            AnyDevice::from_raw(device_ptr as *mut _, false)
+            assert!(!device_ptr.is_null());
+            AnyDevice::from_raw(device_ptr, false)
         }
     }
 
@@ -246,6 +249,7 @@ impl Graph {
                 node.as_ptr(),
                 &mut tensor_ptr,
             ));
+            assert!(!tensor_ptr.is_null());
             Tensor::from_raw(tensor_ptr as *mut _, false)
         }
     }
@@ -269,7 +273,8 @@ impl Graph {
                 node.as_ptr(),
                 &mut shape_ptr,
             ));
-            Shape::from_raw(shape_ptr as *mut _, true)
+            assert!(!shape_ptr.is_null());
+            Shape::from_raw(shape_ptr, true)
         }
     }
 
@@ -282,7 +287,8 @@ impl Graph {
                 node.as_ptr(),
                 &mut device_ptr,
             ));
-            AnyDevice::from_raw(device_ptr as *mut _, false)
+            assert!(!device_ptr.is_null());
+            AnyDevice::from_raw(device_ptr, false)
         }
     }
 

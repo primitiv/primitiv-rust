@@ -52,7 +52,8 @@ impl Tensor {
                 self.as_ptr(),
                 &mut shape_ptr,
             ));
-            Shape::from_raw(shape_ptr as *mut _, true)
+            assert!(!shape_ptr.is_null());
+            Shape::from_raw(shape_ptr, true)
         }
     }
 
@@ -64,7 +65,8 @@ impl Tensor {
                 self.as_ptr(),
                 &mut device_ptr,
             ));
-            AnyDevice::from_raw(device_ptr as *mut _, false)
+            assert!(!device_ptr.is_null());
+            AnyDevice::from_raw(device_ptr, false)
         }
     }
 
