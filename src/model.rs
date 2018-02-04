@@ -33,11 +33,11 @@ impl Model {
 
     /// Loads all parameters from a file.
     pub fn load(&mut self, path: &str, with_stats: bool) {
-        self.load_into::<AnyDevice>(path, with_stats, None);
+        self.load_on::<AnyDevice>(path, with_stats, None);
     }
 
     /// Loads all parameters from a file.
-    pub fn load_into<D: Device>(&mut self, path: &str, with_stats: bool, device: Option<&mut D>) {
+    pub fn load_on<D: Device>(&mut self, path: &str, with_stats: bool, device: Option<&mut D>) {
         unsafe {
             let path_c = CString::new(path).unwrap();
             let path_ptr = path_c.as_ptr();

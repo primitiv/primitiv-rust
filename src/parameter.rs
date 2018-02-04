@@ -35,11 +35,11 @@ impl Parameter {
 
     /// Creates a new Parameter object.
     pub fn from_values<S: Into<Shape>>(shape: S, value: &[f32]) -> Self {
-        Self::from_values_with_device::<S, AnyDevice>(shape, value, None)
+        Self::from_values_on::<S, AnyDevice>(shape, value, None)
     }
 
     /// Creates a new Parameter object.
-    pub fn from_values_with_device<S: Into<Shape>, D: Device>(
+    pub fn from_values_on<S: Into<Shape>, D: Device>(
         shape: S,
         value: &[f32],
         device: Option<&mut D>,
@@ -63,11 +63,11 @@ impl Parameter {
 
     /// Creates a new Parameter object.
     pub fn from_initializer<S: Into<Shape>, I: Initializer>(shape: S, initializer: &I) -> Self {
-        Self::from_initializer_with_device::<S, AnyDevice, I>(shape, initializer, None)
+        Self::from_initializer_on::<S, AnyDevice, I>(shape, initializer, None)
     }
 
     /// Creates a new Parameter object.
-    pub fn from_initializer_with_device<S: Into<Shape>, D: Device, I: Initializer>(
+    pub fn from_initializer_on<S: Into<Shape>, D: Device, I: Initializer>(
         shape: S,
         initializer: &I,
         device: Option<&mut D>,
@@ -90,11 +90,11 @@ impl Parameter {
 
     /// Initializes the Parameter object.
     pub fn init_by_values<S: Into<Shape>>(&mut self, shape: S, value: &[f32]) {
-        self.init_by_values_with_device::<S, AnyDevice>(shape, value, None);
+        self.init_by_values_on::<S, AnyDevice>(shape, value, None);
     }
 
     /// Initializes the Parameter object.
-    pub fn init_by_values_with_device<S: Into<Shape>, D: Device>(
+    pub fn init_by_values_on<S: Into<Shape>, D: Device>(
         &mut self,
         shape: S,
         value: &[f32],
@@ -117,11 +117,11 @@ impl Parameter {
         shape: S,
         initializer: &I,
     ) {
-        self.init_by_initializer_with_device::<S, AnyDevice, I>(shape, initializer, None);
+        self.init_by_initializer_on::<S, AnyDevice, I>(shape, initializer, None);
     }
 
     /// Initializes the Parameter object.
-    pub fn init_by_initializer_with_device<S: Into<Shape>, D: Device, I: Initializer>(
+    pub fn init_by_initializer_on<S: Into<Shape>, D: Device, I: Initializer>(
         &mut self,
         shape: S,
         initializer: &I,
@@ -139,11 +139,11 @@ impl Parameter {
 
     /// Loads parameters from specified file.
     pub fn load(&mut self, path: &str, with_stats: bool) {
-        self.load_into::<AnyDevice>(path, with_stats, None);
+        self.load_on::<AnyDevice>(path, with_stats, None);
     }
 
     /// Loads parameters from specified file.
-    pub fn load_into<D: Device>(&mut self, path: &str, with_stats: bool, device: Option<&mut D>) {
+    pub fn load_on<D: Device>(&mut self, path: &str, with_stats: bool, device: Option<&mut D>) {
         unsafe {
             let path_c = CString::new(path).unwrap();
             let path_ptr = path_c.as_ptr();
