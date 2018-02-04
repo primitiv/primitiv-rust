@@ -4,7 +4,6 @@ use std::ptr;
 use devices::AnyDevice;
 use ApiResult;
 use Shape;
-use Status;
 use Tensor;
 use Wrap;
 
@@ -31,7 +30,7 @@ impl Node {
     }
 
     /// Returns corresponding Graph object.
-    pub fn graph(&self, node: &Node) -> Graph {
+    pub fn graph(&self) -> Graph {
         unsafe {
             let mut graph_ptr: *mut _primitiv::primitivGraph_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivGetGraphFromNode(
