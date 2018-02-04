@@ -120,6 +120,12 @@ impl XavierUniform {
     }
 }
 
+impl Default for XavierUniform {
+    fn default() -> Self {
+        Self::new(1.0)
+    }
+}
+
 /// The Xavier matrix initialization with the normal distribution.
 #[derive(Debug)]
 pub struct XavierNormal {
@@ -140,6 +146,12 @@ impl XavierNormal {
             assert!(!initializer_ptr.is_null());
             XavierNormal { inner: initializer_ptr }
         }
+    }
+}
+
+impl Default for XavierNormal {
+    fn default() -> Self {
+        Self::new(1.0)
     }
 }
 
@@ -166,6 +178,12 @@ impl XavierUniformConv2D {
     }
 }
 
+impl Default for XavierUniformConv2D {
+    fn default() -> Self {
+        Self::new(1.0)
+    }
+}
+
 /// The Xavier initialization with the normal distribution for conv2d filters.
 #[derive(Debug)]
 pub struct XavierNormalConv2D {
@@ -186,5 +204,11 @@ impl XavierNormalConv2D {
             assert!(!initializer_ptr.is_null());
             XavierNormalConv2D { inner: initializer_ptr }
         }
+    }
+}
+
+impl Default for XavierNormalConv2D {
+    fn default() -> Self {
+        Self::new(1.0)
     }
 }
