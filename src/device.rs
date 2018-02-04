@@ -1,11 +1,6 @@
 use primitiv_sys as _primitiv;
-
 use ApiResult;
-use Result;
-use Status;
 use Wrap;
-
-use std::ptr;
 
 /// `Device` trait
 pub trait Device: Wrap<_primitiv::primitivDevice_t> {}
@@ -17,14 +12,6 @@ macro_rules! impl_device {
         impl Device for $name {}
     }
 }
-
-#[derive(Debug)]
-pub struct AnyDevice {
-    inner: *mut _primitiv::primitivDevice_t,
-    owned: bool,
-}
-
-impl_device!(AnyDevice);
 
 pub fn set_default<D: Device>(device: &mut D) {
     unsafe {

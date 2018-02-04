@@ -1,10 +1,9 @@
 use primitiv_sys as _primitiv;
 use std::ptr;
-use AnyDevice;
 use ApiResult;
+use devices::AnyDevice;
 use Result;
 use Shape;
-use Status;
 use Wrap;
 
 /// Value with any dimensions.

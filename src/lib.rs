@@ -102,12 +102,13 @@ mod status;
 pub use status::*;
 
 #[macro_use]
-mod device;
-pub use device::*;
+pub mod device;
+// pub use device::*;
 mod graph;
 pub use graph::*;
-// mod initializer;
-// pub use initializer::*;
+#[macro_use]
+mod initializer;
+pub use initializer::*;
 // mod parameter;
 // pub use parameter::*;
 mod shape;
@@ -123,6 +124,6 @@ pub use tensor::*;
 // // pub use functions::node_funcs as node_functions;
 // // pub use functions::tensor_funcs as tensor_functions;
 //
-// pub mod devices;
-// pub mod initializers;
+pub mod devices;
+pub mod initializers;
 // // pub mod optimizers;

@@ -1,13 +1,29 @@
 use primitiv_sys as _primitiv;
-use Device;
+use std::ptr;
+use ApiResult;
+use device::Device;
 use Wrap;
 
 /// Device class for the naive function implementations on CPU.
 #[derive(Debug)]
 pub struct Naive {
-    inner: *mut _primitiv::primitiv_Device,
+    inner: *mut _primitiv::primitivDevice_t,
     owned: bool,
 }
 
 impl_device!(Naive);
-impl_new!(Naive, primitiv_devices_Naive_new);
+
+impl Naive {
+    /// Creates a Naive object.
+    pub fn new() -> Self {
+        unsafe {
+            let mut device_ptr: *mut _primitiv::primitivDevice_t = ptr::null_mut();
+            check_api_status!(_primitiv::primitivCreateNaiveDevice(&mut device_ptr));
+            assert!(!device_ptr.is_null());
+            Naive {
+                inner: device_ptr,
+                owned: true,
+            }
+        }
+    }
+}

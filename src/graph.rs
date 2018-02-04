@@ -1,9 +1,8 @@
 use primitiv_sys as _primitiv;
 use std::ffi::CString;
 use std::ptr;
-use AnyDevice;
+use devices::AnyDevice;
 use ApiResult;
-use Result;
 use Shape;
 use Status;
 use Tensor;
