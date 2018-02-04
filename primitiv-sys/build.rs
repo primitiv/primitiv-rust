@@ -24,13 +24,12 @@ fn build() -> Result<(), Box<Error>> {
 
     let mut builder = bindgen::Builder::default()
         .clang_arg(format!("-I{}", include_dir))
-        .header(format!("{}/primitiv_c/api.h", include_dir))
+        .header(format!("{}/primitiv/c/api.h", include_dir))
         .rustfmt_bindings(false)
         .generate_comments(false);
 
     if cfg!(feature = "cuda") {
-        builder = builder
-            .header(format!("{}/primitiv_c/api_cuda.h", include_dir));
+        builder = builder.header(format!("{}/primitiv/c/api_cuda.h", include_dir));
     }
 
     builder
