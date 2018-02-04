@@ -8,6 +8,3 @@ build = "build.rs"
 
 [build-dependencies]
 bindgen = "0.31"
-
-[features]
-cuda = []

@@ -26,4 +26,20 @@ impl Naive {
             }
         }
     }
+
+    /// Creates a Naive object.
+    pub fn new_with_seed(rng_seed: u32) -> Self {
+        unsafe {
+            let mut device_ptr: *mut _primitiv::primitivDevice_t = ptr::null_mut();
+            check_api_status!(_primitiv::primitivCreateNaiveDeviceWithSeed(
+                rng_seed,
+                &mut device_ptr,
+            ));
+            assert!(!device_ptr.is_null());
+            Naive {
+                inner: device_ptr,
+                owned: true,
+            }
+        }
+    }
 }
