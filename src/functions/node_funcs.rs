@@ -11,10 +11,10 @@ use Shape;
 use Wrap;
 
 macro_rules! node_func_body {
-    ($api:ident, $($arg:expr),* ) => {
+    ($api_fn:ident, $($arg:expr),* ) => {
         unsafe {
             let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
-            check_api_status!(_primitiv::$api(
+            check_api_status!(_primitiv::$api_fn(
                 $($arg),*,
                 &mut node_ptr,
             ));
@@ -25,38 +25,59 @@ macro_rules! node_func_body {
 }
 
 macro_rules! impl_node_unary_func {
-    ($name:ident, $api:ident) => {
+    ($name:ident, $api_fn:ident) => {
         pub fn $name<N: AsRef<Node>>(x: N) -> Node {
-            unsafe {
-                let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
-                check_api_status!(_primitiv::$api(x.as_ref().as_ptr(), &mut node_ptr));
-                assert!(!node_ptr.is_null());
-                Node::from_raw(node_ptr, true)
+            node_func_body!($api_fn, x.as_ref().as_ptr())
+        }
+    }
+}
+
+macro_rules! impl_node_binary_func {
+    ($name:ident,
+     $api_fn:ident,
+     $name_xc:ident,
+     $api_fn_xc:ident,
+     $name_cx:ident,
+     $api_fn_cx:ident) => {
+        pub fn $name<N: AsRef<Node>>(a: N, b: N) -> Node {
+            node_func_body!($api_fn, a.as_ref().as_ptr(), b.as_ref().as_ptr())
+        }
+
+        pub fn $name_xc<N: AsRef<Node>>(x: N, k: f32) -> Node {
+            node_func_body!($api_fn_xc, x.as_ref().as_ptr(), k)
+        }
+
+        pub fn $name_cx<N: AsRef<Node>>(k: f32, x: N) -> Node {
+            node_func_body!($api_fn_cx, k, x.as_ref().as_ptr())
+        }
+    }
+}
+
+macro_rules! impl_node_unary_op {
+    ($name:ident,
+     $op_fn:ident,
+     $api_fn:ident) => {
+        impl ops::$name for Node {
+            type Output = Node;
+
+            fn $op_fn(self) -> Node {
+                node_func_body!($api_fn, self.as_ptr())
             }
         }
     }
 }
 
-macro_rules! impl_node_scalar_op {
+macro_rules! impl_node_binary_with_constant_op {
     ($scalar:ty,
      $name:ident,
      $op_fn:ident,
-     $api_nc_fn:ident,
-     $api_cn_fn:ident) => {
+     $api_fn_xc:ident,
+     $api_fn_cx:ident) => {
         impl ops::$name<$scalar> for Node {
             type Output = Node;
 
             fn $op_fn(self, rhs: $scalar) -> Node {
-                unsafe {
-                    let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
-                    check_api_status!(_primitiv::primitivApplyNodeAddXC(
-                        self.as_ptr(),
-                        rhs as f32,
-                        &mut node_ptr,
-                    ));
-                    assert!(!node_ptr.is_null());
-                    Node::from_raw(node_ptr, true)
-                }
+                node_func_body!($api_fn_xc, self.as_ptr(), rhs as f32)
             }
         }
 
@@ -64,52 +85,34 @@ macro_rules! impl_node_scalar_op {
             type Output = Node;
 
             fn $op_fn(self, rhs: Node) -> Node {
-                unsafe {
-                    let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
-                    check_api_status!(_primitiv::primitivApplyNodeAddCX(
-                        self as f32,
-                        rhs.as_ptr(),
-                        &mut node_ptr,
-                    ));
-                    assert!(!node_ptr.is_null());
-                    Node::from_raw(node_ptr, true)
-                }
+                node_func_body!($api_fn_cx, self as f32, rhs.as_ptr())
             }
         }
     }
 }
 
-macro_rules! impl_bin_node_op {
+macro_rules! impl_node_binary_op {
     ($name:ident,
      $op_fn:ident,
-     $api_nc_fn:ident,
-     $api_cn_fn:ident,
-     $api_nn_fn:ident) => {
-        impl_node_scalar_op!(i8, $name, $op_fn, $api_nc_fn, $api_cn_fn);
-        impl_node_scalar_op!(u8, $name, $op_fn, $api_nc_fn, $api_cn_fn);
-        impl_node_scalar_op!(i16, $name, $op_fn, $api_nc_fn, $api_cn_fn);
-        impl_node_scalar_op!(u16, $name, $op_fn, $api_nc_fn, $api_cn_fn);
-        impl_node_scalar_op!(i32, $name, $op_fn, $api_nc_fn, $api_cn_fn);
-        impl_node_scalar_op!(u32, $name, $op_fn, $api_nc_fn, $api_cn_fn);
-        impl_node_scalar_op!(i64, $name, $op_fn, $api_nc_fn, $api_cn_fn);
-        impl_node_scalar_op!(u64, $name, $op_fn, $api_nc_fn, $api_cn_fn);
-        impl_node_scalar_op!(f32, $name, $op_fn, $api_nc_fn, $api_cn_fn);
-        impl_node_scalar_op!(f64, $name, $op_fn, $api_nc_fn, $api_cn_fn);
+     $api_fn:ident,
+     $api_fn_xc:ident,
+     $api_fn_cx:ident) => {
+        impl_node_binary_with_constant_op!(i8, $name, $op_fn, $api_fn_xc, $api_fn_cx);
+        impl_node_binary_with_constant_op!(u8, $name, $op_fn, $api_fn_xc, $api_fn_cx);
+        impl_node_binary_with_constant_op!(i16, $name, $op_fn, $api_fn_xc, $api_fn_cx);
+        impl_node_binary_with_constant_op!(u16, $name, $op_fn, $api_fn_xc, $api_fn_cx);
+        impl_node_binary_with_constant_op!(i32, $name, $op_fn, $api_fn_xc, $api_fn_cx);
+        impl_node_binary_with_constant_op!(u32, $name, $op_fn, $api_fn_xc, $api_fn_cx);
+        impl_node_binary_with_constant_op!(i64, $name, $op_fn, $api_fn_xc, $api_fn_cx);
+        impl_node_binary_with_constant_op!(u64, $name, $op_fn, $api_fn_xc, $api_fn_cx);
+        impl_node_binary_with_constant_op!(f32, $name, $op_fn, $api_fn_xc, $api_fn_cx);
+        impl_node_binary_with_constant_op!(f64, $name, $op_fn, $api_fn_xc, $api_fn_cx);
 
-        impl ops::$name<Node> for Node {
+        impl ops::$name for Node {
             type Output = Node;
 
             fn $op_fn(self, rhs: Node) -> Node {
-                unsafe {
-                    let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
-                    check_api_status!(_primitiv::$api_nn_fn(
-                        self.as_ptr(),
-                        rhs.as_ptr(),
-                        &mut node_ptr,
-                    ));
-                    assert!(!node_ptr.is_null());
-                    Node::from_raw(node_ptr, true)
-                }
+                node_func_body!($api_fn, self.as_ptr(), rhs.as_ptr())
             }
         }
 
@@ -117,16 +120,7 @@ macro_rules! impl_bin_node_op {
             type Output = Node;
 
             fn $op_fn(self, rhs: Node) -> Node {
-                unsafe {
-                    let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
-                    check_api_status!(_primitiv::$api_nn_fn(
-                        self.as_ptr(),
-                        rhs.as_ptr(),
-                        &mut node_ptr,
-                    ));
-                    assert!(!node_ptr.is_null());
-                    Node::from_raw(node_ptr, true)
-                }
+                node_func_body!($api_fn, self.as_ptr(), rhs.as_ptr())
             }
         }
 
@@ -134,16 +128,7 @@ macro_rules! impl_bin_node_op {
             type Output = Node;
 
             fn $op_fn(self, rhs: &'a Node) -> Node {
-                unsafe {
-                    let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
-                    check_api_status!(_primitiv::$api_nn_fn(
-                        self.as_ptr(),
-                        rhs.as_ptr(),
-                        &mut node_ptr,
-                    ));
-                    assert!(!node_ptr.is_null());
-                    Node::from_raw(node_ptr, true)
-                }
+                node_func_body!($api_fn, self.as_ptr(), rhs.as_ptr())
             }
         }
 
@@ -151,53 +136,86 @@ macro_rules! impl_bin_node_op {
             type Output = Node;
 
             fn $op_fn(self, rhs: &'a Node) -> Node {
-                unsafe {
-                    let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
-                    check_api_status!(_primitiv::$api_nn_fn(
-                        self.as_ptr(),
-                        rhs.as_ptr(),
-                        &mut node_ptr,
-                    ));
-                    assert!(!node_ptr.is_null());
-                    Node::from_raw(node_ptr, true)
-                }
+                node_func_body!($api_fn, self.as_ptr(), rhs.as_ptr())
             }
         }
-
     }
 }
 
 impl_node_unary_func!(positive, primitivApplyNodePositive);
 impl_node_unary_func!(negative, primitivApplyNodeNegative);
-
-impl_bin_node_op!(
+impl_node_unary_op!(Neg, neg, primitivApplyNodeNegative);
+impl_node_binary_func!(
+    add,
+    primitivApplyNodeAdd,
+    add_const,
+    primitivApplyNodeAddXC,
+    add_node,
+    primitivApplyNodeAddCX
+);
+impl_node_binary_op!(
     Add,
     add,
+    primitivApplyNodeAdd,
     primitivApplyNodeAddXC,
-    primitivApplyNodeAddCX,
-    primitivApplyNodeAdd
+    primitivApplyNodeAddCX
 );
-impl_bin_node_op!(
+impl_node_binary_func!(
+    subtract,
+    primitivApplyNodeSubtract,
+    subtract_const,
+    primitivApplyNodeSubtractXC,
+    subtract_node,
+    primitivApplyNodeSubtractCX
+);
+impl_node_binary_op!(
     Sub,
     sub,
+    primitivApplyNodeSubtract,
     primitivApplyNodeSubtractXC,
-    primitivApplyNodeSubtractCX,
-    primitivApplyNodeSubtract
+    primitivApplyNodeSubtractCX
 );
-impl_bin_node_op!(
+impl_node_binary_func!(
+    multiply,
+    primitivApplyNodeMultiply,
+    multiply_const,
+    primitivApplyNodeMultiplyXC,
+    multiply_node,
+    primitivApplyNodeMultiplyCX
+);
+impl_node_binary_op!(
     Mul,
     mul,
+    primitivApplyNodeMultiply,
     primitivApplyNodeMultiplyXC,
-    primitivApplyNodeMultiplyCX,
-    primitivApplyNodeMultiply
+    primitivApplyNodeMultiplyCX
 );
-impl_bin_node_op!(
+impl_node_binary_func!(
+    divide,
+    primitivApplyNodeDivide,
+    divide_const,
+    primitivApplyNodeDivideXC,
+    divide_node,
+    primitivApplyNodeDivideCX
+);
+impl_node_binary_op!(
     Div,
     div,
+    primitivApplyNodeDivide,
     primitivApplyNodeDivideXC,
-    primitivApplyNodeDivideCX,
-    primitivApplyNodeDivide
+    primitivApplyNodeDivideCX
 );
+impl_node_binary_func!(
+    pow,
+    primitivApplyNodePow,
+    pow_const,
+    primitivApplyNodePowXC,
+    pow_node,
+    primitivApplyNodePowCX
+);
+pub fn pown<N: AsRef<Node>>(x: N, k: i32) -> Node {
+    node_func_body!(primitivApplyNodePown, x.as_ref().as_ptr(), k)
+}
 
 pub fn input<S: Into<Shape>>(shape: S, data: &[f32]) -> Node {
     input_into::<S, AnyDevice>(shape, data, None, None)
@@ -213,19 +231,14 @@ pub fn input_into<S: Into<Shape>, D: Device>(
     dev: Option<&mut D>,
     g: Option<&mut Graph>,
 ) -> Node {
-    unsafe {
-        let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
-        check_api_status!(_primitiv::primitivApplyNodeInput(
-            shape.into().as_ptr(),
-            data.as_ptr(),
-            data.len(),
-            dev.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
-            g.map(|_g| _g.as_mut_ptr()).unwrap_or(ptr::null_mut()),
-            &mut node_ptr,
-        ));
-        assert!(!node_ptr.is_null());
-        Node::from_raw(node_ptr, true)
-    }
+    node_func_body!(
+        primitivApplyNodeInput,
+        shape.into().as_ptr(),
+        data.as_ptr(),
+        data.len(),
+        dev.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
+        g.map(|_g| _g.as_mut_ptr()).unwrap_or(ptr::null_mut())
+    )
 }
 
 pub fn parameter(param: &mut Parameter) -> Node {
@@ -233,16 +246,11 @@ pub fn parameter(param: &mut Parameter) -> Node {
 }
 
 pub fn parameter_into(param: &mut Parameter, g: Option<&mut Graph>) -> Node {
-    unsafe {
-        let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
-        check_api_status!(_primitiv::primitivApplyNodeParameter(
-            param.as_mut_ptr(),
-            g.map(|_g| _g.as_mut_ptr()).unwrap_or(ptr::null_mut()),
-            &mut node_ptr,
-        ));
-        assert!(!node_ptr.is_null());
-        Node::from_raw(node_ptr, true)
-    }
+    node_func_body!(
+        primitivApplyNodeParameter,
+        param.as_mut_ptr(),
+        g.map(|_g| _g.as_mut_ptr()).unwrap_or(ptr::null_mut())
+    )
 }
 
 pub fn copy<N: AsRef<Node>>(x: N) -> Node {
@@ -250,90 +258,55 @@ pub fn copy<N: AsRef<Node>>(x: N) -> Node {
 }
 
 pub fn copy_on<N: AsRef<Node>, D: Device>(x: N, dev: Option<&mut D>) -> Node {
-    unsafe {
-        let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
-        check_api_status!(_primitiv::primitivApplyNodeCopy(
-            x.as_ref().as_ptr(),
-            dev.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
-            &mut node_ptr,
-        ));
-        assert!(!node_ptr.is_null());
-        Node::from_raw(node_ptr, true)
-    }
+    node_func_body!(
+        primitivApplyNodeCopy,
+        x.as_ref().as_ptr(),
+        dev.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut())
+    )
 }
 
 pub fn pick<N: AsRef<Node>>(x: N, ids: &[u32], dim: u32) -> Node {
-    unsafe {
-        let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
-        check_api_status!(_primitiv::primitivApplyNodePick(
-            x.as_ref().as_ptr(),
-            ids.as_ptr(),
-            ids.len(),
-            dim,
-            &mut node_ptr,
-        ));
-        assert!(!node_ptr.is_null());
-        Node::from_raw(node_ptr, true)
-    }
+    node_func_body!(
+        primitivApplyNodePick,
+        x.as_ref().as_ptr(),
+        ids.as_ptr(),
+        ids.len(),
+        dim
+    )
 }
 
 pub fn slice<N: AsRef<Node>>(x: N, dim: u32, lower: u32, upper: u32) -> Node {
-    unsafe {
-        let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
-        check_api_status!(_primitiv::primitivApplyNodeSlice(
-            x.as_ref().as_ptr(),
-            dim,
-            lower,
-            upper,
-            &mut node_ptr,
-        ));
-        assert!(!node_ptr.is_null());
-        Node::from_raw(node_ptr, true)
-    }
+    node_func_body!(
+        primitivApplyNodeSlice,
+        x.as_ref().as_ptr(),
+        dim,
+        lower,
+        upper
+    )
 }
 
 pub fn concat<N: AsRef<Node>>(xs: &[N], dim: u32) -> Node {
-    unsafe {
-        let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
-        let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
-        check_api_status!(_primitiv::primitivApplyNodeConcat(
-            x_ptrs.as_ptr(),
-            x_ptrs.len(),
-            dim,
-            &mut node_ptr,
-        ));
-        assert!(!node_ptr.is_null());
-        Node::from_raw(node_ptr, true)
-    }
+    let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
+    node_func_body!(primitivApplyNodeConcat, x_ptrs.as_ptr(), x_ptrs.len(), dim)
 }
 
 pub fn reshape<N: AsRef<Node>, S: Into<Shape>>(x: N, new_shape: S) -> Node {
-    unsafe {
-        let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
-        check_api_status!(_primitiv::primitivApplyNodeReshape(
-            x.as_ref().as_ptr(),
-            new_shape.into().as_ptr(),
-            &mut node_ptr,
-        ));
-        assert!(!node_ptr.is_null());
-        Node::from_raw(node_ptr, true)
-    }
+    node_func_body!(
+        primitivApplyNodeReshape,
+        x.as_ref().as_ptr(),
+        new_shape.into().as_ptr()
+    )
 }
 
 impl_node_unary_func!(flatten, primitivApplyNodeFlatten);
 impl_node_unary_func!(transpose, primitivApplyNodeTranspose);
 
 pub fn matmul<N: AsRef<Node>>(a: N, b: N) -> Node {
-    unsafe {
-        let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
-        check_api_status!(_primitiv::primitivApplyNodeMatmul(
-            a.as_ref().as_ptr(),
-            b.as_ref().as_ptr(),
-            &mut node_ptr,
-        ));
-        assert!(!node_ptr.is_null());
-        Node::from_raw(node_ptr, true)
-    }
+    node_func_body!(
+        primitivApplyNodeMatmul,
+        a.as_ref().as_ptr(),
+        b.as_ref().as_ptr()
+    )
 }
 
 impl_node_unary_func!(sqrt, primitivApplyNodeSqrt);
@@ -356,8 +329,24 @@ pub fn elu<N: AsRef<Node>>(x: N, a: f32) -> Node {
     node_func_body!(primitivApplyNodeElu, x.as_ref().as_ptr(), a)
 }
 
+impl_node_unary_func!(selu, primitivApplyNodeSelu);
+
 pub fn sum<N: AsRef<Node>>(x: N, dim: u32) -> Node {
     node_func_body!(primitivApplyNodeSum, x.as_ref().as_ptr(), dim)
+}
+
+pub fn sum_nodes<N: AsRef<Node>>(xs: &[N]) -> Node {
+    let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
+    node_func_body!(primitivApplyNodeSumNodes, x_ptrs.as_ptr(), x_ptrs.len())
+}
+
+pub fn mean<N: AsRef<Node>>(x: N, dim: u32) -> Node {
+    node_func_body!(primitivApplyNodeMean, x.as_ref().as_ptr(), dim)
+}
+
+pub fn mean_nodes<N: AsRef<Node>>(xs: &[N]) -> Node {
+    let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
+    node_func_body!(primitivApplyNodeMeanNodes, x_ptrs.as_ptr(), x_ptrs.len())
 }
 
 pub fn broadcast<N: AsRef<Node>>(x: N, dim: u32, size: u32) -> Node {
@@ -478,6 +467,57 @@ pub fn identity_into<D: Device>(size: u32, dev: Option<&mut D>, g: Option<&mut G
         size,
         dev.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
         g.map(|_g| _g.as_mut_ptr()).unwrap_or(ptr::null_mut())
+    )
+}
+
+pub fn zeros<S: Into<Shape>>(shape: S) -> Node {
+    zeros_into::<S, AnyDevice>(shape, None, None)
+}
+
+pub fn zeros_on<S: Into<Shape>, D: Device>(shape: S, dev: Option<&mut D>) -> Node {
+    zeros_into::<S, D>(shape, dev, None)
+}
+
+pub fn zeros_into<S: Into<Shape>, D: Device>(
+    shape: S,
+    dev: Option<&mut D>,
+    g: Option<&mut Graph>,
+) -> Node {
+    node_func_body!(
+        primitivApplyNodeZeros,
+        shape.into().as_ptr(),
+        dev.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
+        g.map(|_g| _g.as_mut_ptr()).unwrap_or(ptr::null_mut())
+    )
+}
+
+pub fn ones<S: Into<Shape>>(shape: S) -> Node {
+    ones_into::<S, AnyDevice>(shape, None, None)
+}
+
+pub fn ones_on<S: Into<Shape>, D: Device>(shape: S, dev: Option<&mut D>) -> Node {
+    ones_into::<S, D>(shape, dev, None)
+}
+
+pub fn ones_into<S: Into<Shape>, D: Device>(
+    shape: S,
+    dev: Option<&mut D>,
+    g: Option<&mut Graph>,
+) -> Node {
+    node_func_body!(
+        primitivApplyNodeOnes,
+        shape.into().as_ptr(),
+        dev.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
+        g.map(|_g| _g.as_mut_ptr()).unwrap_or(ptr::null_mut())
+    )
+}
+
+pub fn dropout<N: AsRef<Node>>(x: N, rate: f32, enabled: bool) -> Node {
+    node_func_body!(
+        primitivApplyNodeDropout,
+        x.as_ref().as_ptr(),
+        rate,
+        enabled as u32
     )
 }
 
@@ -636,64 +676,14 @@ pub mod random {
     }
 }
 
-/*
 pub mod batch {
     use primitiv_sys as _primitiv;
-    // use std::ptr;
+    use std::ptr;
     use ApiResult;
-    // use Device;
-    // use devices::AnyDevice;
-    // use Graph;
     use Node;
-    // use Parameter;
-    // use Shape;
     use Wrap;
-    // use Node;
-    // use Status;
-    // use Wrap;
 
-    pub fn mean<N: AsRef<Node>>(x: N) -> Node {
-        let mut status = Status::new();
-        unsafe {
-            let node = Node::from_inner_ptr(_primitiv::safe_primitiv_node_func_batch_mean(
-                x.as_ref().as_inner_ptr(),
-                status.as_inner_mut_ptr(),
-            ));
-            status.into_result().unwrap();
-            node
-        }
-    }
+    impl_node_unary_func!(sum, primitivApplyNodeBatchSum);
+    impl_node_unary_func!(mean, primitivApplyNodeBatchMean);
+    impl_node_unary_func!(normalize, primitivApplyNodeBatchNormalize);
 }
-
-pub fn softmax_cross_entropy<N: AsRef<Node>>(x: N, ids: &[u32], dim: u32) -> Node {
-    let mut status = Status::new();
-    unsafe {
-        let node = Node::from_inner_ptr(
-            _primitiv::safe_primitiv_node_func_softmax_cross_entropy_with_array(
-                x.as_ref().as_inner_ptr(),
-                ids.as_ptr() as *const _,
-                ids.len(),
-                dim,
-                status.as_inner_mut_ptr(),
-            ),
-        );
-        status.into_result().unwrap();
-        node
-    }
-}
-
-pub fn dropout<N: AsRef<Node>>(x: N, rate: f32, enabled: bool) -> Node {
-    let mut status = Status::new();
-    unsafe {
-        let node = Node::from_inner_ptr(_primitiv::safe_primitiv_node_func_dropout(
-            x.as_ref().as_inner_ptr(),
-            rate,
-            enabled as u8,
-            status.as_inner_mut_ptr(),
-        ));
-        status.into_result().unwrap();
-        node
-    }
-}
-
-*/
