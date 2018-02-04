@@ -1,3 +1,5 @@
+pub use super::device::set_default;
+
 mod any_device {
     use primitiv_sys as _primitiv;
     use device::Device;
