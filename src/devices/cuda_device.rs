@@ -29,6 +29,7 @@ impl CUDA {
             }
         }
     }
+
     /// Creates a new CUDA device.
     pub fn new_with_seed(device_id: u32, rng_seed: u32) -> Self {
         unsafe {
