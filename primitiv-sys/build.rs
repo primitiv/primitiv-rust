@@ -21,15 +21,11 @@ fn build() -> Result<(), Box<Error>> {
     println!("cargo:rustc-link-lib=dylib=primitiv_c");
     println!("cargo:rustc-link-search={}", lib_dir);
 
-    let mut builder = bindgen::Builder::default()
+    let builder = bindgen::Builder::default()
         .clang_arg(format!("-I{}", include_dir))
         .header(format!("{}/primitiv/c/api.h", include_dir))
         .rustfmt_bindings(false)
         .generate_comments(false);
-
-    if cfg!(feature = "cuda") {
-        builder = builder.header(format!("{}/primitiv/c/api_cuda.h", include_dir));
-    }
 
     builder
         .generate()

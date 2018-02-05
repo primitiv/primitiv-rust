@@ -1,10 +1,8 @@
 extern crate primitiv;
 
-use primitiv::device;
 use primitiv::Graph;
 use primitiv::Optimizer;
 use primitiv::Parameter;
-use primitiv::Shape;
 
 use primitiv::devices as D;
 use primitiv::functions as F;
@@ -13,7 +11,7 @@ use primitiv::optimizers as O;
 
 fn main() {
     let mut dev = D::Naive::new();
-    device::set_default(&mut dev);
+    D::set_default(&mut dev);
 
     let mut pw1 = Parameter::from_initializer([8, 2], &I::XavierUniform::new(1.0));
     let mut pb1 = Parameter::from_initializer([8], &I::Constant::new(0.0));

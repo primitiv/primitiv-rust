@@ -1,43 +1,21 @@
 use primitiv_sys as _primitiv;
-use Status;
+use ApiResult;
 use Wrap;
 
-pub trait Device: Wrap<_primitiv::primitiv_Device> {}
+/// `Device` trait
+pub trait Device: Wrap<_primitiv::primitivDevice_t> {}
 
-#[derive(Debug)]
-pub struct AnyDevice {
-    inner: *mut _primitiv::primitiv_Device,
-}
-
-impl_wrap!(AnyDevice, primitiv_Device);
-
-impl Drop for AnyDevice {
-    fn drop(&mut self) {
-        // An AnyDevice instance does not call internal destructor
-        // because its inner is actually reference and it does not own a device instance.
+macro_rules! impl_device {
+    ($name:ident) => {
+        impl_wrap!($name, primitivDevice_t);
+        impl_drop!($name, primitivDeleteDevice);
+        impl Device for $name {}
     }
 }
 
-impl Device for AnyDevice {}
-
-pub fn get_default() -> AnyDevice {
-    let mut status = Status::new();
-    unsafe {
-        let device = AnyDevice::from_inner_ptr(_primitiv::safe_primitiv_Device_get_default(
-            status.as_inner_mut_ptr(),
-        ));
-        status.into_result().unwrap();
-        device
-    }
-}
-
+#[allow(dead_code)]
 pub fn set_default<D: Device>(device: &mut D) {
-    let mut status = Status::new();
     unsafe {
-        _primitiv::safe_primitiv_Device_set_default(
-            device.as_inner_mut_ptr(),
-            status.as_inner_mut_ptr(),
-        );
-        status.into_result().unwrap();
+        check_api_status!(_primitiv::primitivSetDefaultDevice(device.as_mut_ptr()));
     }
 }

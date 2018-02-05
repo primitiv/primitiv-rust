@@ -4,39 +4,39 @@ use ApiResult;
 use device::Device;
 use Wrap;
 
-/// Device class for the naive function implementations on CPU.
+/// Device class for the Eigen3 backend.
 #[derive(Debug)]
-pub struct Naive {
+pub struct Eigen {
     inner: *mut _primitiv::primitivDevice_t,
     owned: bool,
 }
 
-impl_device!(Naive);
+impl_device!(Eigen);
 
-impl Naive {
-    /// Creates a Naive object.
+impl Eigen {
+    /// Creates a Eigen object.
     pub fn new() -> Self {
         unsafe {
             let mut device_ptr: *mut _primitiv::primitivDevice_t = ptr::null_mut();
-            check_api_status!(_primitiv::primitivCreateNaiveDevice(&mut device_ptr));
+            check_api_status!(_primitiv::primitivCreateEigenDevice(&mut device_ptr));
             assert!(!device_ptr.is_null());
-            Naive {
+            Eigen {
                 inner: device_ptr,
                 owned: true,
             }
         }
     }
 
-    /// Creates a Naive object.
+    /// Creates a Eigen object.
     pub fn new_with_seed(rng_seed: u32) -> Self {
         unsafe {
             let mut device_ptr: *mut _primitiv::primitivDevice_t = ptr::null_mut();
-            check_api_status!(_primitiv::primitivCreateNaiveDeviceWithSeed(
+            check_api_status!(_primitiv::primitivCreateEigenDeviceWithSeed(
                 rng_seed,
                 &mut device_ptr,
             ));
             assert!(!device_ptr.is_null());
-            Naive {
+            Eigen {
                 inner: device_ptr,
                 owned: true,
             }

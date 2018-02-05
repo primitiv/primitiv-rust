@@ -6,11 +6,9 @@ use std::fs::File;
 use std::io::{BufReader, Read, Seek, SeekFrom};
 use std::path::Path;
 
-use primitiv::device;
 use primitiv::Graph;
 use primitiv::Optimizer;
 use primitiv::Parameter;
-use primitiv::Shape;
 
 use primitiv::devices as D;
 use primitiv::functions as F;
@@ -54,13 +52,17 @@ fn main() {
     let test_inputs = load_images("data/t10k-images-idx3-ubyte", NUM_TEST_SAMPLES);
     let test_labels = load_labels("data/t10k-labels-idx1-ubyte", NUM_TEST_SAMPLES);
 
-    let mut dev = D::Naive::new();  // let mut dev = D::CUDA::new(0);
-    device::set_default(&mut dev);
+    let mut dev = D::Naive::new(); // let mut dev = D::CUDA::new(0);
+    D::set_default(&mut dev);
 
-    let mut pw1 = Parameter::from_initializer([NUM_HIDDEN_UNITS, NUM_INPUT_UNITS], &I::XavierUniform::new(1.0));
-    let mut pb1 = Parameter::from_initializer([NUM_HIDDEN_UNITS], &I::Constant::new(0.0));
-    let mut pw2 = Parameter::from_initializer([NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS], &I::XavierUniform::new(1.0));
-    let mut pb2 = Parameter::from_initializer([NUM_OUTPUT_UNITS], &I::Constant::new(0.0));
+    let mut pw1 = Parameter::from_initializer([NUM_HIDDEN_UNITS, NUM_INPUT_UNITS],
+                                              &I::XavierUniform::new(1.0));
+    let mut pb1 = Parameter::from_initializer([NUM_HIDDEN_UNITS],
+                                              &I::Constant::new(0.0));
+    let mut pw2 = Parameter::from_initializer([NUM_OUTPUT_UNITS, NUM_HIDDEN_UNITS],
+                                              &I::XavierUniform::new(1.0));
+    let mut pb2 = Parameter::from_initializer([NUM_OUTPUT_UNITS],
+                                              &I::Constant::new(0.0));
 
     let mut optimizer = O::SGD::new(0.5);
     optimizer.add_parameter(&mut pw1);
@@ -103,7 +105,7 @@ fn main() {
             g.clear();
 
             let y = make_graph(&inputs, true);
-            let loss = F::softmax_cross_entropy(y, &labels, 0);
+            let loss = F::softmax_cross_entropy_with_ids(y, &labels, 0);
             let avg_loss = F::batch::mean(loss);
 
             optimizer.reset_gradients();
