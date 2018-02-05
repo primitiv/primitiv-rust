@@ -213,8 +213,9 @@ impl_node_binary_func!(
     pow_node,
     primitivApplyNodePowCX
 );
+
 pub fn pown<N: AsRef<Node>>(x: N, k: i32) -> Node {
-    node_func_body!(primitivApplyNodePown, x.as_ref().as_ptr(), k)
+    node_func_body!(primitivApplyNodePowN, x.as_ref().as_ptr(), k)
 }
 
 pub fn input<S: Into<Shape>>(shape: S, data: &[f32]) -> Node {

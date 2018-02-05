@@ -212,8 +212,9 @@ impl_tensor_binary_func!(
     pow_tensor,
     primitivApplyTensorPowCX
 );
+
 pub fn pown<T: AsRef<Tensor>>(x: T, k: i32) -> Tensor {
-    tensor_func_body!(primitivApplyTensorPown, x.as_ref().as_ptr(), k)
+    tensor_func_body!(primitivApplyTensorPowN, x.as_ref().as_ptr(), k)
 }
 
 pub fn input<S: Into<Shape>>(shape: S, data: &[f32]) -> Tensor {
