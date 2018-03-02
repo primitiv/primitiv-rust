@@ -3,6 +3,7 @@ extern crate rand;
 
 use rand::{thread_rng, Rng};
 use std::cmp::min;
+use std::io::{stdout, Write};
 
 use primitiv::Graph;
 use primitiv::Model;
@@ -149,7 +150,7 @@ fn main() {
 
     // Sentence IDs.
     let mut train_ids = (0..num_train_sents).collect::<Vec<_>>();
-    let mut valid_ids = (0..num_valid_sents).collect::<Vec<_>>();
+    let valid_ids = (0..num_valid_sents).collect::<Vec<_>>();
 
     // Train/valid loop.
     for epoch in 0..MAX_EPOCH {
@@ -173,6 +174,7 @@ fn main() {
             optimizer.update();
 
             print!("{}\r", ofs);
+            stdout().flush().unwrap();
             ofs += BATCH_SIZE;
         }
 
@@ -192,6 +194,7 @@ fn main() {
             valid_loss += loss.to_float() * batch_ids.len() as f32;
 
             print!("{}\r", ofs);
+            stdout().flush().unwrap();
             ofs += BATCH_SIZE;
         }
 
