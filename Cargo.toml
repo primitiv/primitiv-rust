@@ -18,7 +18,12 @@ opencl = []
 
 [[example]]
 name = "xor"
+path = "examples/xor/xor.rs"
 
 [[example]]
 name = "mnist"
 path = "examples/mnist/mnist.rs"
+
+[[example]]
+name = "ptb_rnnlm"
+path = "examples/ptb/ptb_rnnlm.rs"
