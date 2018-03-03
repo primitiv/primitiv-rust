@@ -142,26 +142,26 @@ pub trait Optimizer: Wrap<_primitiv::primitivOptimizer_t> + Default {
     }
 
     /// Registers a model.
-    fn add_model(&mut self, param: &mut Model) {
+    fn add_model<M: AsMut<Model>>(&mut self, model: &mut M) {
         unsafe {
             check_api_status!(_primitiv::primitivAddModelToOptimizer(
                 self.as_mut_ptr(),
-                param.as_mut_ptr(),
+                model.as_mut().as_mut_ptr(),
             ));
         }
     }
 
     /// Registers multiple models.
-    fn add_models(&mut self, params: &mut [&mut Model]) {
+    fn add_models<M: AsMut<Model>>(&mut self, models: &mut [&mut M]) {
         unsafe {
-            let mut param_ptrs = params
+            let mut model_ptrs = models
                 .iter_mut()
-                .map(|param| param.as_mut_ptr())
+                .map(|model| model.as_mut().as_mut_ptr())
                 .collect::<Vec<_>>();
             check_api_status!(_primitiv::primitivAddModelsToOptimizer(
                 self.as_mut_ptr(),
-                param_ptrs.as_mut_ptr(),
-                param_ptrs.len(),
+                model_ptrs.as_mut_ptr(),
+                model_ptrs.len(),
             ));
         }
     }

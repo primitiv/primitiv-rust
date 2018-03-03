@@ -96,13 +96,18 @@ impl RNNLM {
         }
         F::batch::mean(F::sum_nodes(&losses))
     }
+}
 
-    #[allow(dead_code)]
-    pub fn get_model(&self) -> &Model {
+impl AsRef<Model> for RNNLM {
+    #[inline]
+    fn as_ref(&self) -> &Model {
         &self.model
     }
+}
 
-    pub fn get_model_mut(&mut self) -> &mut Model {
+impl AsMut<Model> for RNNLM {
+    #[inline]
+    fn as_mut(&mut self) -> &mut Model {
         &mut self.model
     }
 }
@@ -143,7 +148,7 @@ fn main() {
     let mut optimizer = O::Adam::default();
     optimizer.set_weight_decay(1e-6);
     optimizer.set_gradient_clipping(5.0);
-    optimizer.add_model(lm.get_model_mut());
+    optimizer.add_model(&mut lm);
 
     // Batch randomizer.
     let mut rng = thread_rng();

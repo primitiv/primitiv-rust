@@ -77,14 +77,14 @@ impl Model {
     }
 
     /// Registers a new submodel.
-    pub fn add_submodel(&mut self, name: &str, model: &mut Model) {
+    pub fn add_submodel<M: AsMut<Model>>(&mut self, name: &str, model: &mut M) {
         unsafe {
             let name_c = CString::new(name).unwrap();
             let name_ptr = name_c.as_ptr();
             check_api_status!(_primitiv::primitivAddSubmodelToModel(
                 self.as_mut_ptr(),
                 name_ptr,
-                model.as_mut_ptr(),
+                model.as_mut().as_mut_ptr(),
             ));
         }
     }
@@ -147,4 +147,18 @@ impl Model {
 
     // TODO: implement get_all_parameters()
     // TODO: implement get_trainable_parameters()
+}
+
+impl AsRef<Model> for Model {
+    #[inline]
+    fn as_ref(&self) -> &Model {
+        self
+    }
+}
+
+impl AsMut<Model> for Model {
+    #[inline]
+    fn as_mut(&mut self) -> &mut Model {
+        self
+    }
 }
