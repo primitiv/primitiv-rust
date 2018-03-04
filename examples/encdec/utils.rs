@@ -50,7 +50,7 @@ pub fn make_inv_vocab(vocab: &HashMap<String, u32>) -> Vec<&str> {
         .iter()
         .map(|(s, i)| (*i, &s[..]))
         .collect::<Vec<(u32, &str)>>();
-    vocab.sort_by(|a, b| a.1.cmp(&b.1));
+    vocab.sort_by(|a, b| a.0.cmp(&b.0));
     vocab.into_iter().map(|(_, s)| s).collect()
 }
 
