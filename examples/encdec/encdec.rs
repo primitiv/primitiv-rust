@@ -159,13 +159,11 @@ impl EncoderDecoder {
     }
 
     pub fn save<P: AsRef<Path>>(&self, path: P, with_stats: bool) -> Result<(), IOError> {
-        self.model.save(path.as_ref().to_str().unwrap(), with_stats);
-        Ok(())
+        self.model.save(path, with_stats)
     }
 
     pub fn load<P: AsRef<Path>>(&mut self, path: P, with_stats: bool) -> Result<(), IOError> {
-        self.model.load(path.as_ref().to_str().unwrap(), with_stats);
-        Ok(())
+        self.model.load(path, with_stats)
     }
 }
 
@@ -288,7 +286,7 @@ pub fn train<O: Optimizer>(
             print!("  saving model/optimizer ... ");
             stdout().flush().unwrap();
             encdec.save(format!("{}.model", prefix), true).unwrap();
-            optimizer.save(&format!("{}.optimizer", prefix));
+            optimizer.save(format!("{}.optimizer", prefix)).unwrap();
             save_ppl(format!("{}.valid_ppl", prefix), best_valid_ppl).unwrap();
             println!("done.");
         }
@@ -377,7 +375,7 @@ fn main() {
         let mut encdec = EncoderDecoder::new();
         encdec.load(format!("{}.model", prefix), true).unwrap();
         let mut optimizer = O::Adam::default();
-        optimizer.load(&format!("{}.optimizer", prefix));
+        optimizer.load(format!("{}.optimizer", prefix)).unwrap();
         let valid_ppl = load_ppl(format!("{}.valid_ppl", prefix)).unwrap();
         eprintln!("done.");
         train(&mut encdec, &mut optimizer, prefix, valid_ppl);

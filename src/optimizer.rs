@@ -1,5 +1,7 @@
 use primitiv_sys as _primitiv;
 use std::ffi::CString;
+use std::io;
+use std::path::Path;
 use ApiResult;
 use Parameter;
 use Model;
@@ -8,23 +10,32 @@ use Wrap;
 /// `Optimizer` trait
 pub trait Optimizer: Wrap<_primitiv::primitivOptimizer_t> + Default {
     /// Loads configurations from a file.
-    fn load(&mut self, path: &str) {
+    fn load<P: AsRef<Path>>(&mut self, path: P) -> io::Result<()> {
         unsafe {
-            let path_c = CString::new(path).unwrap();
+            let path_c = CString::new(path.as_ref().to_str().unwrap()).unwrap();
             let path_ptr = path_c.as_ptr();
-            check_api_status!(_primitiv::primitivLoadOptimizer(
+            Result::from_api_status(_primitiv::primitivLoadOptimizer(
                 self.as_mut_ptr(),
                 path_ptr,
-            ));
+                ),
+                (),
+            ).map_err(|status| {
+                io::Error::new(io::ErrorKind::Other, status.message())
+            })
         }
     }
 
     /// Saves current configurations to a file.
-    fn save(&self, path: &str) {
+    fn save<P: AsRef<Path>>(&self, path: P) -> io::Result<()> {
         unsafe {
-            let path_c = CString::new(path).unwrap();
+            let path_c = CString::new(path.as_ref().to_str().unwrap()).unwrap();
             let path_ptr = path_c.as_ptr();
-            check_api_status!(_primitiv::primitivSaveOptimizer(self.as_ptr(), path_ptr));
+            Result::from_api_status(
+                _primitiv::primitivSaveOptimizer(self.as_ptr(), path_ptr),
+                (),
+            ).map_err(|status| {
+                io::Error::new(io::ErrorKind::Other, status.message())
+            })
         }
     }
 

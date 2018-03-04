@@ -1,5 +1,7 @@
 use primitiv_sys as _primitiv;
 use std::ffi::CString;
+use std::io;
+use std::path::Path;
 use std::ptr;
 use ApiResult;
 use Device;
@@ -138,34 +140,49 @@ impl Parameter {
     }
 
     /// Loads parameters from specified file.
-    pub fn load(&mut self, path: &str, with_stats: bool) {
-        self.load_on::<AnyDevice>(path, with_stats, None);
+    pub fn load<P: AsRef<Path>>(&mut self, path: P, with_stats: bool) -> io::Result<()> {
+        self.load_on::<P, AnyDevice>(path, with_stats, None)
     }
 
     /// Loads parameters from specified file.
-    pub fn load_on<D: Device>(&mut self, path: &str, with_stats: bool, device: Option<&mut D>) {
+    pub fn load_on<P: AsRef<Path>, D: Device>(
+        &mut self,
+        path: P,
+        with_stats: bool,
+        device: Option<&mut D>,
+    ) -> io::Result<()> {
         unsafe {
-            let path_c = CString::new(path).unwrap();
+            let path_c = CString::new(path.as_ref().to_str().unwrap()).unwrap();
             let path_ptr = path_c.as_ptr();
-            check_api_status!(_primitiv::primitivLoadParameter(
-                self.as_mut_ptr(),
-                path_ptr,
-                with_stats as u32,
-                device.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
-            ));
+            Result::from_api_status(
+                _primitiv::primitivLoadParameter(
+                    self.as_mut_ptr(),
+                    path_ptr,
+                    with_stats as u32,
+                    device.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
+                ),
+                (),
+            ).map_err(|status| {
+                io::Error::new(io::ErrorKind::Other, status.message())
+            })
         }
     }
 
     /// Saves current parameters into specified file.
-    pub fn save(&self, path: &str, with_stats: bool) {
+    pub fn save<P: AsRef<Path>>(&self, path: P, with_stats: bool) -> io::Result<()> {
         unsafe {
-            let path_c = CString::new(path).unwrap();
+            let path_c = CString::new(path.as_ref().to_str().unwrap()).unwrap();
             let path_ptr = path_c.as_ptr();
-            check_api_status!(_primitiv::primitivSaveParameter(
+            Result::from_api_status(
+                _primitiv::primitivSaveParameter(
                 self.as_ptr(),
                 path_ptr,
                 with_stats as u32,
-            ));
+                ),
+                (),
+            ).map_err(|status| {
+                io::Error::new(io::ErrorKind::Other, status.message())
+            })
         }
     }
 
