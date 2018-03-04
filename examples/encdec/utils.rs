@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::io::{BufRead, Write};
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io;
 use std::path::Path;
 use std::process::exit;
@@ -135,7 +135,11 @@ where
 
 /// Helper to save current ppl.
 pub fn save_ppl<P: AsRef<Path>>(path: P, ppl: f32) -> Result<(), io::Error> {
-    let mut file = File::open(path.as_ref())?;
+    let mut file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(path.as_ref())?;
     write!(file, "{}", ppl)?;
     Ok(())
 }
