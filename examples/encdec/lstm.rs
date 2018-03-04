@@ -37,9 +37,9 @@ impl LSTM {
             h: Node::new(),
             c: Node::new(),
         };
-        m.model.add_parameter("pwxh", &mut m.pwxh);
-        m.model.add_parameter("pwhh", &mut m.pwhh);
-        m.model.add_parameter("pbh", &mut m.pbh);
+        m.model.add_parameter("wxh", &mut m.pwxh);
+        m.model.add_parameter("whh", &mut m.pwhh);
+        m.model.add_parameter("bh", &mut m.pbh);
         m
     }
 
