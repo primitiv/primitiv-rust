@@ -2,6 +2,7 @@ extern crate backtrace;
 use primitiv_sys as _primitiv;
 use libc::c_uint;
 use self::backtrace::Backtrace;
+use std::env;
 use std::ffi::CString;
 use std::fmt;
 use std::fmt::Debug;
@@ -105,18 +106,18 @@ impl Debug for Status {
         try!(write!(f, "Status: {{"));
         try!(write!(
             f,
-            "code: \"{}({})\", message: \"{}\", backtrace: \"\n",
+            "code: \"{}({})\", message: \"{}\"",
             self.code(),
             self.code().to_int(),
             self.message()
         ));
         match self.trace {
             Some(ref trace) => {
-                try!(write!(f, "{:?}", trace));
+                try!(write!(f, ", backtrace: \"\n{:?}\n\"", trace));
             }
             None => {}
         }
-        try!(write!(f, "\n\"}}"));
+        try!(write!(f, "}}"));
         Ok(())
     }
 }
@@ -141,7 +142,15 @@ impl<T> ApiResult<T, Status> for result::Result<T, Status> {
                 assert!(Code::is_ok(s));
                 let message = CString::from_raw(buffer).into_string().unwrap();
 
-                Err(Status::new(code, message, Some(trace)))
+                let enabled = match env::var_os("RUST_BACKTRACE") {
+                    Some(ref val) if val != "0" => true,
+                    _ => false,
+                };
+                Err(Status::new(
+                    code,
+                    message,
+                    if enabled { Some(trace) } else { None },
+                ))
             },
         }
     }
