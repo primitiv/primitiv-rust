@@ -14,16 +14,17 @@ pub fn make_vocab<P: AsRef<Path>>(path: P, size: usize) -> Result<HashMap<String
     let reader = io::BufReader::new(File::open(path.as_ref())?);
 
     // Counts all word existences.
-    let mut freq = HashMap::<String, u32>::new();
+    let mut freq = HashMap::<String, (u32, i32)>::new();
     reader.lines().for_each(|line| {
         line.unwrap().split(" ").for_each(|word| {
             let mut has_key = false;
-            if let Some(counter) = freq.get_mut(word) {
-                *counter += 1;
+            if let Some(value) = freq.get_mut(word) {
+                (*value).0 += 1;
                 has_key = true;
             }
             if !has_key {
-                freq.insert(word.to_string(), 1);
+                let index = freq.len() as i32;
+                freq.insert(word.to_string(), (1, -index));
             }
         })
     });
@@ -34,7 +35,7 @@ pub fn make_vocab<P: AsRef<Path>>(path: P, size: usize) -> Result<HashMap<String
     vocab.insert("<unk>".to_string(), 0);
     vocab.insert("<bos>".to_string(), 1);
     vocab.insert("<eos>".to_string(), 2);
-    let mut freq = freq.into_iter().collect::<Vec<(String, u32)>>();
+    let mut freq = freq.into_iter().collect::<Vec<(String, (u32, i32))>>();
     freq.sort_by(|a, b| b.1.cmp(&a.1));
     freq.into_iter()
         .enumerate()
@@ -47,10 +48,10 @@ pub fn make_vocab<P: AsRef<Path>>(path: P, size: usize) -> Result<HashMap<String
 pub fn make_inv_vocab(vocab: &HashMap<String, u32>) -> Vec<&str> {
     let mut vocab = vocab
         .iter()
-        .map(|(s, i)| (&s[..], *i))
-        .collect::<Vec<(&str, u32)>>();
+        .map(|(s, i)| (*i, &s[..]))
+        .collect::<Vec<(u32, &str)>>();
     vocab.sort_by(|a, b| a.1.cmp(&b.1));
-    vocab.into_iter().map(|(s, _)| s).collect()
+    vocab.into_iter().map(|(_, s)| s).collect()
 }
 
 /// Generates word ID list from a sentence.
