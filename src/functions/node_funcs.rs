@@ -39,7 +39,7 @@ macro_rules! impl_node_binary_func {
      $api_fn_xc:ident,
      $name_cx:ident,
      $api_fn_cx:ident) => {
-        pub fn $name<N: AsRef<Node>>(a: N, b: N) -> Node {
+        pub fn $name<N1: AsRef<Node>, N2: AsRef<Node>>(a: N1, b: N2) -> Node {
             node_func_body!($api_fn, a.as_ref().as_ptr(), b.as_ref().as_ptr())
         }
 
@@ -302,7 +302,7 @@ pub fn reshape<N: AsRef<Node>, S: Into<Shape>>(x: N, new_shape: S) -> Node {
 impl_node_unary_func!(flatten, primitivApplyNodeFlatten);
 impl_node_unary_func!(transpose, primitivApplyNodeTranspose);
 
-pub fn matmul<N: AsRef<Node>>(a: N, b: N) -> Node {
+pub fn matmul<N1: AsRef<Node>, N2: AsRef<Node>>(a: N1, b: N2) -> Node {
     node_func_body!(
         primitivApplyNodeMatmul,
         a.as_ref().as_ptr(),
@@ -366,7 +366,7 @@ pub fn softmax<N: AsRef<Node>>(x: N, dim: u32) -> Node {
     node_func_body!(primitivApplyNodeSoftmax, x.as_ref().as_ptr(), dim)
 }
 
-pub fn softmax_cross_entropy<N: AsRef<Node>>(x: N, t: N, dim: u32) -> Node {
+pub fn softmax_cross_entropy<N1: AsRef<Node>, N2: AsRef<Node>>(x: N1, t: N2, dim: u32) -> Node {
     node_func_body!(
         primitivApplyNodeSoftmaxCrossEntropy,
         x.as_ref().as_ptr(),
@@ -387,9 +387,9 @@ pub fn softmax_cross_entropy_with_ids<N: AsRef<Node>>(x: N, ids: &[u32], dim: u3
 
 impl_node_unary_func!(stop_gradient, primitivApplyNodeStopGradient);
 
-pub fn conv2d<N: AsRef<Node>>(
-    x: N,
-    w: N,
+pub fn conv2d<N1: AsRef<Node>, N2: AsRef<Node>>(
+    x: N1,
+    w: N2,
     padding0: u32,
     padding1: u32,
     stride0: u32,

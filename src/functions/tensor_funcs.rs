@@ -38,7 +38,7 @@ macro_rules! impl_tensor_binary_func {
      $api_fn_xc:ident,
      $name_cx:ident,
      $api_fn_cx:ident) => {
-        pub fn $name<T: AsRef<Tensor>>(a: T, b: T) -> Tensor {
+        pub fn $name<T1: AsRef<Tensor>, T2: AsRef<Tensor>>(a: T1, b: T2) -> Tensor {
             tensor_func_body!($api_fn, a.as_ref().as_ptr(), b.as_ref().as_ptr())
         }
 
@@ -288,7 +288,7 @@ pub fn reshape<T: AsRef<Tensor>, S: Into<Shape>>(x: T, new_shape: S) -> Tensor {
 impl_tensor_unary_func!(flatten, primitivApplyTensorFlatten);
 impl_tensor_unary_func!(transpose, primitivApplyTensorTranspose);
 
-pub fn matmul<T: AsRef<Tensor>>(a: T, b: T) -> Tensor {
+pub fn matmul<T1: AsRef<Tensor>, T2: AsRef<Tensor>>(a: T1, b: T2) -> Tensor {
     tensor_func_body!(
         primitivApplyTensorMatmul,
         a.as_ref().as_ptr(),
@@ -356,7 +356,11 @@ pub fn softmax<T: AsRef<Tensor>>(x: T, dim: u32) -> Tensor {
     tensor_func_body!(primitivApplyTensorSoftmax, x.as_ref().as_ptr(), dim)
 }
 
-pub fn softmax_cross_entropy<T: AsRef<Tensor>>(x: T, t: T, dim: u32) -> Tensor {
+pub fn softmax_cross_entropy<T1: AsRef<Tensor>, T2: AsRef<Tensor>>(
+    x: T1,
+    t: T2,
+    dim: u32,
+) -> Tensor {
     tensor_func_body!(
         primitivApplyTensorSoftmaxCrossEntropy,
         x.as_ref().as_ptr(),
@@ -377,9 +381,9 @@ pub fn softmax_cross_entropy_with_ids<T: AsRef<Tensor>>(x: T, ids: &[u32], dim: 
 
 impl_tensor_unary_func!(stop_gradient, primitivApplyTensorStopGradient);
 
-pub fn conv2d<T: AsRef<Tensor>>(
-    x: T,
-    w: T,
+pub fn conv2d<T1: AsRef<Tensor>, T2: AsRef<Tensor>>(
+    x: T1,
+    w: T2,
     padding0: u32,
     padding1: u32,
     stride0: u32,
