@@ -16,8 +16,6 @@ pub struct Shape {
 impl_wrap_owned!(Shape, primitivShape_t);
 impl_drop!(Shape, primitivDeleteShape);
 
-// TODO: impl Clone
-
 impl Shape {
     /// Creates a new scalar Shape object.
     pub fn new() -> Self {
@@ -267,6 +265,30 @@ impl Shape {
                 self.as_mut_ptr(),
                 batch,
             ));
+        }
+    }
+}
+
+impl Clone for Shape {
+    #[inline]
+    fn clone(&self) -> Self {
+        unsafe {
+            let mut shape_ptr: *mut _primitiv::primitivShape_t = ptr::null_mut();
+            check_api_status!(_primitiv::primitivCloneShape(self.as_ptr(), &mut shape_ptr));
+            Shape::from_raw(shape_ptr, true)
+        }
+    }
+
+    #[inline]
+    fn clone_from(&mut self, source: &Self) {
+        unsafe {
+            check_api_status!(_primitiv::primitivDeleteShape(self.inner));
+            let mut shape_ptr: *mut _primitiv::primitivShape_t = ptr::null_mut();
+            check_api_status!(_primitiv::primitivCloneShape(
+                source.as_ptr(),
+                &mut shape_ptr,
+            ));
+            self.inner = shape_ptr;
         }
     }
 }
