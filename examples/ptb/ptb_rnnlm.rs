@@ -22,7 +22,7 @@ const NUM_HIDDEN_UNITS: u32 = 256;
 const BATCH_SIZE: usize = 64;
 const MAX_EPOCH: u32 = 100;
 
-struct RNNLM {
+pub struct RNNLM {
     model: Model,
     pwlookup: Parameter,
     pwxs: Parameter,
