@@ -46,11 +46,12 @@ pub fn make_vocab<P: AsRef<Path>>(path: P, size: usize) -> Result<HashMap<String
 
 /// Generates ID-to-word dictionary.
 pub fn make_inv_vocab(vocab: &HashMap<String, u32>) -> Vec<&str> {
-    let mut ret: Vec<&str> = Vec::with_capacity(vocab.len());
-    for (key, value) in vocab {
-        ret[*value as usize] = &key;
-    }
-    ret
+    let mut vocab = vocab
+        .iter()
+        .map(|(s, i)| (&s[..], *i))
+        .collect::<Vec<(&str, u32)>>();
+    vocab.sort_by(|a, b| a.1.cmp(&b.1));
+    vocab.into_iter().map(|(s, _)| s).collect()
 }
 
 /// Generates word ID list from a sentence.
