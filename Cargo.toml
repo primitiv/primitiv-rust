@@ -27,3 +27,7 @@ path = "examples/mnist/mnist.rs"
 [[example]]
 name = "ptb_rnnlm"
 path = "examples/ptb/ptb_rnnlm.rs"
+
+[[example]]
+name = "encdec"
+path = "examples/encdec/encdec.rs"
