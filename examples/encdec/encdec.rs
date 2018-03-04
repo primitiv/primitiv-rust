@@ -4,7 +4,7 @@ extern crate rand;
 use rand::{thread_rng, Rng};
 use std::cmp::min;
 use std::env::args;
-use std::io::{stdin, stdout, Error as IOError, Read, Write};
+use std::io::{stdin, stdout, BufRead, Error as IOError, Write};
 use std::path::Path;
 use std::process::exit;
 
@@ -301,17 +301,20 @@ pub fn test(encdec: &mut EncoderDecoder) {
     let trg_vocab = make_vocab(TRG_TRAIN_FILE, TRG_VOCAB_SIZE).unwrap();
     let inv_trg_vocab = make_inv_vocab(&trg_vocab);
 
-    loop {
-        let mut line = String::new();
-        stdin().read_to_string(&mut line).unwrap();
-        let src_corpus = [line_to_sent(&line, &src_vocab)];
+    let mut g = Graph::new();
+    Graph::set_default(&mut g);
+
+    let stdin = stdin();
+    for line in stdin.lock().lines() {
+        let src_corpus = [line_to_sent(&line.unwrap(), &src_vocab)];
         let src_batch = make_batch(&src_corpus, &[0], &src_vocab);
+        g.clear();
         encdec.encode(&src_batch, false);
 
         // Generates target words one-by-one.
         let mut trg_ids = vec![trg_vocab["<bos>"]];
         let eos_id = trg_vocab["<eos>"];
-        while *trg_ids.last().unwrap() == eos_id {
+        while *trg_ids.last().unwrap() != eos_id {
             if trg_ids.len() > GENERATION_LIMIT + 1 {
                 eprintln!(
                     "Warning: Sentence generation did not finish in {} iterations.",
@@ -325,12 +328,12 @@ pub fn test(encdec: &mut EncoderDecoder) {
         }
 
         // Prints the result.
-        trg_ids.iter().enumerate().for_each(|(i, trg_id)| {
+        for i in 1..trg_ids.len() - 1 {
             if i > 1 {
                 print!(" ");
             }
-            print!("{}", inv_trg_vocab[*trg_id as usize]);
-        });
+            print!("{}", inv_trg_vocab[trg_ids[i] as usize]);
+        }
         println!();
     }
 }

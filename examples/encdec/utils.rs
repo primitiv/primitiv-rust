@@ -38,9 +38,8 @@ pub fn make_vocab<P: AsRef<Path>>(path: P, size: usize) -> Result<HashMap<String
     freq.sort_by(|a, b| b.1.cmp(&a.1));
     freq.into_iter()
         .enumerate()
-        .skip(3)
-        .take_while(|&(i, _)| i < size)
-        .for_each(|(i, x)| { vocab.insert(x.0, i as u32); });
+        .take_while(|&(i, _)| i < size - 3)
+        .for_each(|(i, x)| { vocab.insert(x.0, i as u32 + 3); });
     Ok(vocab)
 }
 
@@ -141,7 +140,7 @@ pub fn save_ppl<P: AsRef<Path>>(path: P, ppl: f32) -> Result<(), io::Error> {
         .write(true)
         .create(true)
         .open(path.as_ref())?;
-    write!(file, "{}", ppl)?;
+    writeln!(file, "{}", ppl)?;
     Ok(())
 }
 
@@ -150,5 +149,5 @@ pub fn load_ppl<P: AsRef<Path>>(path: P) -> Result<f32, io::Error> {
     let mut reader = io::BufReader::new(File::open(path.as_ref())?);
     let mut line = String::new();
     reader.read_line(&mut line)?;
-    Ok(line.parse::<f32>().unwrap())
+    Ok(line.trim().parse::<f32>().unwrap())
 }
