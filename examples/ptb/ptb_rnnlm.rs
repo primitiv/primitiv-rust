@@ -94,7 +94,7 @@ impl RNNLM {
                 0,
             ));
         }
-        F::batch::mean(F::sum_nodes(&losses))
+        F::batch::mean(F::sum_vars(&losses))
     }
 }
 

@@ -112,7 +112,7 @@ impl EncoderDecoder {
         Words: AsRef<[u32]>,
     {
         // Reversed encoding.
-        let src_lookup = F::parameter(&mut self.psrc_lookup);
+        let src_lookup = F::parameter::<Node>(&mut self.psrc_lookup);
         self.src_lstm.restart(None, None);
         for it in inputs.as_ref().iter().rev() {
             let x = F::pick(&src_lookup, it.as_ref(), 1);
@@ -155,7 +155,7 @@ impl EncoderDecoder {
                 0,
             ));
         }
-        F::batch::mean(F::sum_nodes(&losses))
+        F::batch::mean(F::sum_vars(&losses))
     }
 }
 
