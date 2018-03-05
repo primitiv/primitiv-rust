@@ -10,7 +10,7 @@ use Tensor;
 use Wrap;
 
 macro_rules! tensor_func_body {
-    ($api_fn:ident, $($arg:expr),* ) => {
+    ($api_fn:ident, $($arg:expr),*) => {
         unsafe {
             let mut tensor_ptr: *mut _primitiv::primitivTensor_t = ptr::null_mut();
             check_api_status!(_primitiv::$api_fn(

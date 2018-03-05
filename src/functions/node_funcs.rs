@@ -11,7 +11,7 @@ use Shape;
 use Wrap;
 
 macro_rules! node_func_body {
-    ($api_fn:ident, $($arg:expr),* ) => {
+    ($api_fn:ident, $($arg:expr),*) => {
         unsafe {
             let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
             check_api_status!(_primitiv::$api_fn(
