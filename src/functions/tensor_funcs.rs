@@ -80,10 +80,26 @@ macro_rules! impl_tensor_binary_with_constant_op {
             }
         }
 
+        impl<'a> ops::$name<$scalar> for &'a Tensor {
+            type Output = Tensor;
+
+            fn $op_fn(self, rhs: $scalar) -> Tensor {
+                tensor_func_body!($api_fn_xc, self.as_ptr(), rhs as f32)
+            }
+        }
+
         impl ops::$name<Tensor> for $scalar {
             type Output = Tensor;
 
             fn $op_fn(self, rhs: Tensor) -> Tensor {
+                tensor_func_body!($api_fn_cx, self as f32, rhs.as_ptr())
+            }
+        }
+
+        impl<'a> ops::$name<&'a Tensor> for $scalar {
+            type Output = Tensor;
+
+            fn $op_fn(self, rhs: &'a Tensor) -> Tensor {
                 tensor_func_body!($api_fn_cx, self as f32, rhs.as_ptr())
             }
         }
