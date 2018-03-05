@@ -178,3 +178,66 @@ impl AsMut<Model> for Model {
         self
     }
 }
+
+pub trait ModelImpl {
+    fn load<P: AsRef<Path>>(&mut self, path: P, with_stats: bool) -> io::Result<()>;
+
+    fn load_on<P: AsRef<Path>, D: Device>(
+        &mut self,
+        path: P,
+        with_stats: bool,
+        device: Option<&mut D>,
+    ) -> io::Result<()>;
+
+    fn save<P: AsRef<Path>>(&self, path: P, with_stats: bool) -> io::Result<()>;
+
+    fn add_parameter(&mut self, name: &str, param: &mut Parameter);
+
+    fn add_submodel<M: AsMut<Model>>(&mut self, name: &str, model: &mut M);
+}
+
+impl<T: AsRef<Model> + AsMut<Model>> ModelImpl for T {
+    fn load<P: AsRef<Path>>(&mut self, path: P, with_stats: bool) -> io::Result<()> {
+        Model::load(self.as_mut(), path, with_stats)
+    }
+
+    fn load_on<P: AsRef<Path>, D: Device>(
+        &mut self,
+        path: P,
+        with_stats: bool,
+        device: Option<&mut D>,
+    ) -> io::Result<()> {
+        Model::load_on(self.as_mut(), path, with_stats, device)
+    }
+
+    fn save<P: AsRef<Path>>(&self, path: P, with_stats: bool) -> io::Result<()> {
+        Model::save(self.as_ref(), path, with_stats)
+    }
+
+    fn add_parameter(&mut self, name: &str, param: &mut Parameter) {
+        Model::add_parameter(self.as_mut(), name, param)
+    }
+
+    fn add_submodel<M: AsMut<Model>>(&mut self, name: &str, model: &mut M) {
+        Model::add_submodel(self.as_mut(), name, model.as_mut())
+    }
+}
+
+#[macro_export]
+macro_rules! impl_model {
+    ($name:ident, $field:ident) => {
+        impl AsRef<Model> for $name {
+            #[inline]
+            fn as_ref(&self) -> &Model {
+                &self.$field
+            }
+        }
+
+        impl AsMut<Model> for $name {
+            #[inline]
+            fn as_mut(&mut self) -> &mut Model {
+                &mut self.$field
+            }
+        }
+    }
+}

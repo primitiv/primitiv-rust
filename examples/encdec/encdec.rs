@@ -4,12 +4,12 @@ extern crate rand;
 use rand::{thread_rng, Rng};
 use std::cmp::min;
 use std::env::args;
-use std::io::{stdin, stdout, BufRead, Error as IOError, Write};
-use std::path::Path;
+use std::io::{stdin, stdout, BufRead, Write};
 use std::process::exit;
 
 use primitiv::Graph;
 use primitiv::Model;
+use primitiv::ModelImpl;
 use primitiv::Node;
 use primitiv::Optimizer;
 use primitiv::Parameter;
@@ -156,14 +156,6 @@ impl EncoderDecoder {
             ));
         }
         F::batch::mean(F::sum_nodes(&losses))
-    }
-
-    pub fn save<P: AsRef<Path>>(&self, path: P, with_stats: bool) -> Result<(), IOError> {
-        self.model.save(path, with_stats)
-    }
-
-    pub fn load<P: AsRef<Path>>(&mut self, path: P, with_stats: bool) -> Result<(), IOError> {
-        self.model.load(path, with_stats)
     }
 }
 
