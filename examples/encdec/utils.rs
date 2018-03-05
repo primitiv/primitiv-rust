@@ -1,7 +1,7 @@
 use std::collections::HashMap;
-use std::io::{BufRead, Write};
 use std::fs::{File, OpenOptions};
 use std::io;
+use std::io::{BufRead, Write};
 use std::path::Path;
 use std::process::exit;
 

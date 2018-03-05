@@ -1,13 +1,14 @@
 use std::collections::HashMap;
 use std::fs::File;
+use std::io;
 use std::io::{BufReader, BufRead};
 use std::path::Path;
 
 // Common utility functions for PTB examples.
 
 // Gathers the set of words from space-separated corpus.
-pub fn make_vocab<P: AsRef<Path>>(filename: P) -> HashMap<String, u32> {
-    let reader = BufReader::new(File::open(filename.as_ref()).unwrap());
+pub fn make_vocab<P: AsRef<Path>>(filename: P) -> Result<HashMap<String, u32>, io::Error> {
+    let reader = BufReader::new(File::open(filename.as_ref())?);
     let mut vocab = HashMap::<String, u32>::new();
     for line in reader.lines() {
         let l = format!("<s>{}<s>", line.unwrap());
@@ -18,18 +19,21 @@ pub fn make_vocab<P: AsRef<Path>>(filename: P) -> HashMap<String, u32> {
             }
         }
     }
-    vocab
+    Ok(vocab)
 }
 
 // Generates word ID list using corpus and vocab.
-pub fn load_corpus<P: AsRef<Path>>(filename: P, vocab: &HashMap<String, u32>) -> Vec<Vec<u32>> {
-    let reader = BufReader::new(File::open(filename.as_ref()).unwrap());
+pub fn load_corpus<P: AsRef<Path>>(
+    filename: P,
+    vocab: &HashMap<String, u32>,
+) -> Result<Vec<Vec<u32>>, io::Error> {
+    let reader = BufReader::new(File::open(filename.as_ref())?);
     let mut corpus = vec![];
     for line in reader.lines() {
         let l = format!("<s>{}<s>", line.unwrap());
         corpus.push(l.split(" ").map(|word| vocab[word]).collect::<Vec<_>>());
     }
-    corpus
+    Ok(corpus)
 }
 
 // Counts output labels in the corpus.
