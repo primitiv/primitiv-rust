@@ -66,9 +66,9 @@ impl RNNLM {
     {
         let inputs = inputs.as_ref();
         let batch_size = inputs[0].as_ref().len() as u32;
-        let wlookup = F::parameter(&mut self.pwlookup);
-        let wxs = F::parameter(&mut self.pwxs);
-        let wsy = F::parameter(&mut self.pwsy);
+        let wlookup = F::parameter::<Node>(&mut self.pwlookup);
+        let wxs = F::parameter::<Node>(&mut self.pwxs);
+        let wsy = F::parameter::<Node>(&mut self.pwsy);
         let mut s = F::zeros(Shape::from_dims(&[NUM_HIDDEN_UNITS], batch_size));
         let mut outputs = vec![];
         for i in 0..inputs.len() - 1 {
