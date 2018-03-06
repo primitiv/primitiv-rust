@@ -12,9 +12,9 @@ primitiv-sys = { path = "primitiv-sys" }
 rand = "0.3"
 
 [features]
-eigen = []
-cuda = []
-opencl = []
+eigen = ["primitiv-sys/eigen"]
+cuda = ["primitiv-sys/cuda"]
+opencl = ["primitiv-sys/opencl"]
 
 [[example]]
 name = "xor"

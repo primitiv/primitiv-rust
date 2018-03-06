@@ -8,3 +8,8 @@ build = "build.rs"
 
 [build-dependencies]
 bindgen = "0.32"
+
+[features]
+eigen = []
+cuda = []
+opencl = []
