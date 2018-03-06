@@ -1,20 +1,25 @@
 [package]
 name = "primitiv"
-version = "0.1.0"
+version = "0.3.0"
 authors = ["Hiroki Teranishi <teranishihiroki@gmail.com>"]
+description = "A Neural Network Toolkit."
+keywords = ["deep-learning", "neural-networks", "machine-learning"]
+license = "Apache-2.0"
+repository = "https://github.com/primitiv/primitiv-rust"
+readme = "README.md"
 
 [dependencies]
 backtrace = "0.3"
 libc = "0.2"
-primitiv-sys = { path = "primitiv-sys" }
+primitiv-sys = { version = "0.3", path = "primitiv-sys" }
 
 [dev-dependencies]
 rand = "0.3"
 
 [features]
-eigen = []
-cuda = []
-opencl = []
+eigen = ["primitiv-sys/eigen"]
+cuda = ["primitiv-sys/cuda"]
+opencl = ["primitiv-sys/opencl"]
 
 [[example]]
 name = "xor"

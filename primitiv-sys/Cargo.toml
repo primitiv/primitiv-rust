@@ -1,10 +1,21 @@
 [package]
 name = "primitiv-sys"
-version = "0.1.0"
+version = "0.3.0"
 authors = ["Hiroki Teranishi <teranishihiroki@gmail.com>"]
+description = "The package provides bindings to primitiv."
+keywords = ["deep-learning", "neural-networks", "machine-learning", "primitiv"]
+license = "Apache-2.0"
+repository = "https://github.com/primitiv/primitiv-rust"
+readme = "README.md"
+
 build = "build.rs"
 
 [dependencies]
 
 [build-dependencies]
 bindgen = "0.32"
+
+[features]
+eigen = []
+cuda = []
+opencl = []
