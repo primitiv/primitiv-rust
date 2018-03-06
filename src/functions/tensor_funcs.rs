@@ -283,6 +283,25 @@ pub fn slice<T: AsRef<Tensor>>(x: T, dim: u32, lower: u32, upper: u32) -> Tensor
     )
 }
 
+pub fn split<N: AsRef<Tensor>>(x: N, dim: u32, n: u32) -> Vec<Tensor> {
+    unsafe {
+        let mut tensor_ptrs = vec![ptr::null_mut(); n as usize];
+        check_api_status!(_primitiv::primitivApplyTensorSplit(
+            x.as_ref().as_ptr(),
+            dim,
+            n,
+            tensor_ptrs.as_mut_ptr(),
+        ));
+        tensor_ptrs
+            .into_iter()
+            .map(|tensor_ptr| {
+                assert!(!tensor_ptr.is_null());
+                Tensor::from_raw(tensor_ptr, true)
+            })
+            .collect()
+    }
+}
+
 pub fn concat<T: AsRef<Tensor>>(xs: &[T], dim: u32) -> Tensor {
     let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
     tensor_func_body!(

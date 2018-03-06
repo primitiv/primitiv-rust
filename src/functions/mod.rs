@@ -10,6 +10,7 @@ pub use self::generics::{
     copy_on,
     pick,
     slice,
+    split,
     concat,
     reshape,
     flatten,

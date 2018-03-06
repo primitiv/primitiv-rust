@@ -302,6 +302,25 @@ pub fn slice<N: AsRef<Node>>(x: N, dim: u32, lower: u32, upper: u32) -> Node {
     )
 }
 
+pub fn split<N: AsRef<Node>>(x: N, dim: u32, n: u32) -> Vec<Node> {
+    unsafe {
+        let mut node_ptrs = vec![ptr::null_mut(); n as usize];
+        check_api_status!(_primitiv::primitivApplyNodeSplit(
+            x.as_ref().as_ptr(),
+            dim,
+            n,
+            node_ptrs.as_mut_ptr(),
+        ));
+        node_ptrs
+            .into_iter()
+            .map(|node_ptr| {
+                assert!(!node_ptr.is_null());
+                Node::from_raw(node_ptr, true)
+            })
+            .collect()
+    }
+}
+
 pub fn concat<N: AsRef<Node>>(xs: &[N], dim: u32) -> Node {
     let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
     node_func_body!(primitivApplyNodeConcat, x_ptrs.as_ptr(), x_ptrs.len(), dim)

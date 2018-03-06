@@ -17,6 +17,7 @@ pub trait Functions<Var> {
     fn copy_on<T: AsRef<Var>, D: Device>(x: T, dev: Option<&mut D>) -> Var;
     fn pick<T: AsRef<Var>>(x: T, ids: &[u32], dim: u32) -> Var;
     fn slice<T: AsRef<Var>>(x: T, dim: u32, lower: u32, upper: u32) -> Var;
+    fn split<T: AsRef<Var>>(x: T, dim: u32, n: u32) -> Vec<Var>;
     fn concat<T: AsRef<Var>>(xs: &[T], dim: u32) -> Var;
     fn reshape<T: AsRef<Var>, S: Into<Shape>>(x: T, new_shape: S) -> Var;
     fn flatten<T: AsRef<Var>>(x: T) -> Var;
@@ -169,6 +170,13 @@ where
     FuncImpls<Var>: Functions<Var>,
 {
     <FuncImpls<Var> as Functions<Var>>::slice(x, dim, lower, upper)
+}
+
+pub fn split<T: AsRef<Var>, Var>(x: T, dim: u32, n: u32) -> Vec<Var>
+where
+    FuncImpls<Var>: Functions<Var>,
+{
+    <FuncImpls<Var> as Functions<Var>>::split(x, dim, n)
 }
 
 pub fn concat<T: AsRef<Var>, Var>(xs: &[T], dim: u32) -> Var
@@ -661,6 +669,11 @@ impl Functions<Node> for FuncImpls<Node> {
     }
 
     #[inline]
+    fn split<T: AsRef<Node>>(x: T, dim: u32, n: u32) -> Vec<Node> {
+        node_funcs::split(x, dim, n)
+    }
+
+    #[inline]
     fn concat<T: AsRef<Node>>(xs: &[T], dim: u32) -> Node {
         node_funcs::concat(xs, dim)
     }
@@ -1020,6 +1033,11 @@ impl Functions<Tensor> for FuncImpls<Tensor> {
     #[inline]
     fn slice<T: AsRef<Tensor>>(x: T, dim: u32, lower: u32, upper: u32) -> Tensor {
         tensor_funcs::slice(x, dim, lower, upper)
+    }
+
+    #[inline]
+    fn split<T: AsRef<Tensor>>(x: T, dim: u32, n: u32) -> Vec<Tensor> {
+        tensor_funcs::split(x, dim, n)
     }
 
     #[inline]
