@@ -14,12 +14,10 @@ use primitiv::functions as F;
 ///   h[t] = o * tanh(c[t])
 pub struct LSTM {
     model: Model,
-    pwxh: Parameter,
-    pwhh: Parameter,
-    pbh: Parameter,
-    wxh: Node,
-    whh: Node,
-    bh: Node,
+    pw: Parameter,
+    pb: Parameter,
+    w: Node,
+    b: Node,
     h: Node,
     c: Node,
 }
@@ -28,32 +26,25 @@ impl LSTM {
     pub fn new() -> Self {
         let mut m = LSTM {
             model: Model::new(),
-            pwxh: Parameter::new(),
-            pwhh: Parameter::new(),
-            pbh: Parameter::new(),
-            wxh: Node::new(),
-            whh: Node::new(),
-            bh: Node::new(),
+            pw: Parameter::new(),
+            pb: Parameter::new(),
+            w: Node::new(),
+            b: Node::new(),
             h: Node::new(),
             c: Node::new(),
         };
-        m.model.add_parameter("wxh", &mut m.pwxh);
-        m.model.add_parameter("whh", &mut m.pwhh);
-        m.model.add_parameter("bh", &mut m.pbh);
+        m.model.add_parameter("w", &mut m.pw);
+        m.model.add_parameter("b", &mut m.pb);
         m
     }
 
     /// Initializes the model.
     pub fn init(&mut self, in_size: u32, out_size: u32) {
-        self.pwxh.init_by_initializer(
-            [4 * out_size, in_size],
-            &I::XavierUniform::new(1.0),
+        self.pw.init_by_initializer(
+            [4 * out_size, in_size + out_size],
+            &I::Uniform::new(-0.1, 0.1),
         );
-        self.pwhh.init_by_initializer(
-            [4 * out_size, out_size],
-            &I::XavierUniform::new(1.0),
-        );
-        self.pbh.init_by_initializer(
+        self.pb.init_by_initializer(
             [4 * out_size],
             &I::Constant::new(1.0),
         );
@@ -61,10 +52,9 @@ impl LSTM {
 
     /// Initializes the model.
     pub fn restart(&mut self, init_c: Option<&Node>, init_h: Option<&Node>) {
-        let out_size = self.pwhh.shape().at(1);
-        self.wxh = F::parameter(&mut self.pwxh);
-        self.whh = F::parameter(&mut self.pwhh);
-        self.bh = F::parameter(&mut self.pbh);
+        let out_size = self.pw.shape().at(0) / 4;
+        self.w = F::parameter(&mut self.pw);
+        self.b = F::parameter(&mut self.pb);
         self.c = init_c
             .and_then(|n| if n.valid() { Some(n.clone()) } else { None })
             .unwrap_or(F::zeros([out_size]));
@@ -75,12 +65,12 @@ impl LSTM {
 
     /// One step forwarding.
     pub fn forward<N: AsRef<Node>>(&mut self, x: N) -> &Node {
-        let out_size = self.pwhh.shape().at(1);
-        let u = F::matmul(&self.wxh, x.as_ref()) + F::matmul(&self.whh, &self.h) + &self.bh;
-        let i = F::sigmoid(F::slice(&u, 0, 0, out_size));
-        let f = F::sigmoid(F::slice(&u, 0, out_size, 2 * out_size));
-        let o = F::sigmoid(F::slice(&u, 0, 2 * out_size, 3 * out_size));
-        let j = F::tanh(F::slice(&u, 0, 3 * out_size, 4 * out_size));
+        let u = F::matmul(&self.w, F::concat(&vec![x.as_ref(), &self.h], 0)) + &self.b;
+        let v = F::split(u, 0, 4);
+        let i = F::sigmoid(&v[0]);
+        let f = F::sigmoid(&v[1]);
+        let o = F::sigmoid(&v[2]);
+        let j = F::tanh(&v[3]);
         self.c = i * j + f * &self.c;
         self.h = o * F::tanh(&self.c);
         &self.h
