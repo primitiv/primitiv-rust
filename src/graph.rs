@@ -16,8 +16,6 @@ pub struct Node {
 impl_wrap_owned!(Node, primitivNode_t);
 impl_drop!(Node, primitivDeleteNode);
 
-// TODO: impl Clone
-
 impl Node {
     /// Creates a new Node object.
     pub fn new() -> Self {
@@ -187,6 +185,27 @@ impl Node {
     pub fn backward(&self) {
         unsafe {
             check_api_status!(_primitiv::primitivExecuteNodeBackward(self.as_ptr()));
+        }
+    }
+}
+
+impl Clone for Node {
+    #[inline]
+    fn clone(&self) -> Self {
+        unsafe {
+            let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
+            check_api_status!(_primitiv::primitivCloneNode(self.as_ptr(), &mut node_ptr));
+            Node::from_raw(node_ptr, true)
+        }
+    }
+
+    #[inline]
+    fn clone_from(&mut self, source: &Self) {
+        unsafe {
+            check_api_status!(_primitiv::primitivDeleteNode(self.inner));
+            let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
+            check_api_status!(_primitiv::primitivCloneNode(source.as_ptr(), &mut node_ptr));
+            self.inner = node_ptr;
         }
     }
 }

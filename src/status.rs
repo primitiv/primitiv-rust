@@ -2,6 +2,7 @@ extern crate backtrace;
 use primitiv_sys as _primitiv;
 use libc::c_uint;
 use self::backtrace::Backtrace;
+use std::env;
 use std::ffi::CString;
 use std::fmt;
 use std::fmt::Debug;
@@ -19,7 +20,7 @@ pub(crate) enum Code {
 }
 
 impl Code {
-    fn from_int(value: c_uint) -> Self {
+    pub fn from_int(value: c_uint) -> Self {
         match value {
             0 => Code::Ok,
             4294967295 => Code::Error,
@@ -27,9 +28,9 @@ impl Code {
         }
     }
 
-    fn to_int(&self) -> c_uint {
+    pub fn to_int(&self) -> c_uint {
         match self {
-            &Code::UnrecognizedEnumValue(c) => c, 
+            &Code::UnrecognizedEnumValue(c) => c,
             &Code::Ok => 0,
             &Code::Error => 4294967295,
         }
@@ -45,7 +46,7 @@ impl Code {
         Self::from_int(value as c_uint)
     }
 
-    fn is_ok(value: c_uint) -> bool {
+    pub fn is_ok(value: c_uint) -> bool {
         match value {
             0 => true,
             _ => false,
@@ -78,11 +79,11 @@ impl Status {
         }
     }
 
-    fn code(&self) -> Code {
+    pub fn code(&self) -> Code {
         self.code
     }
 
-    fn message(&self) -> &str {
+    pub fn message(&self) -> &str {
         self.message.as_str()
     }
 }
@@ -105,18 +106,18 @@ impl Debug for Status {
         try!(write!(f, "Status: {{"));
         try!(write!(
             f,
-            "code: \"{}({})\", message: \"{}\", backtrace: \"\n",
+            "code: \"{}({})\", message: \"{}\"",
             self.code(),
             self.code().to_int(),
             self.message()
         ));
         match self.trace {
             Some(ref trace) => {
-                try!(write!(f, "{:?}", trace));
+                try!(write!(f, ", backtrace: \"\n{:?}\n\"", trace));
             }
             None => {}
         }
-        try!(write!(f, "\n\"}}"));
+        try!(write!(f, "}}"));
         Ok(())
     }
 }
@@ -141,7 +142,15 @@ impl<T> ApiResult<T, Status> for result::Result<T, Status> {
                 assert!(Code::is_ok(s));
                 let message = CString::from_raw(buffer).into_string().unwrap();
 
-                Err(Status::new(code, message, Some(trace)))
+                let enabled = match env::var_os("RUST_BACKTRACE") {
+                    Some(ref val) if val != "0" => true,
+                    _ => false,
+                };
+                Err(Status::new(
+                    code,
+                    message,
+                    if enabled { Some(trace) } else { None },
+                ))
             },
         }
     }

@@ -10,7 +10,7 @@ use Tensor;
 use Wrap;
 
 macro_rules! tensor_func_body {
-    ($api_fn:ident, $($arg:expr),* ) => {
+    ($api_fn:ident, $($arg:expr),*) => {
         unsafe {
             let mut tensor_ptr: *mut _primitiv::primitivTensor_t = ptr::null_mut();
             check_api_status!(_primitiv::$api_fn(
@@ -38,7 +38,7 @@ macro_rules! impl_tensor_binary_func {
      $api_fn_xc:ident,
      $name_cx:ident,
      $api_fn_cx:ident) => {
-        pub fn $name<T: AsRef<Tensor>>(a: T, b: T) -> Tensor {
+        pub fn $name<T1: AsRef<Tensor>, T2: AsRef<Tensor>>(a: T1, b: T2) -> Tensor {
             tensor_func_body!($api_fn, a.as_ref().as_ptr(), b.as_ref().as_ptr())
         }
 
@@ -80,10 +80,26 @@ macro_rules! impl_tensor_binary_with_constant_op {
             }
         }
 
+        impl<'a> ops::$name<$scalar> for &'a Tensor {
+            type Output = Tensor;
+
+            fn $op_fn(self, rhs: $scalar) -> Tensor {
+                tensor_func_body!($api_fn_xc, self.as_ptr(), rhs as f32)
+            }
+        }
+
         impl ops::$name<Tensor> for $scalar {
             type Output = Tensor;
 
             fn $op_fn(self, rhs: Tensor) -> Tensor {
+                tensor_func_body!($api_fn_cx, self as f32, rhs.as_ptr())
+            }
+        }
+
+        impl<'a> ops::$name<&'a Tensor> for $scalar {
+            type Output = Tensor;
+
+            fn $op_fn(self, rhs: &'a Tensor) -> Tensor {
                 tensor_func_body!($api_fn_cx, self as f32, rhs.as_ptr())
             }
         }
@@ -267,6 +283,25 @@ pub fn slice<T: AsRef<Tensor>>(x: T, dim: u32, lower: u32, upper: u32) -> Tensor
     )
 }
 
+pub fn split<N: AsRef<Tensor>>(x: N, dim: u32, n: u32) -> Vec<Tensor> {
+    unsafe {
+        let mut tensor_ptrs = vec![ptr::null_mut(); n as usize];
+        check_api_status!(_primitiv::primitivApplyTensorSplit(
+            x.as_ref().as_ptr(),
+            dim,
+            n,
+            tensor_ptrs.as_mut_ptr(),
+        ));
+        tensor_ptrs
+            .into_iter()
+            .map(|tensor_ptr| {
+                assert!(!tensor_ptr.is_null());
+                Tensor::from_raw(tensor_ptr, true)
+            })
+            .collect()
+    }
+}
+
 pub fn concat<T: AsRef<Tensor>>(xs: &[T], dim: u32) -> Tensor {
     let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
     tensor_func_body!(
@@ -288,7 +323,7 @@ pub fn reshape<T: AsRef<Tensor>, S: Into<Shape>>(x: T, new_shape: S) -> Tensor {
 impl_tensor_unary_func!(flatten, primitivApplyTensorFlatten);
 impl_tensor_unary_func!(transpose, primitivApplyTensorTranspose);
 
-pub fn matmul<T: AsRef<Tensor>>(a: T, b: T) -> Tensor {
+pub fn matmul<T1: AsRef<Tensor>, T2: AsRef<Tensor>>(a: T1, b: T2) -> Tensor {
     tensor_func_body!(
         primitivApplyTensorMatmul,
         a.as_ref().as_ptr(),
@@ -356,7 +391,11 @@ pub fn softmax<T: AsRef<Tensor>>(x: T, dim: u32) -> Tensor {
     tensor_func_body!(primitivApplyTensorSoftmax, x.as_ref().as_ptr(), dim)
 }
 
-pub fn softmax_cross_entropy<T: AsRef<Tensor>>(x: T, t: T, dim: u32) -> Tensor {
+pub fn softmax_cross_entropy<T1: AsRef<Tensor>, T2: AsRef<Tensor>>(
+    x: T1,
+    t: T2,
+    dim: u32,
+) -> Tensor {
     tensor_func_body!(
         primitivApplyTensorSoftmaxCrossEntropy,
         x.as_ref().as_ptr(),
@@ -377,9 +416,9 @@ pub fn softmax_cross_entropy_with_ids<T: AsRef<Tensor>>(x: T, ids: &[u32], dim: 
 
 impl_tensor_unary_func!(stop_gradient, primitivApplyTensorStopGradient);
 
-pub fn conv2d<T: AsRef<Tensor>>(
-    x: T,
-    w: T,
+pub fn conv2d<T1: AsRef<Tensor>, T2: AsRef<Tensor>>(
+    x: T1,
+    w: T2,
     padding0: u32,
     padding1: u32,
     stride0: u32,

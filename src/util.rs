@@ -10,6 +10,7 @@ macro_rules! impl_wrap {
         impl Wrap<_primitiv::$type> for $name {
             #[inline(always)]
             fn from_raw(ptr: *mut _primitiv::$type, owned: bool) -> Self {
+                assert!(!ptr.is_null());
                 $name { inner: ptr, owned: owned }
             }
 
@@ -36,6 +37,7 @@ macro_rules! impl_wrap_owned {
         impl Wrap<_primitiv::$type> for $name {
             #[inline(always)]
             fn from_raw(ptr: *mut _primitiv::$type, _owned: bool) -> Self {
+                assert!(!ptr.is_null());
                 $name { inner: ptr }
             }
 
@@ -63,7 +65,7 @@ macro_rules! impl_drop {
             fn drop(&mut self) {
                 if self.is_owned() {
                     unsafe {
-                        _primitiv::$call(self.inner);
+                        check_api_status!(_primitiv::$call(self.inner));
                     }
                 }
             }

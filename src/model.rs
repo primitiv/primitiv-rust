@@ -1,5 +1,7 @@
 use primitiv_sys as _primitiv;
 use std::ffi::CString;
+use std::io;
+use std::path::Path;
 use std::ptr;
 use ApiResult;
 use Device;
@@ -32,34 +34,48 @@ impl Model {
     }
 
     /// Loads all parameters from a file.
-    pub fn load(&mut self, path: &str, with_stats: bool) {
-        self.load_on::<AnyDevice>(path, with_stats, None);
+    pub fn load<P: AsRef<Path>>(&mut self, path: P, with_stats: bool) -> io::Result<()> {
+        self.load_on::<P, AnyDevice>(path, with_stats, None)
     }
 
     /// Loads all parameters from a file.
-    pub fn load_on<D: Device>(&mut self, path: &str, with_stats: bool, device: Option<&mut D>) {
+    pub fn load_on<P: AsRef<Path>, D: Device>(
+        &mut self,
+        path: P,
+        with_stats: bool,
+        device: Option<&mut D>,
+    ) -> io::Result<()> {
         unsafe {
-            let path_c = CString::new(path).unwrap();
+            let path_c = CString::new(path.as_ref().to_str().unwrap()).unwrap();
             let path_ptr = path_c.as_ptr();
-            check_api_status!(_primitiv::primitivLoadModel(
-                self.as_mut_ptr(),
-                path_ptr,
-                with_stats as u32,
-                device.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
-            ));
+            Result::from_api_status(
+                _primitiv::primitivLoadModel(
+                    self.as_mut_ptr(),
+                    path_ptr,
+                    with_stats as u32,
+                    device.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
+                ),
+                (),
+            ).map_err(|status| {
+                io::Error::new(io::ErrorKind::Other, status.message())
+            })
         }
     }
 
     /// Saves all parameters to a file.
-    pub fn save(&self, path: &str, with_stats: bool) {
+    pub fn save<P: AsRef<Path>>(&self, path: P, with_stats: bool) -> io::Result<()> {
         unsafe {
-            let path_c = CString::new(path).unwrap();
+            let path_c = CString::new(path.as_ref().to_str().unwrap()).unwrap();
             let path_ptr = path_c.as_ptr();
-            check_api_status!(_primitiv::primitivSaveModel(
+            Result::from_api_status(_primitiv::primitivSaveModel(
                 self.as_ptr(),
                 path_ptr,
                 with_stats as u32,
-            ));
+                ),
+                (),
+            ).map_err(|status| {
+                io::Error::new(io::ErrorKind::Other, status.message())
+            })
         }
     }
 
@@ -160,5 +176,68 @@ impl AsMut<Model> for Model {
     #[inline]
     fn as_mut(&mut self) -> &mut Model {
         self
+    }
+}
+
+pub trait ModelImpl {
+    fn load<P: AsRef<Path>>(&mut self, path: P, with_stats: bool) -> io::Result<()>;
+
+    fn load_on<P: AsRef<Path>, D: Device>(
+        &mut self,
+        path: P,
+        with_stats: bool,
+        device: Option<&mut D>,
+    ) -> io::Result<()>;
+
+    fn save<P: AsRef<Path>>(&self, path: P, with_stats: bool) -> io::Result<()>;
+
+    fn add_parameter(&mut self, name: &str, param: &mut Parameter);
+
+    fn add_submodel<M: AsMut<Model>>(&mut self, name: &str, model: &mut M);
+}
+
+impl<T: AsRef<Model> + AsMut<Model>> ModelImpl for T {
+    fn load<P: AsRef<Path>>(&mut self, path: P, with_stats: bool) -> io::Result<()> {
+        Model::load(self.as_mut(), path, with_stats)
+    }
+
+    fn load_on<P: AsRef<Path>, D: Device>(
+        &mut self,
+        path: P,
+        with_stats: bool,
+        device: Option<&mut D>,
+    ) -> io::Result<()> {
+        Model::load_on(self.as_mut(), path, with_stats, device)
+    }
+
+    fn save<P: AsRef<Path>>(&self, path: P, with_stats: bool) -> io::Result<()> {
+        Model::save(self.as_ref(), path, with_stats)
+    }
+
+    fn add_parameter(&mut self, name: &str, param: &mut Parameter) {
+        Model::add_parameter(self.as_mut(), name, param)
+    }
+
+    fn add_submodel<M: AsMut<Model>>(&mut self, name: &str, model: &mut M) {
+        Model::add_submodel(self.as_mut(), name, model.as_mut())
+    }
+}
+
+#[macro_export]
+macro_rules! impl_model {
+    ($name:ident, $field:ident) => {
+        impl AsRef<Model> for $name {
+            #[inline]
+            fn as_ref(&self) -> &Model {
+                &self.$field
+            }
+        }
+
+        impl AsMut<Model> for $name {
+            #[inline]
+            fn as_mut(&mut self) -> &mut Model {
+                &mut self.$field
+            }
+        }
     }
 }

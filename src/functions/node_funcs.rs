@@ -11,7 +11,7 @@ use Shape;
 use Wrap;
 
 macro_rules! node_func_body {
-    ($api_fn:ident, $($arg:expr),* ) => {
+    ($api_fn:ident, $($arg:expr),*) => {
         unsafe {
             let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
             check_api_status!(_primitiv::$api_fn(
@@ -39,7 +39,7 @@ macro_rules! impl_node_binary_func {
      $api_fn_xc:ident,
      $name_cx:ident,
      $api_fn_cx:ident) => {
-        pub fn $name<N: AsRef<Node>>(a: N, b: N) -> Node {
+        pub fn $name<N1: AsRef<Node>, N2: AsRef<Node>>(a: N1, b: N2) -> Node {
             node_func_body!($api_fn, a.as_ref().as_ptr(), b.as_ref().as_ptr())
         }
 
@@ -81,10 +81,26 @@ macro_rules! impl_node_binary_with_constant_op {
             }
         }
 
+        impl<'a> ops::$name<$scalar> for &'a Node {
+            type Output = Node;
+
+            fn $op_fn(self, rhs: $scalar) -> Node {
+                node_func_body!($api_fn_xc, self.as_ptr(), rhs as f32)
+            }
+        }
+
         impl ops::$name<Node> for $scalar {
             type Output = Node;
 
             fn $op_fn(self, rhs: Node) -> Node {
+                node_func_body!($api_fn_cx, self as f32, rhs.as_ptr())
+            }
+        }
+
+        impl<'a> ops::$name<&'a Node> for $scalar {
+            type Output = Node;
+
+            fn $op_fn(self, rhs: &'a Node) -> Node {
                 node_func_body!($api_fn_cx, self as f32, rhs.as_ptr())
             }
         }
@@ -286,6 +302,25 @@ pub fn slice<N: AsRef<Node>>(x: N, dim: u32, lower: u32, upper: u32) -> Node {
     )
 }
 
+pub fn split<N: AsRef<Node>>(x: N, dim: u32, n: u32) -> Vec<Node> {
+    unsafe {
+        let mut node_ptrs = vec![ptr::null_mut(); n as usize];
+        check_api_status!(_primitiv::primitivApplyNodeSplit(
+            x.as_ref().as_ptr(),
+            dim,
+            n,
+            node_ptrs.as_mut_ptr(),
+        ));
+        node_ptrs
+            .into_iter()
+            .map(|node_ptr| {
+                assert!(!node_ptr.is_null());
+                Node::from_raw(node_ptr, true)
+            })
+            .collect()
+    }
+}
+
 pub fn concat<N: AsRef<Node>>(xs: &[N], dim: u32) -> Node {
     let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
     node_func_body!(primitivApplyNodeConcat, x_ptrs.as_ptr(), x_ptrs.len(), dim)
@@ -302,7 +337,7 @@ pub fn reshape<N: AsRef<Node>, S: Into<Shape>>(x: N, new_shape: S) -> Node {
 impl_node_unary_func!(flatten, primitivApplyNodeFlatten);
 impl_node_unary_func!(transpose, primitivApplyNodeTranspose);
 
-pub fn matmul<N: AsRef<Node>>(a: N, b: N) -> Node {
+pub fn matmul<N1: AsRef<Node>, N2: AsRef<Node>>(a: N1, b: N2) -> Node {
     node_func_body!(
         primitivApplyNodeMatmul,
         a.as_ref().as_ptr(),
@@ -366,7 +401,7 @@ pub fn softmax<N: AsRef<Node>>(x: N, dim: u32) -> Node {
     node_func_body!(primitivApplyNodeSoftmax, x.as_ref().as_ptr(), dim)
 }
 
-pub fn softmax_cross_entropy<N: AsRef<Node>>(x: N, t: N, dim: u32) -> Node {
+pub fn softmax_cross_entropy<N1: AsRef<Node>, N2: AsRef<Node>>(x: N1, t: N2, dim: u32) -> Node {
     node_func_body!(
         primitivApplyNodeSoftmaxCrossEntropy,
         x.as_ref().as_ptr(),
@@ -387,9 +422,9 @@ pub fn softmax_cross_entropy_with_ids<N: AsRef<Node>>(x: N, ids: &[u32], dim: u3
 
 impl_node_unary_func!(stop_gradient, primitivApplyNodeStopGradient);
 
-pub fn conv2d<N: AsRef<Node>>(
-    x: N,
-    w: N,
+pub fn conv2d<N1: AsRef<Node>, N2: AsRef<Node>>(
+    x: N1,
+    w: N2,
     padding0: u32,
     padding1: u32,
     stride0: u32,

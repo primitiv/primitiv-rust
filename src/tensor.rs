@@ -16,8 +16,6 @@ pub struct Tensor {
 impl_wrap!(Tensor, primitivTensor_t);
 impl_drop!(Tensor, primitivDeleteTensor);
 
-// TODO: impl Clone
-
 impl Tensor {
     /// Creates an invalid Tensor object.
     pub fn new() -> Self {
@@ -230,6 +228,33 @@ impl Tensor {
                 x.as_ptr(),
             ));
             self
+        }
+    }
+}
+
+impl Clone for Tensor {
+    #[inline]
+    fn clone(&self) -> Self {
+        unsafe {
+            let mut tensor_ptr: *mut _primitiv::primitivTensor_t = ptr::null_mut();
+            check_api_status!(_primitiv::primitivCloneTensor(
+                self.as_ptr(),
+                &mut tensor_ptr,
+            ));
+            Tensor::from_raw(tensor_ptr, true)
+        }
+    }
+
+    #[inline]
+    fn clone_from(&mut self, source: &Self) {
+        unsafe {
+            check_api_status!(_primitiv::primitivDeleteTensor(self.inner));
+            let mut tensor_ptr: *mut _primitiv::primitivTensor_t = ptr::null_mut();
+            check_api_status!(_primitiv::primitivCloneTensor(
+                source.as_ptr(),
+                &mut tensor_ptr,
+            ));
+            self.inner = tensor_ptr;
         }
     }
 }

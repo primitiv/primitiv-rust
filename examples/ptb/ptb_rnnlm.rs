@@ -22,7 +22,7 @@ const NUM_HIDDEN_UNITS: u32 = 256;
 const BATCH_SIZE: usize = 64;
 const MAX_EPOCH: u32 = 100;
 
-struct RNNLM {
+pub struct RNNLM {
     model: Model,
     pwlookup: Parameter,
     pwxs: Parameter,
@@ -94,7 +94,7 @@ impl RNNLM {
                 0,
             ));
         }
-        F::batch::mean(F::sum_nodes(&losses))
+        F::batch::mean(F::sum_vars(&losses))
     }
 }
 
@@ -114,13 +114,13 @@ impl AsMut<Model> for RNNLM {
 
 fn main() {
     // Loads vocab.
-    let vocab = utils::make_vocab("data/ptb.train.txt");
+    let vocab = utils::make_vocab("data/ptb.train.txt").unwrap();
     println!("#vocab: {}", vocab.len()); // maybe 10000
     let eos_id = vocab["<s>"];
 
     // Loads all corpus.
-    let train_corpus = utils::load_corpus("data/ptb.train.txt", &vocab);
-    let valid_corpus = utils::load_corpus("data/ptb.valid.txt", &vocab);
+    let train_corpus = utils::load_corpus("data/ptb.train.txt", &vocab).unwrap();
+    let valid_corpus = utils::load_corpus("data/ptb.valid.txt", &vocab).unwrap();
     let num_train_sents = train_corpus.len();
     let num_valid_sents = valid_corpus.len();
     let num_train_labels = utils::count_labels(&train_corpus);

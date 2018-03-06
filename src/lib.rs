@@ -16,8 +16,9 @@ pub use graph::{Graph, Node};
 #[macro_use]
 mod initializer;
 pub use initializer::Initializer;
+#[macro_use]
 mod model;
-pub use model::Model;
+pub use model::{Model, ModelImpl};
 mod parameter;
 pub use parameter::Parameter;
 mod shape;
