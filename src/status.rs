@@ -137,7 +137,7 @@ impl<T> ApiResult<T, Status> for result::Result<T, Status> {
                 let mut size: usize = 0;
                 let s = _primitiv::primitivGetMessage(ptr::null_mut(), &mut size as *mut _);
                 assert!(Code::is_ok(s));
-                let buffer = CString::new(Vec::with_capacity(size)).unwrap().into_raw();
+                let buffer = CString::new(vec![b'0'; size]).unwrap().into_raw();
                 let s = _primitiv::primitivGetMessage(buffer, &mut size as *mut _);
                 assert!(Code::is_ok(s));
                 let message = CString::from_raw(buffer).into_string().unwrap();
