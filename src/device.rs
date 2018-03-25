@@ -14,7 +14,7 @@ macro_rules! impl_device {
 }
 
 #[allow(dead_code)]
-pub fn set_default<D: Device>(device: &mut D) {
+pub fn set_default<D: Device + ?Sized>(device: &mut D) {
     unsafe {
         check_api_status!(_primitiv::primitivSetDefaultDevice(device.as_mut_ptr()));
     }

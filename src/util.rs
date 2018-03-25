@@ -1,5 +1,7 @@
 pub trait Wrap<T>: Drop {
-    fn from_raw(ptr: *mut T, owned: bool) -> Self;
+    fn from_raw(ptr: *mut T, owned: bool) -> Self
+    where
+        Self: Sized;
     fn as_ptr(&self) -> *const T;
     fn as_mut_ptr(&mut self) -> *mut T;
     fn is_owned(&self) -> bool;
