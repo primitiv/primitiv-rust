@@ -327,7 +327,7 @@ impl Graph {
                 ptr::null_mut(),
                 &mut size as *mut _,
             ));
-            let buffer = CString::new(Vec::with_capacity(size)).unwrap().into_raw();
+            let buffer = CString::new(vec![b'0'; size]).unwrap().into_raw();
             check_api_status!(_primitiv::primitivDumpGraph(
                 self.as_ptr(),
                 format_ptr,
