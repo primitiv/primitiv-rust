@@ -283,7 +283,7 @@ pub fn slice<T: AsRef<Tensor>>(x: T, dim: u32, lower: u32, upper: u32) -> Tensor
     )
 }
 
-pub fn split<N: AsRef<Tensor>>(x: N, dim: u32, n: u32) -> Vec<Tensor> {
+pub fn split<T: AsRef<Tensor>>(x: T, dim: u32, n: u32) -> Vec<Tensor> {
     unsafe {
         let mut tensor_ptrs = vec![ptr::null_mut(); n as usize];
         check_api_status!(_primitiv::primitivApplyTensorSplit(
@@ -628,6 +628,51 @@ pub mod batch {
     use ApiResult;
     use Tensor;
     use Wrap;
+
+    pub fn pick<T: AsRef<Tensor>>(x: T, ids: &[u32]) -> Tensor {
+        tensor_func_body!(
+            primitivApplyTensorBatchPick,
+            x.as_ref().as_ptr(),
+            ids.as_ptr(),
+            ids.len()
+        )
+    }
+
+    pub fn slice<T: AsRef<Tensor>>(x: T, lower: u32, upper: u32) -> Tensor {
+        tensor_func_body!(
+            primitivApplyTensorBatchSlice,
+            x.as_ref().as_ptr(),
+            lower,
+            upper
+        )
+    }
+
+    pub fn split<T: AsRef<Tensor>>(x: T, n: u32) -> Vec<Tensor> {
+        unsafe {
+            let mut tensor_ptrs = vec![ptr::null_mut(); n as usize];
+            check_api_status!(_primitiv::primitivApplyTensorBatchSplit(
+                x.as_ref().as_ptr(),
+                n,
+                tensor_ptrs.as_mut_ptr(),
+            ));
+            tensor_ptrs
+                .into_iter()
+                .map(|tensor_ptr| {
+                    assert!(!tensor_ptr.is_null());
+                    Tensor::from_raw(tensor_ptr, true)
+                })
+                .collect()
+        }
+    }
+
+    pub fn concat<T: AsRef<Tensor>>(xs: &[T]) -> Tensor {
+        let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
+        tensor_func_body!(
+            primitivApplyTensorBatchConcat,
+            x_ptrs.as_ptr(),
+            x_ptrs.len()
+        )
+    }
 
     impl_tensor_unary_func!(sum, primitivApplyTensorBatchSum);
     impl_tensor_unary_func!(mean, primitivApplyTensorBatchMean);

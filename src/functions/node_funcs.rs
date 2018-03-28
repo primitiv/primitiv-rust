@@ -719,6 +719,47 @@ pub mod batch {
     use Node;
     use Wrap;
 
+    pub fn pick<N: AsRef<Node>>(x: N, ids: &[u32]) -> Node {
+        node_func_body!(
+            primitivApplyNodeBatchPick,
+            x.as_ref().as_ptr(),
+            ids.as_ptr(),
+            ids.len()
+        )
+    }
+
+    pub fn slice<N: AsRef<Node>>(x: N, lower: u32, upper: u32) -> Node {
+        node_func_body!(
+            primitivApplyNodeBatchSlice,
+            x.as_ref().as_ptr(),
+            lower,
+            upper
+        )
+    }
+
+    pub fn split<N: AsRef<Node>>(x: N, n: u32) -> Vec<Node> {
+        unsafe {
+            let mut node_ptrs = vec![ptr::null_mut(); n as usize];
+            check_api_status!(_primitiv::primitivApplyNodeBatchSplit(
+                x.as_ref().as_ptr(),
+                n,
+                node_ptrs.as_mut_ptr(),
+            ));
+            node_ptrs
+                .into_iter()
+                .map(|node_ptr| {
+                    assert!(!node_ptr.is_null());
+                    Node::from_raw(node_ptr, true)
+                })
+                .collect()
+        }
+    }
+
+    pub fn concat<N: AsRef<Node>>(xs: &[N]) -> Node {
+        let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
+        node_func_body!(primitivApplyNodeBatchConcat, x_ptrs.as_ptr(), x_ptrs.len())
+    }
+
     impl_node_unary_func!(sum, primitivApplyNodeBatchSum);
     impl_node_unary_func!(mean, primitivApplyNodeBatchMean);
     impl_node_unary_func!(normalize, primitivApplyNodeBatchNormalize);

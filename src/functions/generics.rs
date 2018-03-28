@@ -107,6 +107,10 @@ pub trait Functions<Var> {
         beta: f32,
         dev: Option<&mut D>,
     ) -> Var;
+    fn batch_pick<T: AsRef<Var>>(x: T, ids: &[u32]) -> Var;
+    fn batch_slice<T: AsRef<Var>>(x: T, lower: u32, upper: u32) -> Var;
+    fn batch_split<T: AsRef<Var>>(x: T, n: u32) -> Vec<Var>;
+    fn batch_concat<T: AsRef<Var>>(xs: &[T]) -> Var;
     fn batch_sum<T: AsRef<Var>>(x: T) -> Var;
     fn batch_mean<T: AsRef<Var>>(x: T) -> Var;
     fn batch_normalize<T: AsRef<Var>>(x: T) -> Var;
@@ -605,6 +609,34 @@ pub mod batch {
     use super::FuncImpls;
     use super::Functions;
 
+    pub fn pick<T: AsRef<Var>, Var>(x: T, ids: &[u32]) -> Var
+    where
+        FuncImpls<Var>: Functions<Var>,
+    {
+        <FuncImpls<Var> as Functions<Var>>::batch_pick(x, ids)
+    }
+
+    pub fn slice<T: AsRef<Var>, Var>(x: T, lower: u32, upper: u32) -> Var
+    where
+        FuncImpls<Var>: Functions<Var>,
+    {
+        <FuncImpls<Var> as Functions<Var>>::batch_slice(x, lower, upper)
+    }
+
+    pub fn split<T: AsRef<Var>, Var>(x: T, n: u32) -> Vec<Var>
+    where
+        FuncImpls<Var>: Functions<Var>,
+    {
+        <FuncImpls<Var> as Functions<Var>>::batch_split(x, n)
+    }
+
+    pub fn concat<T: AsRef<Var>, Var>(xs: &[T]) -> Var
+    where
+        FuncImpls<Var>: Functions<Var>,
+    {
+        <FuncImpls<Var> as Functions<Var>>::batch_concat(xs)
+    }
+
     pub fn sum<T: AsRef<Var>, Var>(x: T) -> Var
     where
         FuncImpls<Var>: Functions<Var>,
@@ -979,6 +1011,26 @@ impl Functions<Node> for FuncImpls<Node> {
     }
 
     #[inline]
+    fn batch_pick<T: AsRef<Node>>(x: T, ids: &[u32]) -> Node {
+        node_funcs::batch::pick(x, ids)
+    }
+
+    #[inline]
+    fn batch_slice<T: AsRef<Node>>(x: T, lower: u32, upper: u32) -> Node {
+        node_funcs::batch::slice(x, lower, upper)
+    }
+
+    #[inline]
+    fn batch_split<T: AsRef<Node>>(x: T, n: u32) -> Vec<Node> {
+        node_funcs::batch::split(x, n)
+    }
+
+    #[inline]
+    fn batch_concat<T: AsRef<Node>>(xs: &[T]) -> Node {
+        node_funcs::batch::concat(xs)
+    }
+
+    #[inline]
     fn batch_sum<T: AsRef<Node>>(x: T) -> Node {
         node_funcs::batch::sum(x)
     }
@@ -1347,6 +1399,26 @@ impl Functions<Tensor> for FuncImpls<Tensor> {
         dev: Option<&mut D>,
     ) -> Tensor {
         tensor_funcs::random::gumbel_on(shape, mu, beta, dev)
+    }
+
+    #[inline]
+    fn batch_pick<T: AsRef<Tensor>>(x: T, ids: &[u32]) -> Tensor {
+        tensor_funcs::batch::pick(x, ids)
+    }
+
+    #[inline]
+    fn batch_slice<T: AsRef<Tensor>>(x: T, lower: u32, upper: u32) -> Tensor {
+        tensor_funcs::batch::slice(x, lower, upper)
+    }
+
+    #[inline]
+    fn batch_split<T: AsRef<Tensor>>(x: T, n: u32) -> Vec<Tensor> {
+        tensor_funcs::batch::split(x, n)
+    }
+
+    #[inline]
+    fn batch_concat<T: AsRef<Tensor>>(xs: &[T]) -> Tensor {
+        tensor_funcs::batch::concat(xs)
     }
 
     #[inline]
