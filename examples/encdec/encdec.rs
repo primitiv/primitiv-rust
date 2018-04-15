@@ -344,7 +344,7 @@ fn main() {
         exit(1);
     }
 
-    eprintln!("initializing device ... ");
+    eprint!("initializing device ... ");
     let mut dev = D::Naive::new(); // let mut dev = D::CUDA::new(0);
     D::set_default(&mut dev);
     eprintln!("done.");
