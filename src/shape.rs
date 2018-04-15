@@ -329,40 +329,40 @@ impl fmt::Display for Shape {
     }
 }
 
-macro_rules! impl_array_into_shape {
+macro_rules! impl_shape_from_array {
     ($num:expr) => {
-        impl Into<Shape> for [u32; $num] {
-            fn into(self) -> Shape {
-                Shape::from_dims(&self, 1)
+        impl From<[u32; $num]> for Shape {
+            fn from(dims: [u32; $num]) -> Shape {
+                Shape::from_dims(&dims, 1)
             }
         }
     }
 }
-impl_array_into_shape!(0);
-impl_array_into_shape!(1);
-impl_array_into_shape!(2);
-impl_array_into_shape!(3);
-impl_array_into_shape!(4);
-impl_array_into_shape!(5);
-impl_array_into_shape!(6);
-impl_array_into_shape!(7);
-impl_array_into_shape!(8);
+impl_shape_from_array!(0);
+impl_shape_from_array!(1);
+impl_shape_from_array!(2);
+impl_shape_from_array!(3);
+impl_shape_from_array!(4);
+impl_shape_from_array!(5);
+impl_shape_from_array!(6);
+impl_shape_from_array!(7);
+impl_shape_from_array!(8);
 
-macro_rules! impl_tuple_into_shape {
+macro_rules! impl_shape_from_tuple {
     ($num:expr) => {
-        impl Into<Shape> for ([u32; $num], u32) {
-            fn into(self) -> Shape {
-                Shape::from_dims(&self.0, self.1)
+        impl From<([u32; $num], u32)> for Shape {
+            fn from(dims_with_batch: ([u32; $num], u32)) -> Shape {
+                Shape::from_dims(&dims_with_batch.0, dims_with_batch.1)
             }
         }
     }
 }
-impl_tuple_into_shape!(0);
-impl_tuple_into_shape!(1);
-impl_tuple_into_shape!(2);
-impl_tuple_into_shape!(3);
-impl_tuple_into_shape!(4);
-impl_tuple_into_shape!(5);
-impl_tuple_into_shape!(6);
-impl_tuple_into_shape!(7);
-impl_tuple_into_shape!(8);
+impl_shape_from_tuple!(0);
+impl_shape_from_tuple!(1);
+impl_shape_from_tuple!(2);
+impl_shape_from_tuple!(3);
+impl_shape_from_tuple!(4);
+impl_shape_from_tuple!(5);
+impl_shape_from_tuple!(6);
+impl_shape_from_tuple!(7);
+impl_shape_from_tuple!(8);
