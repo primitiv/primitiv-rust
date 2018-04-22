@@ -18,7 +18,7 @@ pub trait Functions<Var> {
     fn pick<T: AsRef<Var>>(x: T, ids: &[u32], dim: u32) -> Var;
     fn slice<T: AsRef<Var>>(x: T, dim: u32, lower: u32, upper: u32) -> Var;
     fn split<T: AsRef<Var>>(x: T, dim: u32, n: u32) -> Vec<Var>;
-    fn concat<T: AsRef<Var>>(xs: &[T], dim: u32) -> Var;
+    fn concat<TS: AsRef<[T]>, T: AsRef<Var>>(xs: TS, dim: u32) -> Var;
     fn reshape<T: AsRef<Var>, S: Into<Shape>>(x: T, new_shape: S) -> Var;
     fn flatten<T: AsRef<Var>>(x: T) -> Var;
     fn transpose<T: AsRef<Var>>(x: T) -> Var;
@@ -38,9 +38,9 @@ pub trait Functions<Var> {
     fn elu<T: AsRef<Var>>(x: T, a: f32) -> Var;
     fn selu<T: AsRef<Var>>(x: T) -> Var;
     fn sum<T: AsRef<Var>>(x: T, dim: u32) -> Var;
-    fn sum_vars<T: AsRef<Var>>(xs: &[T]) -> Var;
+    fn sum_vars<TS: AsRef<[T]>, T: AsRef<Var>>(xs: TS) -> Var;
     fn mean<T: AsRef<Var>>(x: T, dim: u32) -> Var;
-    fn mean_vars<T: AsRef<Var>>(xs: &[T]) -> Var;
+    fn mean_vars<TS: AsRef<[T]>, T: AsRef<Var>>(xs: TS) -> Var;
     fn broadcast<T: AsRef<Var>>(x: T, dim: u32, size: u32) -> Var;
     fn logsumexp<T: AsRef<Var>>(x: T, dim: u32) -> Var;
     fn log_softmax<T: AsRef<Var>>(x: T, dim: u32) -> Var;
@@ -110,7 +110,7 @@ pub trait Functions<Var> {
     fn batch_pick<T: AsRef<Var>>(x: T, ids: &[u32]) -> Var;
     fn batch_slice<T: AsRef<Var>>(x: T, lower: u32, upper: u32) -> Var;
     fn batch_split<T: AsRef<Var>>(x: T, n: u32) -> Vec<Var>;
-    fn batch_concat<T: AsRef<Var>>(xs: &[T]) -> Var;
+    fn batch_concat<TS: AsRef<[T]>, T: AsRef<Var>>(xs: TS) -> Var;
     fn batch_sum<T: AsRef<Var>>(x: T) -> Var;
     fn batch_mean<T: AsRef<Var>>(x: T) -> Var;
     fn batch_normalize<T: AsRef<Var>>(x: T) -> Var;
@@ -183,7 +183,7 @@ where
     <FuncImpls<Var> as Functions<Var>>::split(x, dim, n)
 }
 
-pub fn concat<T: AsRef<Var>, Var>(xs: &[T], dim: u32) -> Var
+pub fn concat<TS: AsRef<[T]>, T: AsRef<Var>, Var>(xs: TS, dim: u32) -> Var
 where
     FuncImpls<Var>: Functions<Var>,
 {
@@ -323,7 +323,7 @@ where
     <FuncImpls<Var> as Functions<Var>>::sum(x, dim)
 }
 
-pub fn sum_vars<T: AsRef<Var>, Var>(xs: &[T]) -> Var
+pub fn sum_vars<TS: AsRef<[T]>, T: AsRef<Var>, Var>(xs: TS) -> Var
 where
     FuncImpls<Var>: Functions<Var>,
 {
@@ -337,7 +337,7 @@ where
     <FuncImpls<Var> as Functions<Var>>::mean(x, dim)
 }
 
-pub fn mean_vars<T: AsRef<Var>, Var>(xs: &[T]) -> Var
+pub fn mean_vars<TS: AsRef<[T]>, T: AsRef<Var>, Var>(xs: TS) -> Var
 where
     FuncImpls<Var>: Functions<Var>,
 {
@@ -630,7 +630,7 @@ pub mod batch {
         <FuncImpls<Var> as Functions<Var>>::batch_split(x, n)
     }
 
-    pub fn concat<T: AsRef<Var>, Var>(xs: &[T]) -> Var
+    pub fn concat<TS: AsRef<[T]>, T: AsRef<Var>, Var>(xs: TS) -> Var
     where
         FuncImpls<Var>: Functions<Var>,
     {
@@ -706,7 +706,7 @@ impl Functions<Node> for FuncImpls<Node> {
     }
 
     #[inline]
-    fn concat<T: AsRef<Node>>(xs: &[T], dim: u32) -> Node {
+    fn concat<TS: AsRef<[T]>, T: AsRef<Node>>(xs: TS, dim: u32) -> Node {
         node_funcs::concat(xs, dim)
     }
 
@@ -806,7 +806,7 @@ impl Functions<Node> for FuncImpls<Node> {
     }
 
     #[inline]
-    fn sum_vars<T: AsRef<Node>>(xs: &[T]) -> Node {
+    fn sum_vars<TS: AsRef<[T]>, T: AsRef<Node>>(xs: TS) -> Node {
         node_funcs::sum_nodes(xs)
     }
 
@@ -816,7 +816,7 @@ impl Functions<Node> for FuncImpls<Node> {
     }
 
     #[inline]
-    fn mean_vars<T: AsRef<Node>>(xs: &[T]) -> Node {
+    fn mean_vars<TS: AsRef<[T]>, T: AsRef<Node>>(xs: TS) -> Node {
         node_funcs::mean_nodes(xs)
     }
 
@@ -1026,7 +1026,7 @@ impl Functions<Node> for FuncImpls<Node> {
     }
 
     #[inline]
-    fn batch_concat<T: AsRef<Node>>(xs: &[T]) -> Node {
+    fn batch_concat<TS: AsRef<[T]>, T: AsRef<Node>>(xs: TS) -> Node {
         node_funcs::batch::concat(xs)
     }
 
@@ -1093,7 +1093,7 @@ impl Functions<Tensor> for FuncImpls<Tensor> {
     }
 
     #[inline]
-    fn concat<T: AsRef<Tensor>>(xs: &[T], dim: u32) -> Tensor {
+    fn concat<TS: AsRef<[T]>, T: AsRef<Tensor>>(xs: TS, dim: u32) -> Tensor {
         tensor_funcs::concat(xs, dim)
     }
 
@@ -1193,7 +1193,7 @@ impl Functions<Tensor> for FuncImpls<Tensor> {
     }
 
     #[inline]
-    fn sum_vars<T: AsRef<Tensor>>(xs: &[T]) -> Tensor {
+    fn sum_vars<TS: AsRef<[T]>, T: AsRef<Tensor>>(xs: TS) -> Tensor {
         tensor_funcs::sum_tensors(xs)
     }
 
@@ -1203,7 +1203,7 @@ impl Functions<Tensor> for FuncImpls<Tensor> {
     }
 
     #[inline]
-    fn mean_vars<T: AsRef<Tensor>>(xs: &[T]) -> Tensor {
+    fn mean_vars<TS: AsRef<[T]>, T: AsRef<Tensor>>(xs: TS) -> Tensor {
         tensor_funcs::mean_tensors(xs)
     }
 
@@ -1417,7 +1417,7 @@ impl Functions<Tensor> for FuncImpls<Tensor> {
     }
 
     #[inline]
-    fn batch_concat<T: AsRef<Tensor>>(xs: &[T]) -> Tensor {
+    fn batch_concat<TS: AsRef<[T]>, T: AsRef<Tensor>>(xs: TS) -> Tensor {
         tensor_funcs::batch::concat(xs)
     }
 

@@ -302,8 +302,11 @@ pub fn split<T: AsRef<Tensor>>(x: T, dim: u32, n: u32) -> Vec<Tensor> {
     }
 }
 
-pub fn concat<T: AsRef<Tensor>>(xs: &[T], dim: u32) -> Tensor {
-    let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
+pub fn concat<TS: AsRef<[T]>, T: AsRef<Tensor>>(xs: TS, dim: u32) -> Tensor {
+    let x_ptrs = xs.as_ref()
+        .iter()
+        .map(|x| x.as_ref().as_ptr())
+        .collect::<Vec<_>>();
     tensor_func_body!(
         primitivApplyTensorConcat,
         x_ptrs.as_ptr(),
@@ -357,8 +360,11 @@ pub fn sum<T: AsRef<Tensor>>(x: T, dim: u32) -> Tensor {
     tensor_func_body!(primitivApplyTensorSum, x.as_ref().as_ptr(), dim)
 }
 
-pub fn sum_tensors<T: AsRef<Tensor>>(xs: &[T]) -> Tensor {
-    let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
+pub fn sum_tensors<TS: AsRef<[T]>, T: AsRef<Tensor>>(xs: TS) -> Tensor {
+    let x_ptrs = xs.as_ref()
+        .iter()
+        .map(|x| x.as_ref().as_ptr())
+        .collect::<Vec<_>>();
     tensor_func_body!(primitivApplyTensorSumTensors, x_ptrs.as_ptr(), x_ptrs.len())
 }
 
@@ -366,8 +372,11 @@ pub fn mean<T: AsRef<Tensor>>(x: T, dim: u32) -> Tensor {
     tensor_func_body!(primitivApplyTensorMean, x.as_ref().as_ptr(), dim)
 }
 
-pub fn mean_tensors<T: AsRef<Tensor>>(xs: &[T]) -> Tensor {
-    let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
+pub fn mean_tensors<TS: AsRef<[T]>, T: AsRef<Tensor>>(xs: TS) -> Tensor {
+    let x_ptrs = xs.as_ref()
+        .iter()
+        .map(|x| x.as_ref().as_ptr())
+        .collect::<Vec<_>>();
     tensor_func_body!(
         primitivApplyTensorMeanTensors,
         x_ptrs.as_ptr(),
@@ -665,8 +674,11 @@ pub mod batch {
         }
     }
 
-    pub fn concat<T: AsRef<Tensor>>(xs: &[T]) -> Tensor {
-        let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
+    pub fn concat<TS: AsRef<[T]>, T: AsRef<Tensor>>(xs: TS) -> Tensor {
+        let x_ptrs = xs.as_ref()
+            .iter()
+            .map(|x| x.as_ref().as_ptr())
+            .collect::<Vec<_>>();
         tensor_func_body!(
             primitivApplyTensorBatchConcat,
             x_ptrs.as_ptr(),

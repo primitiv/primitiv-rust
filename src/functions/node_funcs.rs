@@ -321,8 +321,11 @@ pub fn split<N: AsRef<Node>>(x: N, dim: u32, n: u32) -> Vec<Node> {
     }
 }
 
-pub fn concat<N: AsRef<Node>>(xs: &[N], dim: u32) -> Node {
-    let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
+pub fn concat<NS: AsRef<[N]>, N: AsRef<Node>>(xs: NS, dim: u32) -> Node {
+    let x_ptrs = xs.as_ref()
+        .iter()
+        .map(|x| x.as_ref().as_ptr())
+        .collect::<Vec<_>>();
     node_func_body!(primitivApplyNodeConcat, x_ptrs.as_ptr(), x_ptrs.len(), dim)
 }
 
@@ -371,8 +374,11 @@ pub fn sum<N: AsRef<Node>>(x: N, dim: u32) -> Node {
     node_func_body!(primitivApplyNodeSum, x.as_ref().as_ptr(), dim)
 }
 
-pub fn sum_nodes<N: AsRef<Node>>(xs: &[N]) -> Node {
-    let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
+pub fn sum_nodes<NS: AsRef<[N]>, N: AsRef<Node>>(xs: NS) -> Node {
+    let x_ptrs = xs.as_ref()
+        .iter()
+        .map(|x| x.as_ref().as_ptr())
+        .collect::<Vec<_>>();
     node_func_body!(primitivApplyNodeSumNodes, x_ptrs.as_ptr(), x_ptrs.len())
 }
 
@@ -380,8 +386,11 @@ pub fn mean<N: AsRef<Node>>(x: N, dim: u32) -> Node {
     node_func_body!(primitivApplyNodeMean, x.as_ref().as_ptr(), dim)
 }
 
-pub fn mean_nodes<N: AsRef<Node>>(xs: &[N]) -> Node {
-    let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
+pub fn mean_nodes<NS: AsRef<[N]>, N: AsRef<Node>>(xs: NS) -> Node {
+    let x_ptrs = xs.as_ref()
+        .iter()
+        .map(|x| x.as_ref().as_ptr())
+        .collect::<Vec<_>>();
     node_func_body!(primitivApplyNodeMeanNodes, x_ptrs.as_ptr(), x_ptrs.len())
 }
 
@@ -755,8 +764,11 @@ pub mod batch {
         }
     }
 
-    pub fn concat<N: AsRef<Node>>(xs: &[N]) -> Node {
-        let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
+    pub fn concat<NS: AsRef<[N]>, N: AsRef<Node>>(xs: NS) -> Node {
+        let x_ptrs = xs.as_ref()
+            .iter()
+            .map(|x| x.as_ref().as_ptr())
+            .collect::<Vec<_>>();
         node_func_body!(primitivApplyNodeBatchConcat, x_ptrs.as_ptr(), x_ptrs.len())
     }
 
