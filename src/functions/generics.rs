@@ -37,6 +37,8 @@ pub trait Functions<Var> {
     fn prelu<T: AsRef<Var>>(x: T, a: f32) -> Var;
     fn elu<T: AsRef<Var>>(x: T, a: f32) -> Var;
     fn selu<T: AsRef<Var>>(x: T) -> Var;
+    fn max<T: AsRef<Var>>(x: T, dim: u32) -> Var;
+    fn min<T: AsRef<Var>>(x: T, dim: u32) -> Var;
     fn sum<T: AsRef<Var>>(x: T, dim: u32) -> Var;
     fn sum_vars<TS: AsRef<[T]>, T: AsRef<Var>>(xs: TS) -> Var;
     fn mean<T: AsRef<Var>>(x: T, dim: u32) -> Var;
@@ -314,6 +316,20 @@ where
     FuncImpls<Var>: Functions<Var>,
 {
     <FuncImpls<Var> as Functions<Var>>::selu(x)
+}
+
+pub fn max<T: AsRef<Var>, Var>(x: T, dim: u32) -> Var
+where
+    FuncImpls<Var>: Functions<Var>,
+{
+    <FuncImpls<Var> as Functions<Var>>::max(x, dim)
+}
+
+pub fn min<T: AsRef<Var>, Var>(x: T, dim: u32) -> Var
+where
+    FuncImpls<Var>: Functions<Var>,
+{
+    <FuncImpls<Var> as Functions<Var>>::min(x, dim)
 }
 
 pub fn sum<T: AsRef<Var>, Var>(x: T, dim: u32) -> Var
@@ -801,6 +817,16 @@ impl Functions<Node> for FuncImpls<Node> {
     }
 
     #[inline]
+    fn max<T: AsRef<Node>>(x: T, dim: u32) -> Node {
+        node_funcs::max(x, dim)
+    }
+
+    #[inline]
+    fn min<T: AsRef<Node>>(x: T, dim: u32) -> Node {
+        node_funcs::min(x, dim)
+    }
+
+    #[inline]
     fn sum<T: AsRef<Node>>(x: T, dim: u32) -> Node {
         node_funcs::sum(x, dim)
     }
@@ -1185,6 +1211,16 @@ impl Functions<Tensor> for FuncImpls<Tensor> {
     #[inline]
     fn selu<T: AsRef<Tensor>>(x: T) -> Tensor {
         tensor_funcs::selu(x)
+    }
+
+    #[inline]
+    fn max<T: AsRef<Tensor>>(x: T, dim: u32) -> Tensor {
+        tensor_funcs::max(x, dim)
+    }
+
+    #[inline]
+    fn min<T: AsRef<Tensor>>(x: T, dim: u32) -> Tensor {
+        tensor_funcs::min(x, dim)
     }
 
     #[inline]

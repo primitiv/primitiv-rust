@@ -356,6 +356,14 @@ pub fn elu<T: AsRef<Tensor>>(x: T, a: f32) -> Tensor {
 
 impl_tensor_unary_func!(selu, primitivApplyTensorSelu);
 
+pub fn max<T: AsRef<Tensor>>(x: T, dim: u32) -> Tensor {
+    tensor_func_body!(primitivApplyTensorMax, x.as_ref().as_ptr(), dim)
+}
+
+pub fn min<T: AsRef<Tensor>>(x: T, dim: u32) -> Tensor {
+    tensor_func_body!(primitivApplyTensorMin, x.as_ref().as_ptr(), dim)
+}
+
 pub fn sum<T: AsRef<Tensor>>(x: T, dim: u32) -> Tensor {
     tensor_func_body!(primitivApplyTensorSum, x.as_ref().as_ptr(), dim)
 }

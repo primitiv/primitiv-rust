@@ -30,6 +30,8 @@ pub use self::generics::{
     prelu,
     elu,
     selu,
+    max,
+    min,
     sum,
     sum_vars,
     mean,

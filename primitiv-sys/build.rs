@@ -10,7 +10,7 @@ use std::result::Result;
 const FRAMEWORK_LIBRARY: &'static str = "primitiv";
 const LIBRARY: &'static str = "primitiv_c";
 const REPOSITORY: &'static str = "https://github.com/primitiv/primitiv";
-const TAG: &'static str = "1ea9ba875ace79ca884ab448d7c0842d78d4b18d";
+const TAG: &'static str = "8b6294210b1e19d8d79acd394371fa56b30c30d4";
 
 macro_rules! log {
     ($fmt:expr) => (println!(concat!("primitiv-sys/build.rs:{}: ", $fmt), line!()));

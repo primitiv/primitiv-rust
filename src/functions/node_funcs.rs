@@ -370,6 +370,14 @@ pub fn elu<N: AsRef<Node>>(x: N, a: f32) -> Node {
 
 impl_node_unary_func!(selu, primitivApplyNodeSelu);
 
+pub fn max<N: AsRef<Node>>(x: N, dim: u32) -> Node {
+    node_func_body!(primitivApplyNodeMax, x.as_ref().as_ptr(), dim)
+}
+
+pub fn min<N: AsRef<Node>>(x: N, dim: u32) -> Node {
+    node_func_body!(primitivApplyNodeMin, x.as_ref().as_ptr(), dim)
+}
+
 pub fn sum<N: AsRef<Node>>(x: N, dim: u32) -> Node {
     node_func_body!(primitivApplyNodeSum, x.as_ref().as_ptr(), dim)
 }
