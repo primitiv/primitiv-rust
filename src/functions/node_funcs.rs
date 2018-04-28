@@ -348,6 +348,7 @@ pub fn matmul<N1: AsRef<Node>, N2: AsRef<Node>>(a: N1, b: N2) -> Node {
     )
 }
 
+impl_node_unary_func!(abs, primitivApplyNodeAbs);
 impl_node_unary_func!(sqrt, primitivApplyNodeSqrt);
 impl_node_unary_func!(exp, primitivApplyNodeExp);
 impl_node_unary_func!(log, primitivApplyNodeLog);
