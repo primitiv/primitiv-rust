@@ -303,3 +303,9 @@ impl Parameter {
         }
     }
 }
+
+impl Default for Parameter {
+    fn default() -> Parameter {
+        Parameter::new()
+    }
+}
