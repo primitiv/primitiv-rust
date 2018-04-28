@@ -13,6 +13,8 @@ use primitiv::ModelImpl;
 use primitiv::Node;
 use primitiv::Optimizer;
 use primitiv::Parameter;
+use primitiv::Tensor;
+use primitiv::Variable;
 use primitiv::devices as D;
 use primitiv::initializers as I;
 use primitiv::functions as F;
@@ -39,21 +41,21 @@ static SRC_VALID_FILE: &'static str = "data/dev.en";
 static TRG_VALID_FILE: &'static str = "data/dev.ja";
 
 /// Encoder-decoder translation model.
-pub struct EncoderDecoder {
+pub struct EncoderDecoder<V: Variable> {
     model: Model,
     dropout_rate: f32,
     psrc_lookup: Parameter,
     ptrg_lookup: Parameter,
     pwhy: Parameter,
     pby: Parameter,
-    src_lstm: LSTM,
-    trg_lstm: LSTM,
-    trg_lookup: Node,
-    why: Node,
-    by: Node,
+    src_lstm: LSTM<V>,
+    trg_lstm: LSTM<V>,
+    trg_lookup: V,
+    why: V,
+    by: V,
 }
 
-impl EncoderDecoder {
+impl<V: Variable> EncoderDecoder<V> {
     pub fn new() -> Self {
         let mut m = EncoderDecoder {
             model: Model::new(),
@@ -64,9 +66,9 @@ impl EncoderDecoder {
             pby: Parameter::new(),
             src_lstm: LSTM::new(),
             trg_lstm: LSTM::new(),
-            trg_lookup: Node::new(),
-            why: Node::new(),
-            by: Node::new(),
+            trg_lookup: V::new(),
+            why: V::new(),
+            by: V::new(),
         };
         m.model.add_parameter("src_lookup", &mut m.psrc_lookup);
         m.model.add_parameter("trg_lookup", &mut m.ptrg_lookup);
@@ -112,7 +114,7 @@ impl EncoderDecoder {
         Words: AsRef<[u32]>,
     {
         // Reversed encoding.
-        let src_lookup = F::parameter::<Node>(&mut self.psrc_lookup);
+        let src_lookup = F::parameter::<V>(&mut self.psrc_lookup);
         self.src_lstm.restart(None, None);
         for it in inputs.as_ref().iter().rev() {
             let x = F::pick(&src_lookup, it.as_ref(), 1);
@@ -131,7 +133,7 @@ impl EncoderDecoder {
     }
 
     /// One step decoding.
-    pub fn decode_step<Words: AsRef<[u32]>>(&mut self, trg_words: Words, train: bool) -> Node {
+    pub fn decode_step<Words: AsRef<[u32]>>(&mut self, trg_words: Words, train: bool) -> V {
         let x = F::pick(&self.trg_lookup, trg_words.as_ref(), 1);
         let x = F::dropout(x, self.dropout_rate, train);
         let h = self.trg_lstm.forward(x);
@@ -140,7 +142,7 @@ impl EncoderDecoder {
     }
 
     /// Calculates the loss function over given target sentences.
-    pub fn loss<Batch, Words>(&mut self, trg_batch: Batch, train: bool) -> Node
+    pub fn loss<Batch, Words>(&mut self, trg_batch: Batch, train: bool) -> V
     where
         Batch: AsRef<[Words]>,
         Words: AsRef<[u32]>,
@@ -159,14 +161,14 @@ impl EncoderDecoder {
     }
 }
 
-impl AsRef<Model> for EncoderDecoder {
+impl<V: Variable> AsRef<Model> for EncoderDecoder<V> {
     #[inline]
     fn as_ref(&self) -> &Model {
         &self.model
     }
 }
 
-impl AsMut<Model> for EncoderDecoder {
+impl<V: Variable> AsMut<Model> for EncoderDecoder<V> {
     #[inline]
     fn as_mut(&mut self) -> &mut Model {
         &mut self.model
@@ -175,7 +177,7 @@ impl AsMut<Model> for EncoderDecoder {
 
 /// Training encoder decoder model.
 pub fn train<O: Optimizer>(
-    encdec: &mut EncoderDecoder,
+    encdec: &mut EncoderDecoder<Node>,
     optimizer: &mut O,
     prefix: &str,
     mut best_valid_ppl: f32,
@@ -286,7 +288,7 @@ pub fn train<O: Optimizer>(
 }
 
 /// Generates translation by consuming stdin.
-pub fn test(encdec: &mut EncoderDecoder) {
+pub fn test(encdec: &mut EncoderDecoder<Tensor>) {
     let src_vocab = make_vocab(SRC_TRAIN_FILE, SRC_VOCAB_SIZE).unwrap();
     let trg_vocab = make_vocab(TRG_TRAIN_FILE, TRG_VOCAB_SIZE).unwrap();
     let inv_trg_vocab = make_inv_vocab(&trg_vocab);
@@ -350,7 +352,7 @@ fn main() {
     eprintln!("done.");
 
     if mode == "train" {
-        let mut encdec = EncoderDecoder::new();
+        let mut encdec = EncoderDecoder::<Node>::new();
         encdec.init(
             SRC_VOCAB_SIZE,
             TRG_VOCAB_SIZE,
@@ -364,7 +366,7 @@ fn main() {
     } else if mode == "resume" {
         eprint!("loading model/optimizer ... ");
         stdout().flush().unwrap();
-        let mut encdec = EncoderDecoder::new();
+        let mut encdec = EncoderDecoder::<Node>::new();
         encdec.load(format!("{}.model", prefix), true).unwrap();
         let mut optimizer = O::Adam::default();
         optimizer.load(format!("{}.optimizer", prefix)).unwrap();
@@ -375,7 +377,7 @@ fn main() {
         assert!(mode == "test");
         eprint!("loading model ... ");
         stdout().flush().unwrap();
-        let mut encdec = EncoderDecoder::new();
+        let mut encdec = EncoderDecoder::<Tensor>::new();
         encdec.load(format!("{}.model", prefix), true).unwrap();
         eprintln!("done.");
         test(&mut encdec);
