@@ -217,6 +217,12 @@ impl AsRef<Node> for Node {
     }
 }
 
+impl Default for Node {
+    fn default() -> Node {
+        Node::new()
+    }
+}
+
 /// Computation graph.
 #[derive(Debug)]
 pub struct Graph {

@@ -265,3 +265,9 @@ impl AsRef<Tensor> for Tensor {
         self
     }
 }
+
+impl Default for Tensor {
+    fn default() -> Tensor {
+        Tensor::new()
+    }
+}
