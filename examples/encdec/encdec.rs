@@ -293,14 +293,10 @@ pub fn test(encdec: &mut EncoderDecoder<Tensor>) {
     let trg_vocab = make_vocab(TRG_TRAIN_FILE, TRG_VOCAB_SIZE).unwrap();
     let inv_trg_vocab = make_inv_vocab(&trg_vocab);
 
-    let mut g = Graph::new();
-    Graph::set_default(&mut g);
-
     let stdin = stdin();
     for line in stdin.lock().lines() {
         let src_corpus = [line_to_sent(&line.unwrap(), &src_vocab)];
         let src_batch = make_batch(&src_corpus, &[0], &src_vocab);
-        g.clear();
         encdec.encode(&src_batch, false);
 
         // Generates target words one-by-one.
