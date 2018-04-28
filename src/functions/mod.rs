@@ -1,8 +1,25 @@
 pub mod node_funcs;
 pub mod tensor_funcs;
 mod generics;
-pub use self::generics::Variable;
+pub use self::generics::{Var, Variable};
 pub use self::generics::{
+    positive,
+    negative,
+    add,
+    add_const,
+    add_var,
+    subtract,
+    subtract_const,
+    subtract_var,
+    multiply,
+    multiply_const,
+    multiply_var,
+    divide,
+    divide_const,
+    divide_var,
+    pow,
+    pow_const,
+    pow_var,
     pown,
     input,
     input_on,

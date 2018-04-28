@@ -1,4 +1,6 @@
 use std::marker::PhantomData;
+use std::ops;
+use devices::AnyDevice;
 use Device;
 use Node;
 use Parameter;
@@ -8,20 +10,272 @@ use Tensor;
 use super::node_funcs;
 use super::tensor_funcs;
 
-pub trait Variable: AsRef<Self> + Default + Sized {
+pub trait Variable: Clone + Default + AsRef<Self> + Sized {
     type F: Functions<Self>;
 
     fn new() -> Self {
         Self::default()
     }
+
+    fn valid(&self) -> bool;
+
+    fn shape(&self) -> Shape;
+
+    fn device(&self) -> AnyDevice;
+
+    fn to_float(&self) -> f32;
+
+    fn to_vector(&self) -> Vec<f32>;
+
+    fn argmax(&self, dim: u32) -> Vec<u32>;
+
+    fn argmin(&self, dim: u32) -> Vec<u32>;
 }
+
+#[derive(Clone, Debug)]
+pub struct Var<V: Variable> {
+    inner: V,
+}
+
+impl<V: Variable> Var<V> {
+    pub fn new() -> Self {
+        Var { inner: V::default() }
+    }
+
+    pub fn into_inner(self) -> V {
+        self.inner
+    }
+}
+
+impl<V: Variable> Default for Var<V> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<V: Variable> AsRef<Var<V>> for Var<V> {
+    fn as_ref(&self) -> &Var<V> {
+        self
+    }
+}
+
+impl<V: Variable> AsRef<V> for Var<V> {
+    fn as_ref(&self) -> &V {
+        &self.inner
+    }
+}
+
+impl<V: Variable> From<V> for Var<V> {
+    fn from(v: V) -> Self {
+        Var { inner: v }
+    }
+}
+
+impl<V: Variable> Variable for Var<V> {
+    type F = FuncImpls<Var<V>>;
+
+    fn valid(&self) -> bool {
+        self.inner.valid()
+    }
+
+    fn shape(&self) -> Shape {
+        self.inner.shape()
+    }
+
+    fn device(&self) -> AnyDevice {
+        self.inner.device()
+    }
+
+    fn to_float(&self) -> f32 {
+        self.inner.to_float()
+    }
+
+    fn to_vector(&self) -> Vec<f32> {
+        self.inner.to_vector()
+    }
+
+    fn argmax(&self, dim: u32) -> Vec<u32> {
+        self.inner.argmax(dim)
+    }
+
+    fn argmin(&self, dim: u32) -> Vec<u32> {
+        self.inner.argmin(dim)
+    }
+}
+
+macro_rules! impl_var_unary_op {
+    ($name:ident,
+     $op_fn:ident,
+     $fn:ident) => {
+        impl<V: Variable> ops::$name for Var<V> {
+            type Output = Var<V>;
+
+            fn $op_fn(self) -> Var<V> {
+                $fn(self)
+            }
+        }
+    }
+}
+
+macro_rules! impl_var_binary_with_constant_op {
+    ($scalar:ty,
+     $name:ident,
+     $op_fn:ident,
+     $fn_xc:ident,
+     $fn_cx:ident) => {
+        impl<V: Variable> ops::$name<$scalar> for Var<V> {
+            type Output = Var<V>;
+
+            fn $op_fn(self, rhs: $scalar) -> Var<V> {
+                $fn_xc(self, rhs as f32)
+            }
+        }
+
+        impl<'a, V: Variable> ops::$name<$scalar> for &'a Var<V> {
+            type Output = Var<V>;
+
+            fn $op_fn(self, rhs: $scalar) -> Var<V> {
+                $fn_xc(self, rhs as f32)
+            }
+        }
+
+        impl<V: Variable> ops::$name<Var<V>> for $scalar {
+            type Output = Var<V>;
+
+            fn $op_fn(self, rhs: Var<V>) -> Var<V> {
+                $fn_cx(self as f32, rhs)
+            }
+        }
+
+        impl<'a, V: Variable> ops::$name<&'a Var<V>> for $scalar {
+            type Output = Var<V>;
+
+            fn $op_fn(self, rhs: &'a Var<V>) -> Var<V> {
+                $fn_cx(self as f32, rhs)
+            }
+        }
+    }
+}
+
+macro_rules! impl_var_binary_op {
+    ($name:ident,
+     $op_fn:ident,
+     $fn:ident,
+     $fn_xc:ident,
+     $fn_cx:ident) => {
+        impl_var_binary_with_constant_op!(i8, $name, $op_fn, $fn_xc, $fn_cx);
+        impl_var_binary_with_constant_op!(u8, $name, $op_fn, $fn_xc, $fn_cx);
+        impl_var_binary_with_constant_op!(i16, $name, $op_fn, $fn_xc, $fn_cx);
+        impl_var_binary_with_constant_op!(u16, $name, $op_fn, $fn_xc, $fn_cx);
+        impl_var_binary_with_constant_op!(i32, $name, $op_fn, $fn_xc, $fn_cx);
+        impl_var_binary_with_constant_op!(u32, $name, $op_fn, $fn_xc, $fn_cx);
+        impl_var_binary_with_constant_op!(i64, $name, $op_fn, $fn_xc, $fn_cx);
+        impl_var_binary_with_constant_op!(u64, $name, $op_fn, $fn_xc, $fn_cx);
+        impl_var_binary_with_constant_op!(f32, $name, $op_fn, $fn_xc, $fn_cx);
+        impl_var_binary_with_constant_op!(f64, $name, $op_fn, $fn_xc, $fn_cx);
+
+        impl<V: Variable> ops::$name for Var<V> {
+            type Output = Var<V>;
+
+            fn $op_fn(self, rhs: Var<V>) -> Var<V> {
+                $fn(self, rhs)
+            }
+        }
+
+        impl<'a, V: Variable> ops::$name<Var<V>> for &'a Var<V> {
+            type Output = Var<V>;
+
+            fn $op_fn(self, rhs: Var<V>) -> Var<V> {
+                $fn(self, rhs)
+            }
+        }
+
+        impl<'a, V: Variable> ops::$name<&'a Var<V>> for Var<V> {
+            type Output = Var<V>;
+
+            fn $op_fn(self, rhs: &'a Var<V>) -> Var<V> {
+                $fn(self, rhs)
+            }
+        }
+
+        impl<'a, 'b, V: Variable> ops::$name<&'a Var<V>> for &'b Var<V> {
+            type Output = Var<V>;
+
+            fn $op_fn(self, rhs: &'a Var<V>) -> Var<V> {
+                $fn(self, rhs)
+            }
+        }
+    }
+}
+
+impl_var_unary_op!(Neg, neg, negative);
+impl_var_binary_op!(Add, add, add, add_const, add_var);
+impl_var_binary_op!(Sub, sub, subtract, subtract_const, subtract_var);
+impl_var_binary_op!(Mul, mul, multiply, multiply_const, multiply_var);
+impl_var_binary_op!(Div, div, divide, divide_const, divide_var);
 
 impl Variable for Node {
     type F = FuncImpls<Node>;
+
+    fn valid(&self) -> bool {
+        self.valid()
+    }
+
+    fn shape(&self) -> Shape {
+        self.shape()
+    }
+
+    fn device(&self) -> AnyDevice {
+        self.device()
+    }
+
+    fn to_float(&self) -> f32 {
+        self.to_float()
+    }
+
+    fn to_vector(&self) -> Vec<f32> {
+        self.to_vector()
+    }
+
+    fn argmax(&self, dim: u32) -> Vec<u32> {
+        self.argmax(dim)
+    }
+
+    fn argmin(&self, dim: u32) -> Vec<u32> {
+        self.argmin(dim)
+    }
 }
 
 impl Variable for Tensor {
     type F = FuncImpls<Tensor>;
+
+    fn valid(&self) -> bool {
+        self.valid()
+    }
+
+    fn shape(&self) -> Shape {
+        self.shape()
+    }
+
+    fn device(&self) -> AnyDevice {
+        self.device()
+    }
+
+    fn to_float(&self) -> f32 {
+        self.to_float()
+    }
+
+    fn to_vector(&self) -> Vec<f32> {
+        self.to_vector()
+    }
+
+    fn argmax(&self, dim: u32) -> Vec<u32> {
+        self.argmax(dim)
+    }
+
+    fn argmin(&self, dim: u32) -> Vec<u32> {
+        self.argmin(dim)
+    }
 }
 
 pub fn positive<T: AsRef<V>, V: Variable>(x: T) -> V {
@@ -570,8 +824,520 @@ pub trait Functions<Var> {
     fn batch_normalize<T: AsRef<Var>>(x: T) -> Var;
 }
 
+#[derive(Debug)]
 pub struct FuncImpls<Type> {
     _phantom: PhantomData<Type>,
+}
+
+impl<V: Variable> Functions<Var<V>> for FuncImpls<Var<V>> {
+    #[inline]
+    fn positive<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::positive(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn negative<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::negative(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn add<T1: AsRef<Var<V>>, T2: AsRef<Var<V>>>(a: T1, b: T2) -> Var<V> {
+        <V as Variable>::F::add(a.as_ref(), b.as_ref()).into()
+    }
+
+    #[inline]
+    fn add_const<T: AsRef<Var<V>>>(x: T, k: f32) -> Var<V> {
+        <V as Variable>::F::add_const(x.as_ref(), k).into()
+    }
+
+    #[inline]
+    fn add_var<T: AsRef<Var<V>>>(k: f32, x: T) -> Var<V> {
+        <V as Variable>::F::add_var(k, x.as_ref()).into()
+    }
+
+    #[inline]
+    fn subtract<T1: AsRef<Var<V>>, T2: AsRef<Var<V>>>(a: T1, b: T2) -> Var<V> {
+        <V as Variable>::F::subtract(a.as_ref(), b.as_ref()).into()
+    }
+
+    #[inline]
+    fn subtract_const<T: AsRef<Var<V>>>(x: T, k: f32) -> Var<V> {
+        <V as Variable>::F::subtract_const(x.as_ref(), k).into()
+    }
+
+    #[inline]
+    fn subtract_var<T: AsRef<Var<V>>>(k: f32, x: T) -> Var<V> {
+        <V as Variable>::F::subtract_var(k, x.as_ref()).into()
+    }
+
+    #[inline]
+    fn multiply<T1: AsRef<Var<V>>, T2: AsRef<Var<V>>>(a: T1, b: T2) -> Var<V> {
+        <V as Variable>::F::multiply(a.as_ref(), b.as_ref()).into()
+    }
+
+    #[inline]
+    fn multiply_const<T: AsRef<Var<V>>>(x: T, k: f32) -> Var<V> {
+        <V as Variable>::F::multiply_const(x.as_ref(), k).into()
+    }
+
+    #[inline]
+    fn multiply_var<T: AsRef<Var<V>>>(k: f32, x: T) -> Var<V> {
+        <V as Variable>::F::multiply_var(k, x.as_ref()).into()
+    }
+
+    #[inline]
+    fn divide<T1: AsRef<Var<V>>, T2: AsRef<Var<V>>>(a: T1, b: T2) -> Var<V> {
+        <V as Variable>::F::divide(a.as_ref(), b.as_ref()).into()
+    }
+
+    #[inline]
+    fn divide_const<T: AsRef<Var<V>>>(x: T, k: f32) -> Var<V> {
+        <V as Variable>::F::divide_const(x.as_ref(), k).into()
+    }
+
+    #[inline]
+    fn divide_var<T: AsRef<Var<V>>>(k: f32, x: T) -> Var<V> {
+        <V as Variable>::F::divide_var(k, x.as_ref()).into()
+    }
+
+    #[inline]
+    fn pow<T1: AsRef<Var<V>>, T2: AsRef<Var<V>>>(a: T1, b: T2) -> Var<V> {
+        <V as Variable>::F::pow(a.as_ref(), b.as_ref()).into()
+    }
+
+    #[inline]
+    fn pow_const<T: AsRef<Var<V>>>(x: T, k: f32) -> Var<V> {
+        <V as Variable>::F::pow_const(x.as_ref(), k).into()
+    }
+
+    #[inline]
+    fn pow_var<T: AsRef<Var<V>>>(k: f32, x: T) -> Var<V> {
+        <V as Variable>::F::pow_var(k, x.as_ref()).into()
+    }
+
+    #[inline]
+    fn pown<T: AsRef<Var<V>>>(x: T, k: i32) -> Var<V> {
+        <V as Variable>::F::pown(x.as_ref(), k).into()
+    }
+
+    #[inline]
+    fn input<S: Into<Shape>>(shape: S, data: &[f32]) -> Var<V> {
+        <V as Variable>::F::input(shape, data).into()
+    }
+
+    #[inline]
+    fn input_on<S: Into<Shape>, D: Device>(shape: S, data: &[f32], dev: Option<&mut D>) -> Var<V> {
+        <V as Variable>::F::input_on(shape, data, dev).into()
+    }
+
+    #[inline]
+    fn copy<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::copy(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn copy_on<T: AsRef<Var<V>>, D: Device>(x: T, dev: Option<&mut D>) -> Var<V> {
+        <V as Variable>::F::copy_on(x.as_ref(), dev).into()
+    }
+
+    #[inline]
+    fn parameter(param: &mut Parameter) -> Var<V> {
+        <V as Variable>::F::parameter(param).into()
+    }
+
+    #[inline]
+    fn pick<T: AsRef<Var<V>>>(x: T, ids: &[u32], dim: u32) -> Var<V> {
+        <V as Variable>::F::pick(x.as_ref(), ids, dim).into()
+    }
+
+    #[inline]
+    fn slice<T: AsRef<Var<V>>>(x: T, dim: u32, lower: u32, upper: u32) -> Var<V> {
+        <V as Variable>::F::slice(x.as_ref(), dim, lower, upper).into()
+    }
+
+    #[inline]
+    fn split<T: AsRef<Var<V>>>(x: T, dim: u32, n: u32) -> Vec<Var<V>> {
+        <V as Variable>::F::split(x.as_ref(), dim, n)
+            .into_iter()
+            .map(|y| y.into())
+            .collect()
+    }
+
+    #[inline]
+    fn concat<TS: AsRef<[T]>, T: AsRef<Var<V>>>(xs: TS, dim: u32) -> Var<V> {
+        <V as Variable>::F::concat(
+            xs.as_ref().iter().map(|x| x.as_ref()).collect::<Vec<_>>(),
+            dim,
+        ).into()
+    }
+
+    #[inline]
+    fn reshape<T: AsRef<Var<V>>, S: Into<Shape>>(x: T, new_shape: S) -> Var<V> {
+        <V as Variable>::F::reshape(x.as_ref(), new_shape).into()
+    }
+
+    #[inline]
+    fn flatten<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::flatten(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn transpose<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::transpose(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn matmul<T1: AsRef<Var<V>>, T2: AsRef<Var<V>>>(a: T1, b: T2) -> Var<V> {
+        <V as Variable>::F::matmul(a.as_ref(), b.as_ref()).into()
+    }
+
+    #[inline]
+    fn abs<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::abs(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn sqrt<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::sqrt(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn exp<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::exp(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn log<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::log(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn tanh<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::tanh(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn sigmoid<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::sigmoid(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn softplus<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::softplus(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn sin<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::sin(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn cos<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::cos(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn tan<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::tan(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn relu<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::relu(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn lrelu<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::lrelu(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn prelu<T: AsRef<Var<V>>>(x: T, a: f32) -> Var<V> {
+        <V as Variable>::F::prelu(x.as_ref(), a).into()
+    }
+
+    #[inline]
+    fn elu<T: AsRef<Var<V>>>(x: T, a: f32) -> Var<V> {
+        <V as Variable>::F::elu(x.as_ref(), a).into()
+    }
+
+    #[inline]
+    fn selu<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::selu(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn max<T: AsRef<Var<V>>>(x: T, dim: u32) -> Var<V> {
+        <V as Variable>::F::max(x.as_ref(), dim).into()
+    }
+
+    #[inline]
+    fn min<T: AsRef<Var<V>>>(x: T, dim: u32) -> Var<V> {
+        <V as Variable>::F::min(x.as_ref(), dim).into()
+    }
+
+    #[inline]
+    fn sum<T: AsRef<Var<V>>>(x: T, dim: u32) -> Var<V> {
+        <V as Variable>::F::sum(x.as_ref(), dim).into()
+    }
+
+    #[inline]
+    fn sum_vars<TS: AsRef<[T]>, T: AsRef<Var<V>>>(xs: TS) -> Var<V> {
+        <V as Variable>::F::sum_vars(xs.as_ref().iter().map(|x| x.as_ref()).collect::<Vec<_>>())
+            .into()
+    }
+
+    #[inline]
+    fn mean<T: AsRef<Var<V>>>(x: T, dim: u32) -> Var<V> {
+        <V as Variable>::F::mean(x.as_ref(), dim).into()
+    }
+
+    #[inline]
+    fn mean_vars<TS: AsRef<[T]>, T: AsRef<Var<V>>>(xs: TS) -> Var<V> {
+        <V as Variable>::F::mean_vars(xs.as_ref().iter().map(|x| x.as_ref()).collect::<Vec<_>>())
+            .into()
+    }
+
+    #[inline]
+    fn broadcast<T: AsRef<Var<V>>>(x: T, dim: u32, size: u32) -> Var<V> {
+        <V as Variable>::F::broadcast(x.as_ref(), dim, size).into()
+    }
+
+    #[inline]
+    fn logsumexp<T: AsRef<Var<V>>>(x: T, dim: u32) -> Var<V> {
+        <V as Variable>::F::logsumexp(x.as_ref(), dim).into()
+    }
+
+    #[inline]
+    fn log_softmax<T: AsRef<Var<V>>>(x: T, dim: u32) -> Var<V> {
+        <V as Variable>::F::log_softmax(x.as_ref(), dim).into()
+    }
+
+    #[inline]
+    fn softmax<T: AsRef<Var<V>>>(x: T, dim: u32) -> Var<V> {
+        <V as Variable>::F::softmax(x.as_ref(), dim).into()
+    }
+
+    #[inline]
+    fn softmax_cross_entropy<T1: AsRef<Var<V>>, T2: AsRef<Var<V>>>(
+        x: T1,
+        t: T2,
+        dim: u32,
+    ) -> Var<V> {
+        <V as Variable>::F::softmax_cross_entropy(x.as_ref(), t.as_ref(), dim).into()
+    }
+
+    #[inline]
+    fn softmax_cross_entropy_with_ids<T: AsRef<Var<V>>>(x: T, ids: &[u32], dim: u32) -> Var<V> {
+        <V as Variable>::F::softmax_cross_entropy_with_ids(x.as_ref(), ids, dim).into()
+    }
+
+    #[inline]
+    fn stop_gradient<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::stop_gradient(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn conv2d<T1: AsRef<Var<V>>, T2: AsRef<Var<V>>>(
+        x: T1,
+        w: T2,
+        padding0: u32,
+        padding1: u32,
+        stride0: u32,
+        stride1: u32,
+        dilation0: u32,
+        dilation1: u32,
+    ) -> Var<V> {
+        <V as Variable>::F::conv2d(
+            x.as_ref(),
+            w.as_ref(),
+            padding0,
+            padding1,
+            stride0,
+            stride1,
+            dilation0,
+            dilation1,
+        ).into()
+    }
+
+    #[inline]
+    fn max_pool2d<T: AsRef<Var<V>>>(
+        x: T,
+        window0: u32,
+        window1: u32,
+        padding0: u32,
+        padding1: u32,
+        stride0: u32,
+        stride1: u32,
+    ) -> Var<V> {
+        <V as Variable>::F::max_pool2d(
+            x.as_ref(),
+            window0,
+            window1,
+            padding0,
+            padding1,
+            stride0,
+            stride1,
+        ).into()
+    }
+
+    #[inline]
+    fn constant<S: Into<Shape>>(shape: S, k: f32) -> Var<V> {
+        <V as Variable>::F::constant(shape, k).into()
+    }
+
+    #[inline]
+    fn constant_on<S: Into<Shape>, D: Device>(shape: S, k: f32, dev: Option<&mut D>) -> Var<V> {
+        <V as Variable>::F::constant_on(shape, k, dev).into()
+    }
+
+    #[inline]
+    fn identity(size: u32) -> Var<V> {
+        <V as Variable>::F::identity(size).into()
+    }
+
+    #[inline]
+    fn identity_on<D: Device>(size: u32, dev: Option<&mut D>) -> Var<V> {
+        <V as Variable>::F::identity_on(size, dev).into()
+    }
+
+    #[inline]
+    fn zeros<S: Into<Shape>>(shape: S) -> Var<V> {
+        <V as Variable>::F::zeros(shape).into()
+    }
+
+    #[inline]
+    fn zeros_on<S: Into<Shape>, D: Device>(shape: S, dev: Option<&mut D>) -> Var<V> {
+        <V as Variable>::F::zeros_on(shape, dev).into()
+    }
+
+    #[inline]
+    fn ones<S: Into<Shape>>(shape: S) -> Var<V> {
+        <V as Variable>::F::ones(shape).into()
+    }
+
+    #[inline]
+    fn ones_on<S: Into<Shape>, D: Device>(shape: S, dev: Option<&mut D>) -> Var<V> {
+        <V as Variable>::F::ones_on(shape, dev).into()
+    }
+
+    #[inline]
+    fn dropout<T: AsRef<Var<V>>>(x: T, rate: f32, enabled: bool) -> Var<V> {
+        <V as Variable>::F::dropout(x.as_ref(), rate, enabled).into()
+    }
+
+    #[inline]
+    fn random_bernoulli<S: Into<Shape>>(shape: S, p: f32) -> Var<V> {
+        <V as Variable>::F::random_bernoulli(shape, p).into()
+    }
+
+    #[inline]
+    fn random_bernoulli_on<S: Into<Shape>, D: Device>(
+        shape: S,
+        p: f32,
+        dev: Option<&mut D>,
+    ) -> Var<V> {
+        <V as Variable>::F::random_bernoulli_on(shape, p, dev).into()
+    }
+
+    #[inline]
+    fn random_uniform<S: Into<Shape>>(shape: S, lower: f32, upper: f32) -> Var<V> {
+        <V as Variable>::F::random_uniform(shape, lower, upper).into()
+    }
+
+    #[inline]
+    fn random_uniform_on<S: Into<Shape>, D: Device>(
+        shape: S,
+        lower: f32,
+        upper: f32,
+        dev: Option<&mut D>,
+    ) -> Var<V> {
+        <V as Variable>::F::random_uniform_on(shape, lower, upper, dev).into()
+    }
+
+    #[inline]
+    fn random_normal<S: Into<Shape>>(shape: S, mean: f32, sd: f32) -> Var<V> {
+        <V as Variable>::F::random_normal(shape, mean, sd).into()
+    }
+
+    #[inline]
+    fn random_normal_on<S: Into<Shape>, D: Device>(
+        shape: S,
+        mean: f32,
+        sd: f32,
+        dev: Option<&mut D>,
+    ) -> Var<V> {
+        <V as Variable>::F::random_normal_on(shape, mean, sd, dev).into()
+    }
+
+    #[inline]
+    fn random_log_normal<S: Into<Shape>>(shape: S, mean: f32, sd: f32) -> Var<V> {
+        <V as Variable>::F::random_log_normal(shape, mean, sd).into()
+    }
+
+    #[inline]
+    fn random_log_normal_on<S: Into<Shape>, D: Device>(
+        shape: S,
+        mean: f32,
+        sd: f32,
+        dev: Option<&mut D>,
+    ) -> Var<V> {
+        <V as Variable>::F::random_log_normal_on(shape, mean, sd, dev).into()
+    }
+
+    #[inline]
+    fn random_gumbel<S: Into<Shape>>(shape: S, mu: f32, beta: f32) -> Var<V> {
+        <V as Variable>::F::random_gumbel(shape, mu, beta).into()
+    }
+
+    #[inline]
+    fn random_gumbel_on<S: Into<Shape>, D: Device>(
+        shape: S,
+        mu: f32,
+        beta: f32,
+        dev: Option<&mut D>,
+    ) -> Var<V> {
+        <V as Variable>::F::random_gumbel_on(shape, mu, beta, dev).into()
+    }
+
+    #[inline]
+    fn batch_pick<T: AsRef<Var<V>>>(x: T, ids: &[u32]) -> Var<V> {
+        <V as Variable>::F::batch_pick(x.as_ref(), ids).into()
+    }
+
+    #[inline]
+    fn batch_slice<T: AsRef<Var<V>>>(x: T, lower: u32, upper: u32) -> Var<V> {
+        <V as Variable>::F::batch_slice(x.as_ref(), lower, upper).into()
+    }
+
+    #[inline]
+    fn batch_split<T: AsRef<Var<V>>>(x: T, n: u32) -> Vec<Var<V>> {
+        <V as Variable>::F::batch_split(x.as_ref(), n)
+            .into_iter()
+            .map(|y| y.into())
+            .collect()
+    }
+
+    #[inline]
+    fn batch_concat<TS: AsRef<[T]>, T: AsRef<Var<V>>>(xs: TS) -> Var<V> {
+        <V as Variable>::F::batch_concat(xs.as_ref().iter().map(|x| x.as_ref()).collect::<Vec<_>>())
+            .into()
+    }
+
+    #[inline]
+    fn batch_sum<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::batch_sum(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn batch_mean<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::batch_mean(x.as_ref()).into()
+    }
+
+    #[inline]
+    fn batch_normalize<T: AsRef<Var<V>>>(x: T) -> Var<V> {
+        <V as Variable>::F::batch_normalize(x.as_ref()).into()
+    }
 }
 
 impl Functions<Node> for FuncImpls<Node> {
