@@ -29,6 +29,7 @@ pub use tensor::Tensor;
 mod optimizer;
 pub use optimizer::Optimizer;
 pub mod functions;
+pub use functions::Variable;
 pub use functions::node_funcs as node_functions;
 pub use functions::tensor_funcs as tensor_functions;
 pub mod devices;

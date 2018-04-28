@@ -1,7 +1,7 @@
 pub mod node_funcs;
 pub mod tensor_funcs;
 mod generics;
-pub use self::generics::{Var, Variable};
+pub use self::generics::Variable;
 pub use self::generics::{
     positive,
     negative,
