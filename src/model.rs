@@ -175,6 +175,12 @@ impl Model {
     // TODO: implement get_trainable_parameters()
 }
 
+impl Default for Model {
+    fn default() -> Model {
+        Model::new()
+    }
+}
+
 impl AsRef<Model> for Model {
     #[inline]
     fn as_ref(&self) -> &Model {
