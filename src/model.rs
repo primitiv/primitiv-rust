@@ -106,12 +106,12 @@ impl Model {
     }
 
     /// Retrieves a parameter with specified name.
-    pub fn get_parameter(&mut self, name: &str) -> Parameter {
+    pub fn get_parameter(&mut self, name: &str) -> Option<Parameter> {
         self.find_parameter(&[name; 1])
     }
 
     /// Recursively searches a parameter with specified name hierarchy.
-    pub fn find_parameter(&mut self, names: &[&str]) -> Parameter {
+    pub fn find_parameter(&mut self, names: &[&str]) -> Option<Parameter> {
         unsafe {
             let mut parameter_ptr: *const _primitiv::primitivParameter_t = ptr::null_mut();
             let names_c_vec = names
@@ -122,24 +122,29 @@ impl Model {
                 .iter()
                 .map(|name_c| name_c.as_ptr())
                 .collect::<Vec<_>>();
-            check_api_status!(_primitiv::primitivGetParameterFromModel(
-                self.as_ptr(),
-                names_ptr_vec.as_mut_ptr(),
-                names_ptr_vec.len(),
-                &mut parameter_ptr,
-            ));
-            assert!(!parameter_ptr.is_null());
-            Parameter::from_raw(parameter_ptr as *mut _, false)
+            let result = Result::from_api_status(
+                _primitiv::primitivGetParameterFromModel(
+                    self.as_ptr(),
+                    names_ptr_vec.as_mut_ptr(),
+                    names_ptr_vec.len(),
+                    &mut parameter_ptr,
+                ),
+                (),
+            ).map(|()| {
+                assert!(!parameter_ptr.is_null());
+                Parameter::from_raw(parameter_ptr as *mut _, false)
+            });
+            result.ok()
         }
     }
 
     /// Retrieves a submodel with specified name.
-    pub fn get_submodel(&mut self, name: &str) -> Model {
+    pub fn get_submodel(&mut self, name: &str) -> Option<Model> {
         self.find_submodel(&[name; 1])
     }
 
     /// Recursively searches a submodel with specified name hierarchy.
-    pub fn find_submodel(&mut self, names: &[&str]) -> Model {
+    pub fn find_submodel(&mut self, names: &[&str]) -> Option<Model> {
         unsafe {
             let mut model_ptr: *const _primitiv::primitivModel_t = ptr::null_mut();
             let names_c_vec = names
@@ -150,14 +155,19 @@ impl Model {
                 .iter()
                 .map(|name_c| name_c.as_ptr())
                 .collect::<Vec<_>>();
-            check_api_status!(_primitiv::primitivGetSubmodelFromModel(
-                self.as_ptr(),
-                names_ptr_vec.as_mut_ptr(),
-                names_ptr_vec.len(),
-                &mut model_ptr,
-            ));
-            assert!(!model_ptr.is_null());
-            Model::from_raw(model_ptr as *mut _, false)
+            let result = Result::from_api_status(
+                _primitiv::primitivGetSubmodelFromModel(
+                    self.as_ptr(),
+                    names_ptr_vec.as_mut_ptr(),
+                    names_ptr_vec.len(),
+                    &mut model_ptr,
+                ),
+                (),
+            ).map(|()| {
+                assert!(!model_ptr.is_null());
+                Model::from_raw(model_ptr as *mut _, false)
+            });
+            result.ok()
         }
     }
 
