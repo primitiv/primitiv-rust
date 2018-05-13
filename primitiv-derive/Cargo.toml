@@ -1,0 +1,15 @@
+[package]
+name = "primitiv-derive"
+version = "0.1.0"
+authors = ["Hiroki Teranishi <teranishihiroki@gmail.com>"]
+description = "The package provides primitiv custom derives."
+keywords = ["deep-learning", "neural-networks", "machine-learning", "primitiv"]
+license = "Apache-2.0"
+repository = "https://github.com/primitiv/primitiv-rust"
+
+[dependencies]
+syn = "0.13"
+quote = "0.5"
+
+[lib]
+proc-macro = true

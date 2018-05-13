@@ -86,6 +86,8 @@ pub trait Model: Sized {
         })
     }
 
+    fn register_parameters(&mut self);
+
     fn invalidate(&mut self) {
         internal::remove_entity(self);
     }
@@ -94,11 +96,13 @@ pub trait Model: Sized {
 #[derive(Debug)]
 pub struct AnyModel;
 
-impl Model for AnyModel {}
+impl Model for AnyModel {
+    fn register_parameters(&mut self) {}
+}
 
 impl Drop for AnyModel {
     fn drop(&mut self) {
-        self.invalidate()
+        self.invalidate();
     }
 }
 

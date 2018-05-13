@@ -1,7 +1,13 @@
 extern crate primitiv_sys;
+#[allow(unused_imports)]
+#[macro_use]
+extern crate primitiv_derive;
 #[macro_use]
 extern crate lazy_static;
 extern crate libc;
+
+#[doc(hidden)]
+pub use primitiv_derive::*;
 
 #[macro_use]
 mod status;

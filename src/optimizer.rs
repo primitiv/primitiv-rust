@@ -156,6 +156,7 @@ pub trait Optimizer: Wrap<_primitiv::primitivOptimizer_t> + Default {
     /// Registers a model.
     fn add_model<M: Model>(&mut self, model: &mut M) {
         unsafe {
+            model.register_parameters();
             let lock = model_internal::get_entity_mut(model);
             let mut entity = lock.write().unwrap();
             check_api_status!(_primitiv::primitivAddModelToOptimizer(
@@ -170,7 +171,10 @@ pub trait Optimizer: Wrap<_primitiv::primitivOptimizer_t> + Default {
         unsafe {
             let locks = models
                 .iter_mut()
-                .map(|model| model_internal::get_entity_mut(model))
+                .map(|model| {
+                    model.register_parameters();
+                    model_internal::get_entity_mut(model)
+                })
                 .collect::<Vec<_>>();
             let mut guards = locks
                 .iter()
