@@ -6,6 +6,7 @@ use ApiResult;
 use Parameter;
 use Model;
 use Wrap;
+use model_internal;
 
 /// `Optimizer` trait
 pub trait Optimizer: Wrap<_primitiv::primitivOptimizer_t> + Default {
@@ -138,7 +139,7 @@ pub trait Optimizer: Wrap<_primitiv::primitivOptimizer_t> + Default {
     }
 
     /// Registers multiple parameters.
-    fn add_parameters(&mut self, params: &mut [&mut Parameter]) {
+    fn add_parameters(&mut self, params: &mut [Parameter]) {
         unsafe {
             let mut param_ptrs = params
                 .iter_mut()
@@ -153,21 +154,31 @@ pub trait Optimizer: Wrap<_primitiv::primitivOptimizer_t> + Default {
     }
 
     /// Registers a model.
-    fn add_model<M: AsMut<Model>>(&mut self, model: &mut M) {
+    fn add_model<M: Model>(&mut self, model: &mut M) {
         unsafe {
+            let lock = model_internal::get_entity_mut(model);
+            let mut entity = lock.write().unwrap();
             check_api_status!(_primitiv::primitivAddModelToOptimizer(
                 self.as_mut_ptr(),
-                model.as_mut().as_mut_ptr(),
+                entity.as_mut_ptr(),
             ));
         }
     }
 
     /// Registers multiple models.
-    fn add_models<M: AsMut<Model>>(&mut self, models: &mut [&mut M]) {
+    fn add_models<M: Model>(&mut self, models: &mut [M]) {
         unsafe {
-            let mut model_ptrs = models
+            let locks = models
                 .iter_mut()
-                .map(|model| model.as_mut().as_mut_ptr())
+                .map(|model| model_internal::get_entity_mut(model))
+                .collect::<Vec<_>>();
+            let mut guards = locks
+                .iter()
+                .map(|lock| lock.write().unwrap())
+                .collect::<Vec<_>>();
+            let mut model_ptrs = guards
+                .iter_mut()
+                .map(|entity| entity.as_mut_ptr())
                 .collect::<Vec<_>>();
             check_api_status!(_primitiv::primitivAddModelsToOptimizer(
                 self.as_mut_ptr(),

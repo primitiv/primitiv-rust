@@ -1,4 +1,6 @@
 extern crate primitiv_sys;
+#[macro_use]
+extern crate lazy_static;
 extern crate libc;
 
 #[macro_use]
@@ -18,7 +20,8 @@ mod initializer;
 pub use initializer::Initializer;
 #[macro_use]
 mod model;
-pub use model::{Model, ModelImpl};
+pub use model::Model;
+pub(crate) use model::internal as model_internal;
 mod parameter;
 pub use parameter::Parameter;
 mod shape;
