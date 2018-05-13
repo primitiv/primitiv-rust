@@ -82,9 +82,7 @@ fn build_from_src() -> Result<(), Box<Error>> {
         log_var!(source);
         if !source.exists() {
             run("git", |command| {
-                command.arg("clone").arg("--depth=1").arg(REPOSITORY).arg(
-                    &source,
-                )
+                command.arg("clone").arg(REPOSITORY).arg(&source)
             });
             run("git", |command| {
                 command
