@@ -10,6 +10,7 @@ readme = "README.md"
 
 [dependencies]
 backtrace = "0.3"
+lazy_static = "1.0"
 libc = "0.2"
 primitiv-sys = { version = "0.3", path = "primitiv-sys" }
 
