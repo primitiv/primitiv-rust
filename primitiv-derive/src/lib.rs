@@ -4,9 +4,9 @@ extern crate syn;
 extern crate quote;
 
 use proc_macro::TokenStream;
-use syn::*;
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
+use syn::*;
 
 #[proc_macro_derive(Model)]
 pub fn derive_model(input: TokenStream) -> TokenStream {
@@ -29,24 +29,23 @@ fn expand_derive_model(input: &DeriveInput) -> Result<quote::Tokens, &'static st
             return Err("primitiv does not support derive for unions");
         }
     };
-    let impl_block =
-        quote! {
-            impl #impl_generics primitiv::Model for #ident #ty_generics #where_clause {
-                fn register_parameters(&mut self) {
-                    let handle: *mut _ = self;
-                    unsafe {
-                        let model = &mut *handle;
-                        #body
-                    }
+    let impl_block = quote! {
+        impl #impl_generics primitiv::Model for #ident #ty_generics #where_clause {
+            fn register_parameters(&mut self) {
+                let handle: *mut _ = self;
+                unsafe {
+                    let model = &mut *handle;
+                    #body
                 }
             }
+        }
 
-            impl #impl_generics Drop for #ident #ty_generics #where_clause {
-                fn drop(&mut self) {
-                    primitiv::Model::invalidate(self);
-                }
+        impl #impl_generics Drop for #ident #ty_generics #where_clause {
+            fn drop(&mut self) {
+                primitiv::Model::invalidate(self);
             }
-        };
+        }
+    };
     Ok(impl_block)
 }
 
@@ -55,8 +54,13 @@ fn impl_body_from_struct(fields: &Fields) -> Result<quote::Tokens, &'static str>
         Fields::Named(ref f) => {
             let mut stmts: Vec<quote::Tokens> = vec![];
             for field in &f.named {
-                let field_name = field.ident.as_ref().unwrap();
-                parse_field(&field_name, &field.ty, &mut stmts);
+                let field_ident = field.ident.as_ref().unwrap();
+                let field_name = field_ident.to_string();
+                if let Some(stmt) =
+                    parse_field(&field_name, &quote!(self.#field_ident), &field.ty, false)
+                {
+                    stmts.push(stmt);
+                }
             }
             quote!(#(#stmts)*)
         }
@@ -75,123 +79,144 @@ fn impl_body_from_enum(
     Err("not implemented") // TODO(chantera): Implement
 }
 
-fn parse_field(field_name: &Ident, ty: &Type, stmts: &mut Vec<quote::Tokens>) {
+fn parse_field(
+    name: &str,
+    field: &quote::Tokens,
+    ty: &Type,
+    is_ref: bool,
+) -> Option<quote::Tokens> {
     match FieldType::from_ty(ty) {
-        FieldType::Array => {
-            // TODO(chantera): Implement
-            panic!("not implement");
-        }
-        FieldType::Vec => {
-            // TODO(chantera): Implement
-            panic!("not implement");
-            // let sub_type = sub_type(ty).unwrap();
-            // match FieldType::from_ty(sub_type) {
-            //     FieldType::Array | FieldType::Vec | FieldType::Tuple | FieldType::Option => {}
-            //     FieldType::Parameter => {}
-            //     FieldType::Model => {}
-            //     FieldType::Other => {}
-            //     _ => {}
-            // }
-        }
-        FieldType::Tuple => {
-            // TODO(chantera): Implement
-            panic!("not implement");
-        }
-        FieldType::Option => {
-            let sub_type = sub_type(ty).unwrap();
-            match FieldType::from_ty(sub_type) {
-                FieldType::Array | FieldType::Vec | FieldType::Tuple | FieldType::Option => {
-                    // TODO(chantera): Implement
-                    panic!("not implement");
-                    // parse_field(field_name, sub_type, stmts)
+        FieldType::Array(sub_type) | FieldType::Vec(sub_type) => match FieldType::from_ty(sub_type)
+        {
+            FieldType::Array(_)
+            | FieldType::Vec(_)
+            | FieldType::Tuple(_)
+            | FieldType::Option(_) => {
+                // parse_field(name).map(|stmt| {
+                //     quote! {for (i, param) in #field.iter_mut().enumerate() {
+                //     }
+                //     }
+                // })
+                // let stmts: Vec<_> = self.pw4.iter_mut().map(|(i, v)| {
+                //     model.add_parameter(#name, &mut #field);
+                // }).collect();
+                // if stmts.len() > 0 {
+                //     Some(quote!(#(#stmts)*))
+                // } else {
+                //     None
+                // }
+                None
+            }
+            FieldType::Parameter => Some(quote! {
+                for (i, param) in #field.iter_mut().enumerate() {
+                    model.add_parameter(&format!("{}.{}", #name, i), param);
                 }
-                FieldType::Parameter => {
-                    let name = field_name.to_string();
-                    stmts.push(quote! {
-                        if let Some(#field_name) = self.#field_name.as_mut() {
-                            model.add_parameter(#name, #field_name);
-                        }
-                    });
+            }),
+            FieldType::Model => Some(quote! {
+                for (i, sub_model) in #field.iter_mut().enumerate() {
+                    sub_model.register_parameters();
+                    model.add_submodel(&format!("{}.{}", #name, i), sub_model);
                 }
-                FieldType::Model => {
-                    let name = field_name.to_string();
-                    stmts.push(quote! {
-                        if let Some(#field_name) = self.#field_name.as_mut() {
-                            #field_name.register_parameters();
-                            model.add_submodel(#name, #field_name);
-                        }
-                    });
-                }
-                FieldType::Other => {}
+            }),
+            FieldType::Other => None,
+        },
+        FieldType::Tuple(sub_types) => {
+            let stmts: Vec<_> = sub_types
+                .iter()
+                .enumerate()
+                .filter_map(|(i, sub_type)| {
+                    let sub_name = format!("{}.{}", name, i);
+                    let index = Index::from(i);
+                    parse_field(&sub_name, &quote!(#field.#index), sub_type, false)
+                })
+                .collect();
+            if stmts.len() > 0 {
+                Some(quote!(#(#stmts)*))
+            } else {
+                None
             }
         }
+        FieldType::Option(sub_type) => parse_field(name, &quote!(v), sub_type, true).map(|stmt| {
+            quote! {
+                if let Some(v) = #field.as_mut() {
+                    #stmt
+                }
+            }
+        }),
         FieldType::Parameter => {
-            let name = field_name.to_string();
-            stmts.push(quote! {
-                model.add_parameter(#name, &mut self.#field_name);
-            });
+            if is_ref {
+                Some(quote! {
+                    model.add_parameter(#name, #field);
+                })
+            } else {
+                Some(quote! {
+                    model.add_parameter(#name, &mut #field);
+                })
+            }
         }
         FieldType::Model => {
-            let name = field_name.to_string();
-            stmts.push(quote! {
-                self.#field_name.register_parameters();
-                model.add_submodel(#name, &mut self.#field_name);
-            });
+            if is_ref {
+                Some(quote! {
+                    #field.register_parameters();
+                    model.add_submodel(#name, #field);
+                })
+            } else {
+                Some(quote! {
+                    #field.register_parameters();
+                    model.add_submodel(#name, &mut #field);
+                })
+            }
         }
-        FieldType::Other => {}
+        FieldType::Other => None,
     }
 }
 
-enum FieldType {
-    Array,
-    Vec,
-    Tuple,
-    Option,
+enum FieldType<'a> {
+    Array(&'a Type),
+    Vec(&'a Type),
+    Tuple(Vec<&'a Type>),
+    Option(&'a Type),
     Parameter,
     Model,
     Other,
 }
 
-impl FieldType {
-    fn from_ty(ty: &Type) -> Self {
+impl<'a> FieldType<'a> {
+    fn from_ty(ty: &'a Type) -> Self {
         match ty {
-            Type::Array(ref ty) => FieldType::Array,
-            Type::Tuple(ref ty) => FieldType::Tuple,
-            Type::Path(ref ty) => {
-                match ty.path.segments.iter().last().unwrap().ident.as_ref() {
-                    "Vec" => FieldType::Vec,
-                    "Option" => FieldType::Option,
-                    "Parameter" => FieldType::Parameter,
-                    "Model" => FieldType::Model,
-                    _ => FieldType::Other,
-                }
-            }
+            Type::Array(ref t) => FieldType::Array(&t.elem),
+            Type::Tuple(ref t) => FieldType::Tuple(t.elems.iter().collect()),
+            Type::Path(ref t) => match t.path.segments.iter().last().unwrap().ident.as_ref() {
+                "Vec" => FieldType::Vec(FieldType::generic_subtype(ty).unwrap()),
+                "Option" => FieldType::Option(FieldType::generic_subtype(ty).unwrap()),
+                "Parameter" => FieldType::Parameter,
+                "Model" => FieldType::Model,
+                _ => FieldType::Other,
+            },
             _ => FieldType::Other,
         }
     }
-}
 
-fn sub_type(ty: &Type) -> Option<&Type> {
-    match ty {
-        Type::Array(ref ty) => None,
-        Type::Tuple(ref ty) => None,
-        Type::Path(ref ty) => {
-            match ty.path.segments.iter().last().unwrap() {
+    fn generic_subtype(ty: &Type) -> Option<&Type> {
+        match ty {
+            Type::Path(ref t) => match t.path.segments.iter().last().unwrap() {
                 PathSegment {
-                    arguments: PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                                                      ref args, ..
-                                                  }),
+                    arguments:
+                        PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                            ref args, ..
+                        }),
                     ..
-                } if args.len() == 1 => {
-                    if let GenericArgument::Type(ref ty) = args[0] {
-                        Some(ty)
+                } if args.len() == 1 =>
+                {
+                    if let GenericArgument::Type(ref t) = args[0] {
+                        Some(t)
                     } else {
                         None
                     }
                 }
                 _ => None,
-            }
+            },
+            _ => None,
         }
-        _ => None,
     }
 }
