@@ -22,112 +22,223 @@ fn expand_derive_model(input: &DeriveInput) -> Result<quote::Tokens, &'static st
     let generics = input.generics.clone();
     let (_, ty_generics, _) = input.generics.split_for_impl();
     let (impl_generics, _, where_clause) = generics.split_for_impl();
-    let body = match input.data {
-        Data::Struct(ref data) => impl_body_from_struct(&data.fields)?,
-        Data::Enum(ref data) => impl_body_from_enum(&data.variants)?,
+
+    let impl_body = match input.data {
+        Data::Struct(ref data) => impl_body_from_struct(ident, &data.fields),
+        Data::Enum(ref data) => impl_body_from_enum(ident, &data.variants),
         Data::Union(_) => {
             return Err("primitiv does not support derive for unions");
         }
     };
-    let impl_block = quote! {
-        impl #impl_generics primitiv::Model for #ident #ty_generics #where_clause {
-            fn register_parameters(&mut self) {
-                let handle: *mut _ = self;
-                unsafe {
-                    let model = &mut *handle;
-                    #body
+    let impl_model = match impl_body {
+        Some(body) => quote! {
+            impl #impl_generics primitiv::Model for #ident #ty_generics #where_clause {
+                fn register_parameters(&mut self) {
+                    let handle: *mut _ = self;
+                    unsafe {
+                        let model = &mut *handle;
+                        #body
+                    }
                 }
             }
-        }
-
+        },
+        None => quote! {
+            impl #impl_generics primitiv::Model for #ident #ty_generics #where_clause {
+                fn register_parameters(&mut self) {}
+            }
+        },
+    };
+    let impl_drop = quote! {
         impl #impl_generics Drop for #ident #ty_generics #where_clause {
             fn drop(&mut self) {
                 primitiv::Model::invalidate(self);
             }
         }
     };
-    Ok(impl_block)
+    Ok(quote! {
+        #impl_model
+
+        #impl_drop
+    })
 }
 
-fn impl_body_from_struct(fields: &Fields) -> Result<quote::Tokens, &'static str> {
-    let body = match fields {
-        Fields::Named(ref f) => {
-            let mut stmts: Vec<quote::Tokens> = vec![];
-            for field in &f.named {
-                let field_ident = field.ident.as_ref().unwrap();
-                let field_name = field_ident.to_string();
-                if let Some(stmt) =
-                    parse_field(&field_name, &quote!(self.#field_ident), &field.ty, false)
-                {
-                    stmts.push(stmt);
-                }
-            }
-            quote!(#(#stmts)*)
+fn impl_body_from_struct(_name: &Ident, fields: &Fields) -> Option<quote::Tokens> {
+    match fields {
+        Fields::Named(ref f) => Some(map_fields(&f.named, true, Some(&Ident::from("self")), None)),
+        Fields::Unnamed(ref f) => Some(map_fields(
+            &f.unnamed,
+            false,
+            Some(&Ident::from("self")),
+            None,
+        )),
+        Fields::Unit => None,
+    }.and_then(|tokens| {
+        let stmts: Vec<quote::Tokens> = tokens.into_iter().filter_map(|token| token).collect();
+        if stmts.len() > 0 {
+            Some(quote!(#(#stmts)*))
+        } else {
+            None
         }
-        Fields::Unnamed(ref f) => {
-            return Err("not implemented"); // TODO(chantera): Implement
-        }
-        Fields::Unit => quote!(),
-    };
-    // panic!("body: {:?}", body);
-    Ok(body)
+    })
 }
 
 fn impl_body_from_enum(
+    name: &Ident,
     variants: &Punctuated<Variant, Comma>,
-) -> Result<quote::Tokens, &'static str> {
-    Err("not implemented") // TODO(chantera): Implement
+) -> Option<quote::Tokens> {
+    let stmts: Vec<quote::Tokens> = variants
+        .iter()
+        .map(|variant| {
+            let variant_ident = &variant.ident;
+            let variant_name = variant_ident.to_string();
+            match variant.fields {
+                Fields::Named(ref f) => {
+                    let tokens = map_fields(&f.named, true, None, Some(&variant_name[..]));
+                    if tokens.iter().any(|token| token.is_some()) {
+                        let mut fields = Vec::with_capacity(f.named.len());
+                        let mut stmts = Vec::with_capacity(tokens.len());
+                        f.named
+                            .iter()
+                            .zip(tokens)
+                            .for_each(|(field, token)| match token {
+                                Some(stmt) => {
+                                    let ident = field.ident.as_ref().unwrap();
+                                    fields.push(quote!(ref mut #ident));
+                                    stmts.push(stmt);
+                                }
+                                None => {
+                                    let ident = field.ident.as_ref().unwrap();
+                                    let unused_ident =
+                                        Ident::from(&format!("_{}", ident.to_string())[..]);
+                                    fields.push(quote!(#ident: ref mut #unused_ident));
+                                }
+                            });
+                        quote! {
+                            #name::#variant_ident{#(#fields),*} => {
+                                #(#stmts)*
+                            }
+                        }
+                    } else {
+                        quote!(#name::#variant_ident(_) => {})
+                    }
+                }
+                Fields::Unnamed(ref f) => {
+                    let tokens = map_fields(&f.unnamed, false, None, Some(&variant_name[..]));
+                    if tokens.iter().any(|token| token.is_some()) {
+                        let mut fields = Vec::with_capacity(f.unnamed.len());
+                        let mut stmts = Vec::with_capacity(tokens.len());
+                        tokens
+                            .iter()
+                            .enumerate()
+                            .for_each(|(i, token)| match token {
+                                Some(stmt) => {
+                                    let ident = Ident::from(&format!("attr{}", i)[..]);
+                                    fields.push(quote!(ref mut #ident));
+                                    stmts.push(stmt);
+                                }
+                                None => {
+                                    let ident = Ident::from(&format!("_attr{}", i)[..]);
+                                    fields.push(quote!(ref mut #ident));
+                                }
+                            });
+                        quote! {
+                            #name::#variant_ident(#(#fields),*) => {
+                                #(#stmts)*
+                            }
+                        }
+                    } else {
+                        quote!(#name::#variant_ident(_) => {})
+                    }
+                }
+                Fields::Unit => quote!(#name::#variant_ident => {}),
+            }
+        })
+        .collect();
+    if stmts.len() > 0 {
+        Some(quote! { match &mut *self {
+            #(#stmts),*
+        }})
+    } else {
+        None
+    }
 }
 
-fn parse_field(
-    name: &str,
-    field: &quote::Tokens,
-    ty: &Type,
-    is_ref: bool,
-) -> Option<quote::Tokens> {
+fn map_fields(
+    fields: &Punctuated<Field, Comma>,
+    named: bool,
+    root_ident: Option<&Ident>,
+    root_name: Option<&str>,
+) -> Vec<Option<quote::Tokens>> {
+    let iter = fields.iter().enumerate();
+    let stmts = if named {
+        iter.map(|(_i, field)| {
+            let field_ident = field.ident.as_ref().unwrap();
+            let (field_token, is_ref) = match root_ident {
+                Some(ident) => (quote!(#ident.#field_ident), false),
+                None => (quote!(#field_ident), true),
+            };
+            parse_field(&field_token, &field.ty, is_ref).map(|stmt| {
+                let mut field_name = field_ident.to_string();
+                if let Some(root) = root_name {
+                    field_name = format!("{}.{}", root, field_name);
+                }
+                quote!({
+                    let name = #field_name;
+                    #stmt
+                })
+            })
+        }).collect()
+    } else {
+        iter.map(|(i, field)| {
+            let (field_token, is_ref) = match root_ident {
+                Some(ident) => {
+                    let index = Index::from(i);
+                    (quote!(#ident.#index), false)
+                }
+                None => {
+                    let field_ident = Ident::from(&format!("attr{}", i)[..]);
+                    (quote!(#field_ident), true)
+                }
+            };
+            parse_field(&field_token, &field.ty, is_ref).map(|stmt| {
+                let mut field_name = i.to_string();
+                if let Some(root) = root_name {
+                    field_name = format!("{}.{}", root, field_name);
+                }
+                quote!({
+                    let name = #field_name;
+                    #stmt
+                })
+            })
+        }).collect()
+    };
+    stmts
+}
+
+fn parse_field(field: &quote::Tokens, ty: &Type, is_ref: bool) -> Option<quote::Tokens> {
     match FieldType::from_ty(ty) {
-        FieldType::Array(sub_type) | FieldType::Vec(sub_type) => match FieldType::from_ty(sub_type)
-        {
-            FieldType::Array(_)
-            | FieldType::Vec(_)
-            | FieldType::Tuple(_)
-            | FieldType::Option(_) => {
-                // parse_field(name).map(|stmt| {
-                //     quote! {for (i, param) in #field.iter_mut().enumerate() {
-                //     }
-                //     }
-                // })
-                // let stmts: Vec<_> = self.pw4.iter_mut().map(|(i, v)| {
-                //     model.add_parameter(#name, &mut #field);
-                // }).collect();
-                // if stmts.len() > 0 {
-                //     Some(quote!(#(#stmts)*))
-                // } else {
-                //     None
-                // }
-                None
-            }
-            FieldType::Parameter => Some(quote! {
-                for (i, param) in #field.iter_mut().enumerate() {
-                    model.add_parameter(&format!("{}.{}", #name, i), param);
+        FieldType::Array(sub_type) | FieldType::Vec(sub_type) => {
+            parse_field(&quote!(f), sub_type, true).map(|stmt| {
+                quote! {
+                    for (i, f) in #field.iter_mut().enumerate() {
+                        let name = format!("{}.{}", name, i);
+                        #stmt
+                    }
                 }
-            }),
-            FieldType::Model => Some(quote! {
-                for (i, sub_model) in #field.iter_mut().enumerate() {
-                    sub_model.register_parameters();
-                    model.add_submodel(&format!("{}.{}", #name, i), sub_model);
-                }
-            }),
-            FieldType::Other => None,
-        },
+            })
+        }
         FieldType::Tuple(sub_types) => {
             let stmts: Vec<_> = sub_types
                 .iter()
                 .enumerate()
                 .filter_map(|(i, sub_type)| {
-                    let sub_name = format!("{}.{}", name, i);
                     let index = Index::from(i);
-                    parse_field(&sub_name, &quote!(#field.#index), sub_type, false)
+                    parse_field(&quote!(#field.#index), sub_type, false).map(|stmt| {
+                        quote!({
+                            let name = format!("{}.{}", name, #i);
+                            #stmt
+                        })
+                    })
                 })
                 .collect();
             if stmts.len() > 0 {
@@ -136,9 +247,9 @@ fn parse_field(
                 None
             }
         }
-        FieldType::Option(sub_type) => parse_field(name, &quote!(v), sub_type, true).map(|stmt| {
+        FieldType::Option(sub_type) => parse_field(&quote!(f), sub_type, true).map(|stmt| {
             quote! {
-                if let Some(v) = #field.as_mut() {
+                if let Some(f) = #field.as_mut() {
                     #stmt
                 }
             }
@@ -146,11 +257,11 @@ fn parse_field(
         FieldType::Parameter => {
             if is_ref {
                 Some(quote! {
-                    model.add_parameter(#name, #field);
+                    model.add_parameter(&name[..], #field);
                 })
             } else {
                 Some(quote! {
-                    model.add_parameter(#name, &mut #field);
+                    model.add_parameter(&name[..], &mut #field);
                 })
             }
         }
@@ -158,12 +269,12 @@ fn parse_field(
             if is_ref {
                 Some(quote! {
                     #field.register_parameters();
-                    model.add_submodel(#name, #field);
+                    model.add_submodel(&name[..], #field);
                 })
             } else {
                 Some(quote! {
                     #field.register_parameters();
-                    model.add_submodel(#name, &mut #field);
+                    model.add_submodel(&name[..], &mut #field);
                 })
             }
         }
