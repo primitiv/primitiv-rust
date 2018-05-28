@@ -120,16 +120,46 @@ enum Model4 {
     Variant4((Parameter, i32, Parameter)),
     Variant5(Parameter, i32, Parameter),
     Variant6 {
-        pw1: Parameter,
+        _int_val: i32,
     },
     Variant7 {
-        pw1: (Parameter, i32, Parameter),
+        pw1: Parameter,
     },
     Variant8 {
+        pw1: (Parameter, i32, Parameter),
+    },
+    Variant9 {
         pw1: Parameter,
         int_val: i32,
         pw2: Parameter,
     },
+}
+
+#[derive(Model)]
+enum Model5<T> {
+    Variant1(Option<T>),
+    Variant2 { _pw1: Option<T> },
+}
+
+#[derive(Model)]
+struct Model6 {
+    #[primitiv(submodel)]
+    model1: Option<Model1>,
+    #[primitiv(submodel)]
+    model4: Model4,
+}
+
+impl Model6 {
+    pub fn new() -> Self {
+        Model6 {
+            model1: Some(Model1::new()),
+            model4: Model4::Variant9 {
+                pw1: Parameter::new(),
+                int_val: 1,
+                pw2: Parameter::new(),
+            },
+        }
+    }
 }
 
 #[test]
@@ -294,7 +324,7 @@ fn derive_enum_test() {
     {
         let mut m = Model4::Variant2(1);
         m.register_parameters();
-        assert!(m.get_parameter("pw1").is_none());
+        assert!(m.get_parameter("Variant2.0").is_none());
     }
     {
         let mut m = Model4::Variant3(Parameter::new());
@@ -316,30 +346,84 @@ fn derive_enum_test() {
         assert!(m.get_parameter("Variant5.2").is_some());
     }
     {
-        let mut m = Model4::Variant6 {
-            pw1: Parameter::new(),
-        };
+        let mut m = Model4::Variant6 { _int_val: 1 };
         m.register_parameters();
-        assert!(m.get_parameter("Variant6.pw1").is_some());
+        assert!(m.get_parameter("Variant6._int_val").is_none());
     }
     {
         let mut m = Model4::Variant7 {
-            pw1: (Parameter::new(), 1, Parameter::new()),
+            pw1: Parameter::new(),
         };
         m.register_parameters();
-        assert!(m.get_parameter("Variant7.pw1.0").is_some());
-        assert!(m.get_parameter("Variant7.pw1.1").is_none());
-        assert!(m.get_parameter("Variant7.pw1.2").is_some());
+        assert!(m.get_parameter("Variant7.pw1").is_some());
     }
     {
         let mut m = Model4::Variant8 {
+            pw1: (Parameter::new(), 1, Parameter::new()),
+        };
+        m.register_parameters();
+        assert!(m.get_parameter("Variant8.pw1.0").is_some());
+        assert!(m.get_parameter("Variant8.pw1.1").is_none());
+        assert!(m.get_parameter("Variant8.pw1.2").is_some());
+    }
+    {
+        let mut m = Model4::Variant9 {
             pw1: Parameter::new(),
             int_val: 1,
             pw2: Parameter::new(),
         };
         m.register_parameters();
-        assert!(m.get_parameter("Variant8.pw1").is_some());
-        assert!(m.get_parameter("Variant8.int_val").is_none());
-        assert!(m.get_parameter("Variant8.pw2").is_some());
+        assert!(m.get_parameter("Variant9.pw1").is_some());
+        assert!(m.get_parameter("Variant9.int_val").is_none());
+        assert!(m.get_parameter("Variant9.pw2").is_some());
     }
+}
+
+#[test]
+fn derive_with_generics_test() {
+    // currently primitiv does not support the case that a type parameter is bounded to
+    // `Parameter` or `impl Model`
+    const UNSUPPORTED: bool = true;
+    {
+        let mut m = Model5::Variant1(Some(Parameter::new()));
+        m.register_parameters();
+        assert!(m.get_parameter("Variant1.0").is_some() || UNSUPPORTED);
+    }
+    {
+        let mut m = Model5::Variant2 {
+            _pw1: Some(Parameter::new()),
+        };
+        m.register_parameters();
+        assert!(m.get_parameter("Variant2._pw1").is_some() || UNSUPPORTED);
+    }
+}
+
+#[test]
+fn derive_with_model_test() {
+    let mut m = Model6::new();
+    m.register_parameters();
+    assert!(m.get_submodel("model1").is_some());
+    assert!(m.find_parameter(&["model1", "pw1"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw2"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw3.1"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw4.1"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw5.1"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw6"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw7.0"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw8.0"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw9.0"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw10.1"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw11.1.1"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw12.1.1"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw13.1.1"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw14.2"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw15.2.1"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw16.2.1"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw17.2.1"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw18.3"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw19.3.1"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw20.3.1"]).is_some());
+    assert!(m.find_parameter(&["model1", "pw21.3.1"]).is_some());
+    assert!(m.find_parameter(&["model4", "Variant9.pw1"]).is_some());
+    assert!(m.find_parameter(&["model4", "Variant9.pw2"]).is_some());
 }

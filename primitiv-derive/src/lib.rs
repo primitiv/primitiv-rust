@@ -8,7 +8,25 @@ use syn::punctuated::Punctuated;
 use syn::token::Comma;
 use syn::*;
 
-#[proc_macro_derive(Model)]
+// TODO(chantera): support generics
+//
+// ```rust
+// struct ModelImpl<T>(T);
+//
+// impl Model for Modelmpl<Parameter> {
+//     fn register_parameters(&mut self) {
+//         ...
+//     }
+// }
+//
+// impl<M: Model> Model for Modelmpl<M> {
+//     fn register_parameters(&mut self) {
+//         ...
+//     }
+// }
+// ```
+
+#[proc_macro_derive(Model, attributes(primitiv))]
 pub fn derive_model(input: TokenStream) -> TokenStream {
     let input: DeriveInput = syn::parse(input).unwrap();
     match expand_derive_model(&input).into() {
@@ -19,6 +37,7 @@ pub fn derive_model(input: TokenStream) -> TokenStream {
 
 fn expand_derive_model(input: &DeriveInput) -> Result<quote::Tokens, &'static str> {
     let ident = &input.ident;
+    let name = ident.to_string();
     let generics = input.generics.clone();
     let (_, ty_generics, _) = input.generics.split_for_impl();
     let (impl_generics, _, where_clause) = generics.split_for_impl();
@@ -39,6 +58,14 @@ fn expand_derive_model(input: &DeriveInput) -> Result<quote::Tokens, &'static st
                         let model = &mut *handle;
                         #body
                     }
+                }
+
+                fn identifier(&self) -> u64 {
+                    use std::collections::hash_map::DefaultHasher;
+                    use std::hash::Hasher;
+                    let mut hasher = DefaultHasher::new();
+                    hasher.write(format!("{}-{:p}", #name, self).as_bytes());
+                    hasher.finish()
                 }
             }
         },
@@ -86,7 +113,7 @@ fn impl_body_from_enum(
     name: &Ident,
     variants: &Punctuated<Variant, Comma>,
 ) -> Option<quote::Tokens> {
-    let stmts: Vec<quote::Tokens> = variants
+    let stmts: Vec<(quote::Tokens, bool)> = variants
         .iter()
         .map(|variant| {
             let variant_ident = &variant.ident;
@@ -113,13 +140,16 @@ fn impl_body_from_enum(
                                     fields.push(quote!(#ident: ref mut #unused_ident));
                                 }
                             });
-                        quote! {
-                            #name::#variant_ident{#(#fields),*} => {
-                                #(#stmts)*
-                            }
-                        }
+                        (
+                            quote! {
+                                #name::#variant_ident{#(#fields),*} => {
+                                    #(#stmts)*
+                                }
+                            },
+                            true,
+                        )
                     } else {
-                        quote!(#name::#variant_ident(_) => {})
+                        (quote!(#name::#variant_ident{..} => {}), false)
                     }
                 }
                 Fields::Unnamed(ref f) => {
@@ -141,20 +171,24 @@ fn impl_body_from_enum(
                                     fields.push(quote!(ref mut #ident));
                                 }
                             });
-                        quote! {
-                            #name::#variant_ident(#(#fields),*) => {
-                                #(#stmts)*
-                            }
-                        }
+                        (
+                            quote! {
+                                #name::#variant_ident(#(#fields),*) => {
+                                    #(#stmts)*
+                                }
+                            },
+                            true,
+                        )
                     } else {
-                        quote!(#name::#variant_ident(_) => {})
+                        (quote!(#name::#variant_ident(_) => {}), false)
                     }
                 }
-                Fields::Unit => quote!(#name::#variant_ident => {}),
+                Fields::Unit => (quote!(#name::#variant_ident => {}), false),
             }
         })
         .collect();
-    if stmts.len() > 0 {
+    if stmts.len() > 0 && stmts.iter().any(|stmt| stmt.1) {
+        let stmts: Vec<_> = stmts.into_iter().map(|stmt| stmt.0).collect();
         Some(quote! { match &mut *self {
             #(#stmts),*
         }})
@@ -177,7 +211,7 @@ fn map_fields(
                 Some(ident) => (quote!(#ident.#field_ident), false),
                 None => (quote!(#field_ident), true),
             };
-            parse_field(&field_token, &field.ty, is_ref).map(|stmt| {
+            parse_field(&field_token, &field.ty, &parse_attrs(&field.attrs), is_ref).map(|stmt| {
                 let mut field_name = field_ident.to_string();
                 if let Some(root) = root_name {
                     field_name = format!("{}.{}", root, field_name);
@@ -200,7 +234,7 @@ fn map_fields(
                     (quote!(#field_ident), true)
                 }
             };
-            parse_field(&field_token, &field.ty, is_ref).map(|stmt| {
+            parse_field(&field_token, &field.ty, &parse_attrs(&field.attrs), is_ref).map(|stmt| {
                 let mut field_name = i.to_string();
                 if let Some(root) = root_name {
                     field_name = format!("{}.{}", root, field_name);
@@ -215,10 +249,15 @@ fn map_fields(
     stmts
 }
 
-fn parse_field(field: &quote::Tokens, ty: &Type, is_ref: bool) -> Option<quote::Tokens> {
-    match FieldType::from_ty(ty) {
+fn parse_field(
+    field: &quote::Tokens,
+    ty: &Type,
+    attrs: &[FieldAttr],
+    is_ref: bool,
+) -> Option<quote::Tokens> {
+    match FieldType::from_ty(ty, attrs) {
         FieldType::Array(sub_type) | FieldType::Vec(sub_type) => {
-            parse_field(&quote!(f), sub_type, true).map(|stmt| {
+            parse_field(&quote!(f), sub_type, attrs, true).map(|stmt| {
                 quote! {
                     for (i, f) in #field.iter_mut().enumerate() {
                         let name = format!("{}.{}", name, i);
@@ -233,7 +272,7 @@ fn parse_field(field: &quote::Tokens, ty: &Type, is_ref: bool) -> Option<quote::
                 .enumerate()
                 .filter_map(|(i, sub_type)| {
                     let index = Index::from(i);
-                    parse_field(&quote!(#field.#index), sub_type, false).map(|stmt| {
+                    parse_field(&quote!(#field.#index), sub_type, attrs, false).map(|stmt| {
                         quote!({
                             let name = format!("{}.{}", name, #i);
                             #stmt
@@ -247,7 +286,7 @@ fn parse_field(field: &quote::Tokens, ty: &Type, is_ref: bool) -> Option<quote::
                 None
             }
         }
-        FieldType::Option(sub_type) => parse_field(&quote!(f), sub_type, true).map(|stmt| {
+        FieldType::Option(sub_type) => parse_field(&quote!(f), sub_type, attrs, true).map(|stmt| {
             quote! {
                 if let Some(f) = #field.as_mut() {
                     #stmt
@@ -293,7 +332,7 @@ enum FieldType<'a> {
 }
 
 impl<'a> FieldType<'a> {
-    fn from_ty(ty: &'a Type) -> Self {
+    fn from_ty(ty: &'a Type, attrs: &[FieldAttr]) -> Self {
         match ty {
             Type::Array(ref t) => FieldType::Array(&t.elem),
             Type::Tuple(ref t) => FieldType::Tuple(t.elems.iter().collect()),
@@ -301,8 +340,11 @@ impl<'a> FieldType<'a> {
                 "Vec" => FieldType::Vec(FieldType::generic_subtype(ty).unwrap()),
                 "Option" => FieldType::Option(FieldType::generic_subtype(ty).unwrap()),
                 "Parameter" => FieldType::Parameter,
-                "Model" => FieldType::Model,
-                _ => FieldType::Other,
+                _ => match attrs.last() {
+                    Some(FieldAttr::Parameter) => FieldType::Parameter,
+                    Some(FieldAttr::Model) => FieldType::Model,
+                    None => FieldType::Other,
+                },
             },
             _ => FieldType::Other,
         }
@@ -330,4 +372,39 @@ impl<'a> FieldType<'a> {
             _ => None,
         }
     }
+}
+
+enum FieldAttr {
+    Parameter,
+    Model,
+}
+
+fn parse_attrs(attrs: &[Attribute]) -> Vec<FieldAttr> {
+    let iter = attrs
+        .iter()
+        .filter_map(|attr| {
+            let path = &attr.path;
+            match quote!(#path).to_string() == "primitiv" {
+                true => Some(
+                    attr.interpret_meta()
+                        .expect(&format!("invalid primitiv syntax: {}", quote!(attr))),
+                ),
+                false => None,
+            }
+        })
+        .flat_map(|m| match m {
+            Meta::List(l) => l.nested,
+            tokens => panic!("unsupported syntax: {}", quote!(#tokens).to_string()),
+        })
+        .map(|m| match m {
+            NestedMeta::Meta(m) => m,
+            ref tokens => panic!("unsupported syntax: {}", quote!(#tokens).to_string()),
+        });
+    iter.filter_map(|attr| match attr {
+        Meta::Word(ref w) if w == "parameter" => Some(FieldAttr::Parameter),
+        Meta::Word(ref w) if w == "submodel" => Some(FieldAttr::Model),
+        ref v @ Meta::NameValue(..) | ref v @ Meta::List(..) | ref v @ Meta::Word(..) => {
+            panic!("unsupported option: {}", quote!(#v))
+        }
+    }).collect()
 }

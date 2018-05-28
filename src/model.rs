@@ -1,11 +1,15 @@
-use std::io;
-use std::path::Path;
 use Device;
 use Parameter;
+use Wrap;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::Hasher;
+use std::io;
+use std::path::Path;
 
 pub trait Model: Sized {
     /// Loads all parameters from a file.
     fn load<P: AsRef<Path>>(&mut self, path: P, with_stats: bool) -> io::Result<()> {
+        self.register_parameters();
         let lock = internal::get_entity_mut(self);
         let mut entity = lock.write().unwrap();
         entity.load(path, with_stats)
@@ -18,6 +22,7 @@ pub trait Model: Sized {
         with_stats: bool,
         device: Option<&mut D>,
     ) -> io::Result<()> {
+        self.register_parameters();
         let lock = internal::get_entity_mut(self);
         let mut entity = lock.write().unwrap();
         entity.load_on(path, with_stats, device)
@@ -39,10 +44,13 @@ pub trait Model: Sized {
 
     /// Registers a new submodel.
     fn add_submodel<M: Model>(&mut self, name: &str, model: &mut M) {
+        let mut entity_other = {
+            let lock_other = internal::get_entity_mut(model);
+            let mut entity_other = lock_other.write().unwrap();
+            internal::ModelEntity::from_raw(entity_other.as_mut_ptr(), false)
+        };
         let lock_self = internal::get_entity_mut(self);
-        let lock_other = internal::get_entity_mut(model);
         let mut entity_self = lock_self.write().unwrap();
-        let mut entity_other = lock_other.write().unwrap();
         entity_self.add_submodel(name, &mut entity_other)
     }
 
@@ -88,6 +96,12 @@ pub trait Model: Sized {
 
     fn register_parameters(&mut self);
 
+    fn identifier(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        hasher.write(format!("{:p}", self).as_bytes());
+        hasher.finish()
+    }
+
     fn invalidate(&mut self) {
         internal::remove_entity(self);
     }
@@ -107,56 +121,23 @@ impl Drop for AnyModel {
 }
 
 pub(crate) mod internal {
+    use super::Model;
+    use ApiResult;
+    use Device;
+    use Parameter;
+    use Wrap;
+    use devices::AnyDevice;
     use primitiv_sys as _primitiv;
-    use std::borrow::Borrow;
     use std::collections::HashMap;
     use std::ffi::CString;
-    use std::hash::{Hash, Hasher};
     use std::io;
     use std::path::Path;
     use std::ptr;
     use std::sync::{self, Arc, RwLock};
-    use ApiResult;
-    use Device;
-    use devices::AnyDevice;
-    use Parameter;
-    use Wrap;
-    use super::Model;
 
     lazy_static! {
-        static ref MODEL_MAP: RwLock<HashMap<VoidPtr, Arc<RwLock<ModelEntity>>>> = RwLock::new(HashMap::new());
-    }
-
-    #[derive(Debug)]
-    struct VoidPtr(ptr::NonNull<()>);
-
-    impl VoidPtr {
-        pub fn new<T>(obj: &T) -> Self {
-            VoidPtr(ptr::NonNull::new(obj as *const T as *mut ()).unwrap())
-        }
-    }
-
-    unsafe impl Send for VoidPtr {}
-    unsafe impl Sync for VoidPtr {}
-
-    impl Borrow<()> for VoidPtr {
-        fn borrow(&self) -> &() {
-            unsafe { self.0.as_ref() }
-        }
-    }
-
-    impl Eq for VoidPtr {}
-
-    impl PartialEq for VoidPtr {
-        fn eq(&self, rhs: &Self) -> bool {
-            self.0.eq(&rhs.0)
-        }
-    }
-
-    impl Hash for VoidPtr {
-        fn hash<H: Hasher>(&self, hasher: &mut H) {
-            self.0.hash(hasher)
-        }
+        static ref MODEL_MAP: RwLock<HashMap<u64, Arc<RwLock<ModelEntity>>>> =
+            RwLock::new(HashMap::new());
     }
 
     pub(crate) struct UnwritableLock<T>(Arc<RwLock<T>>);
@@ -196,18 +177,18 @@ pub(crate) mod internal {
     }
 
     pub(crate) fn add_entity<M: Model + Sized>(model: &mut M, entity: ModelEntity) {
-        MODEL_MAP.write().unwrap().insert(
-            VoidPtr::new(model),
-            Arc::new(RwLock::new(entity)),
-        );
+        MODEL_MAP
+            .write()
+            .unwrap()
+            .insert(model.identifier(), Arc::new(RwLock::new(entity)));
     }
 
     pub(crate) fn remove_entity<M: Model + Sized>(model: &mut M) {
-        MODEL_MAP.write().unwrap().remove(&VoidPtr::new(model));
+        MODEL_MAP.write().unwrap().remove(&model.identifier());
     }
 
     pub(crate) fn get_entity<M: Model + Sized>(model: &M) -> UnwritableLock<ModelEntity> {
-        let key = VoidPtr::new(model);
+        let key = model.identifier();
         let entity = {
             let map = MODEL_MAP.read().unwrap();
             map.get(&key).map(|e| e.clone())
@@ -222,7 +203,7 @@ pub(crate) mod internal {
 
     pub(crate) fn get_entity_mut<M: Model + Sized>(model: &mut M) -> WritableLock<ModelEntity> {
         let mut map = MODEL_MAP.write().unwrap();
-        let entity = map.entry(VoidPtr::new(model))
+        let entity = map.entry(model.identifier())
             .or_insert_with(|| Arc::new(RwLock::new(ModelEntity::new())))
             .clone();
         WritableLock(entity)
@@ -278,9 +259,7 @@ pub(crate) mod internal {
                         device.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
                     ),
                     (),
-                ).map_err(|status| {
-                    io::Error::new(io::ErrorKind::Other, status.message())
-                })
+                ).map_err(|status| io::Error::new(io::ErrorKind::Other, status.message()))
             }
         }
 
@@ -289,15 +268,10 @@ pub(crate) mod internal {
             unsafe {
                 let path_c = CString::new(path.as_ref().to_str().unwrap()).unwrap();
                 let path_ptr = path_c.as_ptr();
-                Result::from_api_status(_primitiv::primitivSaveModel(
-                self.as_ptr(),
-                path_ptr,
-                with_stats as u32,
-                ),
-                (),
-            ).map_err(|status| {
-                io::Error::new(io::ErrorKind::Other, status.message())
-            })
+                Result::from_api_status(
+                    _primitiv::primitivSaveModel(self.as_ptr(), path_ptr, with_stats as u32),
+                    (),
+                ).map_err(|status| io::Error::new(io::ErrorKind::Other, status.message()))
             }
         }
 
@@ -345,17 +319,17 @@ pub(crate) mod internal {
                     .map(|name_c| name_c.as_ptr())
                     .collect::<Vec<_>>();
                 let result = Result::from_api_status(
-                _primitiv::primitivGetParameterFromModel(
-                    self.as_ptr(),
-                    names_ptr_vec.as_mut_ptr(),
-                    names_ptr_vec.len(),
-                    &mut parameter_ptr,
-                ),
-                (),
-            ).map(|()| {
-                assert!(!parameter_ptr.is_null());
-                Parameter::from_raw(parameter_ptr as *mut _, false)
-            });
+                    _primitiv::primitivGetParameterFromModel(
+                        self.as_ptr(),
+                        names_ptr_vec.as_mut_ptr(),
+                        names_ptr_vec.len(),
+                        &mut parameter_ptr,
+                    ),
+                    (),
+                ).map(|()| {
+                    assert!(!parameter_ptr.is_null());
+                    Parameter::from_raw(parameter_ptr as *mut _, false)
+                });
                 result.ok()
             }
         }
@@ -378,17 +352,17 @@ pub(crate) mod internal {
                     .map(|name_c| name_c.as_ptr())
                     .collect::<Vec<_>>();
                 let result = Result::from_api_status(
-                _primitiv::primitivGetSubmodelFromModel(
-                    self.as_ptr(),
-                    names_ptr_vec.as_mut_ptr(),
-                    names_ptr_vec.len(),
-                    &mut model_ptr,
-                ),
-                (),
-            ).map(|()| {
-                assert!(!model_ptr.is_null());
-                ModelEntity::from_raw(model_ptr as *mut _, false)
-            });
+                    _primitiv::primitivGetSubmodelFromModel(
+                        self.as_ptr(),
+                        names_ptr_vec.as_mut_ptr(),
+                        names_ptr_vec.len(),
+                        &mut model_ptr,
+                    ),
+                    (),
+                ).map(|()| {
+                    assert!(!model_ptr.is_null());
+                    ModelEntity::from_raw(model_ptr as *mut _, false)
+                });
                 result.ok()
             }
         }
