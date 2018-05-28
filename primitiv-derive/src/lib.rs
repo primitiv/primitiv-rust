@@ -51,7 +51,7 @@ fn expand_derive_model(input: &DeriveInput) -> Result<quote::Tokens, &'static st
     };
     let impl_model = match impl_body {
         Some(body) => quote! {
-            impl #impl_generics primitiv::Model for #ident #ty_generics #where_clause {
+            impl #impl_generics _primitiv::Model for #ident #ty_generics #where_clause {
                 fn register_parameters(&mut self) {
                     let handle: *mut _ = self;
                     unsafe {
@@ -70,7 +70,7 @@ fn expand_derive_model(input: &DeriveInput) -> Result<quote::Tokens, &'static st
             }
         },
         None => quote! {
-            impl #impl_generics primitiv::Model for #ident #ty_generics #where_clause {
+            impl #impl_generics _primitiv::Model for #ident #ty_generics #where_clause {
                 fn register_parameters(&mut self) {}
             }
         },
@@ -78,15 +78,21 @@ fn expand_derive_model(input: &DeriveInput) -> Result<quote::Tokens, &'static st
     let impl_drop = quote! {
         impl #impl_generics Drop for #ident #ty_generics #where_clause {
             fn drop(&mut self) {
-                primitiv::Model::invalidate(self);
+                _primitiv::Model::invalidate(self);
             }
         }
     };
-    Ok(quote! {
-        #impl_model
 
-        #impl_drop
-    })
+    let dummy_const = Ident::from(&format!("_IMPL_MODEL_FOR_{}", ident)[..]);
+    let generated = quote! {
+        #[allow(non_upper_case_globals)]
+        const #dummy_const: () = {
+            extern crate primitiv as _primitiv;
+            #impl_model
+            #impl_drop
+        };
+    };
+    Ok(generated)
 }
 
 fn impl_body_from_struct(_name: &Ident, fields: &Fields) -> Option<quote::Tokens> {
