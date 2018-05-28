@@ -1,8 +1,7 @@
-use primitiv::Model;
 use primitiv::Parameter;
 use primitiv::Variable;
-use primitiv::initializers as I;
 use primitiv::functions as F;
+use primitiv::initializers as I;
 
 /// Hand-written LSTM with input/forget/output gates and no peepholes.
 /// Formulation:
@@ -12,8 +11,8 @@ use primitiv::functions as F;
 ///   j = tanh   (W_xj . x[t] + W_hj . h[t-1] + b_j)
 ///   c[t] = i * j + f * c[t-1]
 ///   h[t] = o * tanh(c[t])
+#[derive(Model)]
 pub struct LSTM<V: Variable> {
-    model: Model,
     pw: Parameter,
     pb: Parameter,
     w: V,
@@ -24,18 +23,14 @@ pub struct LSTM<V: Variable> {
 
 impl<V: Variable> LSTM<V> {
     pub fn new() -> Self {
-        let mut m = LSTM {
-            model: Model::new(),
+        LSTM {
             pw: Parameter::new(),
             pb: Parameter::new(),
             w: V::new(),
             b: V::new(),
             h: V::new(),
             c: V::new(),
-        };
-        m.model.add_parameter("w", &mut m.pw);
-        m.model.add_parameter("b", &mut m.pb);
-        m
+        }
     }
 
     /// Initializes the model.
@@ -44,10 +39,8 @@ impl<V: Variable> LSTM<V> {
             [4 * out_size, in_size + out_size],
             &I::Uniform::new(-0.1, 0.1),
         );
-        self.pb.init_by_initializer(
-            [4 * out_size],
-            &I::Constant::new(1.0),
-        );
+        self.pb
+            .init_by_initializer([4 * out_size], &I::Constant::new(1.0));
     }
 
     /// Initializes the model.
@@ -82,19 +75,5 @@ impl<V: Variable> LSTM<V> {
 
     pub fn get_h(&self) -> &V {
         &self.h
-    }
-}
-
-impl<V: Variable> AsRef<Model> for LSTM<V> {
-    #[inline]
-    fn as_ref(&self) -> &Model {
-        &self.model
-    }
-}
-
-impl<V: Variable> AsMut<Model> for LSTM<V> {
-    #[inline]
-    fn as_mut(&mut self) -> &mut Model {
-        &mut self.model
     }
 }

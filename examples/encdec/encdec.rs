@@ -1,3 +1,4 @@
+#[macro_use]
 extern crate primitiv;
 extern crate rand;
 
@@ -9,15 +10,14 @@ use std::process::exit;
 
 use primitiv::Graph;
 use primitiv::Model;
-use primitiv::ModelImpl;
 use primitiv::Node;
 use primitiv::Optimizer;
 use primitiv::Parameter;
 use primitiv::Tensor;
 use primitiv::Variable;
 use primitiv::devices as D;
-use primitiv::initializers as I;
 use primitiv::functions as F;
+use primitiv::initializers as I;
 use primitiv::optimizers as O;
 
 mod lstm;
@@ -41,8 +41,8 @@ static SRC_VALID_FILE: &'static str = "data/dev.en";
 static TRG_VALID_FILE: &'static str = "data/dev.ja";
 
 /// Encoder-decoder translation model.
+#[derive(Model)]
 pub struct EncoderDecoder<V: Variable> {
-    model: Model,
     dropout_rate: f32,
     psrc_lookup: Parameter,
     ptrg_lookup: Parameter,
@@ -57,8 +57,7 @@ pub struct EncoderDecoder<V: Variable> {
 
 impl<V: Variable> EncoderDecoder<V> {
     pub fn new() -> Self {
-        let mut m = EncoderDecoder {
-            model: Model::new(),
+        EncoderDecoder {
             dropout_rate: DROPOUT_RATE,
             psrc_lookup: Parameter::new(),
             ptrg_lookup: Parameter::new(),
@@ -69,14 +68,7 @@ impl<V: Variable> EncoderDecoder<V> {
             trg_lookup: V::new(),
             why: V::new(),
             by: V::new(),
-        };
-        m.model.add_parameter("src_lookup", &mut m.psrc_lookup);
-        m.model.add_parameter("trg_lookup", &mut m.ptrg_lookup);
-        m.model.add_parameter("why", &mut m.pwhy);
-        m.model.add_parameter("by", &mut m.pby);
-        m.model.add_submodel("src_lstm", &mut m.src_lstm);
-        m.model.add_submodel("trg_lstm", &mut m.trg_lstm);
-        m
+        }
     }
 
     /// Initializes the model.
@@ -99,10 +91,8 @@ impl<V: Variable> EncoderDecoder<V> {
             [trg_vocab_size as u32, hidden_size],
             &I::XavierUniform::new(1.0),
         );
-        self.pby.init_by_initializer(
-            [trg_vocab_size as u32],
-            &I::Constant::new(1.0),
-        );
+        self.pby
+            .init_by_initializer([trg_vocab_size as u32], &I::Constant::new(1.0));
         self.src_lstm.init(embed_size, hidden_size);
         self.trg_lstm.init(embed_size, hidden_size);
     }
@@ -126,10 +116,8 @@ impl<V: Variable> EncoderDecoder<V> {
         self.trg_lookup = F::parameter(&mut self.ptrg_lookup);
         self.why = F::parameter(&mut self.pwhy);
         self.by = F::parameter(&mut self.pby);
-        self.trg_lstm.restart(
-            Some(self.src_lstm.get_c()),
-            Some(self.src_lstm.get_h()),
-        );
+        self.trg_lstm
+            .restart(Some(self.src_lstm.get_c()), Some(self.src_lstm.get_h()));
     }
 
     /// One step decoding.
@@ -161,20 +149,6 @@ impl<V: Variable> EncoderDecoder<V> {
     }
 }
 
-impl<V: Variable> AsRef<Model> for EncoderDecoder<V> {
-    #[inline]
-    fn as_ref(&self) -> &Model {
-        &self.model
-    }
-}
-
-impl<V: Variable> AsMut<Model> for EncoderDecoder<V> {
-    #[inline]
-    fn as_mut(&mut self) -> &mut Model {
-        &mut self.model
-    }
-}
-
 /// Training encoder decoder model.
 pub fn train<O: Optimizer>(
     encdec: &mut EncoderDecoder<Node>,
@@ -202,13 +176,11 @@ pub fn train<O: Optimizer>(
     let num_valid_labels = count_labels(&valid_trg_corpus);
     println!(
         "train: {} sentences, {} labels",
-        num_train_sents,
-        num_train_labels
+        num_train_sents, num_train_labels
     );
     println!(
         "valid: {} sentences, {} labels",
-        num_valid_sents,
-        num_valid_labels
+        num_valid_sents, num_valid_labels
     );
 
     // Batch randomizer.
