@@ -1,7 +1,7 @@
+use devices::AnyDevice;
 use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::ops;
-use devices::AnyDevice;
 use Device;
 use Node;
 use Parameter;
@@ -11,8 +11,21 @@ use Tensor;
 use super::node_funcs;
 use super::tensor_funcs;
 
-pub trait Variable
-    : Clone
+pub mod exports {
+    pub use super::Variable;
+    pub use super::{
+        abs, add, add_const, add_var, batch, broadcast, concat, constant, constant_on, conv2d,
+        copy, copy_on, cos, divide, divide_const, divide_var, dropout, elu, exp, flatten, identity,
+        identity_on, input, input_on, log, log_softmax, logsumexp, lrelu, matmul, max, max_pool2d,
+        mean, mean_vars, min, multiply, multiply_const, multiply_var, negative, ones, ones_on,
+        parameter, pick, positive, pow, pow_const, pow_var, pown, prelu, random, relu, reshape,
+        selu, sigmoid, sin, slice, softmax, softmax_cross_entropy, softmax_cross_entropy_with_ids,
+        softplus, split, sqrt, stop_gradient, subtract, subtract_const, subtract_var, sum,
+        sum_vars, tan, tanh, transpose, zeros, zeros_on,
+    };
+}
+pub trait Variable:
+    Clone
     + Default
     + AsRef<Self>
     + Sized
@@ -65,7 +78,8 @@ pub trait Variable
     + ops::Div<i64, Output = Self>
     + ops::Div<u64, Output = Self>
     + ops::Div<f32, Output = Self>
-    + ops::Div<f64, Output = Self> {
+    + ops::Div<f64, Output = Self>
+{
     type F: Functions<Self>;
 
     fn new() -> Self {
@@ -402,14 +416,7 @@ pub fn conv2d<T1: AsRef<V>, T2: AsRef<V>, V: Variable>(
     dilation1: u32,
 ) -> V {
     <V as Variable>::F::conv2d(
-        x,
-        w,
-        padding0,
-        padding1,
-        stride0,
-        stride1,
-        dilation0,
-        dilation1,
+        x, w, padding0, padding1, stride0, stride1, dilation0, dilation1,
     )
 }
 
@@ -466,8 +473,8 @@ pub fn dropout<T: AsRef<V>, V: Variable>(x: T, rate: f32, enabled: bool) -> V {
 }
 
 pub mod random {
-    use super::Variable;
     use super::Functions;
+    use super::Variable;
     use Device;
     use Shape;
 
@@ -537,8 +544,8 @@ pub mod random {
 }
 
 pub mod batch {
-    use super::Variable;
     use super::Functions;
+    use super::Variable;
 
     pub fn pick<T: AsRef<V>, V: Variable>(x: T, ids: &[u32]) -> V {
         <V as Variable>::F::batch_pick(x, ids)
@@ -1010,14 +1017,7 @@ impl Functions<Node> for FuncImpls<Node> {
         dilation1: u32,
     ) -> Node {
         node_funcs::conv2d(
-            x,
-            w,
-            padding0,
-            padding1,
-            stride0,
-            stride1,
-            dilation0,
-            dilation1,
+            x, w, padding0, padding1, stride0, stride1, dilation0, dilation1,
         )
     }
 
@@ -1501,14 +1501,7 @@ impl Functions<Tensor> for FuncImpls<Tensor> {
         dilation1: u32,
     ) -> Tensor {
         tensor_funcs::conv2d(
-            x,
-            w,
-            padding0,
-            padding1,
-            stride0,
-            stride1,
-            dilation0,
-            dilation1,
+            x, w, padding0, padding1, stride0, stride1, dilation0, dilation1,
         )
     }
 

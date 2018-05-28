@@ -22,7 +22,9 @@ impl Constant {
                 &mut initializer_ptr,
             ));
             assert!(!initializer_ptr.is_null());
-            Constant { inner: initializer_ptr }
+            Constant {
+                inner: initializer_ptr,
+            }
         }
     }
 }
@@ -46,7 +48,9 @@ impl Uniform {
                 &mut initializer_ptr,
             ));
             assert!(!initializer_ptr.is_null());
-            Uniform { inner: initializer_ptr }
+            Uniform {
+                inner: initializer_ptr,
+            }
         }
     }
 }
@@ -70,7 +74,9 @@ impl Normal {
                 &mut initializer_ptr,
             ));
             assert!(!initializer_ptr.is_null());
-            Normal { inner: initializer_ptr }
+            Normal {
+                inner: initializer_ptr,
+            }
         }
     }
 }
@@ -92,7 +98,9 @@ impl Identity {
                 &mut initializer_ptr,
             ));
             assert!(!initializer_ptr.is_null());
-            Identity { inner: initializer_ptr }
+            Identity {
+                inner: initializer_ptr,
+            }
         }
     }
 }
@@ -115,7 +123,9 @@ impl XavierUniform {
                 &mut initializer_ptr,
             ));
             assert!(!initializer_ptr.is_null());
-            XavierUniform { inner: initializer_ptr }
+            XavierUniform {
+                inner: initializer_ptr,
+            }
         }
     }
 }
@@ -144,7 +154,9 @@ impl XavierNormal {
                 &mut initializer_ptr,
             ));
             assert!(!initializer_ptr.is_null());
-            XavierNormal { inner: initializer_ptr }
+            XavierNormal {
+                inner: initializer_ptr,
+            }
         }
     }
 }
@@ -173,7 +185,9 @@ impl XavierUniformConv2D {
                 &mut initializer_ptr,
             ));
             assert!(!initializer_ptr.is_null());
-            XavierUniformConv2D { inner: initializer_ptr }
+            XavierUniformConv2D {
+                inner: initializer_ptr,
+            }
         }
     }
 }
@@ -202,7 +216,9 @@ impl XavierNormalConv2D {
                 &mut initializer_ptr,
             ));
             assert!(!initializer_ptr.is_null());
-            XavierNormalConv2D { inner: initializer_ptr }
+            XavierNormalConv2D {
+                inner: initializer_ptr,
+            }
         }
     }
 }

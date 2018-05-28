@@ -10,7 +10,7 @@ macro_rules! impl_device {
         impl_wrap!($name, primitivDevice_t);
         impl_drop!($name, primitivDeleteDevice);
         impl Device for $name {}
-    }
+    };
 }
 
 #[allow(dead_code)]

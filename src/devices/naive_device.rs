@@ -1,7 +1,7 @@
+use device::Device;
 use primitiv_sys as _primitiv;
 use std::ptr;
 use ApiResult;
-use device::Device;
 use Wrap;
 
 /// Device class for the naive function implementations on CPU.

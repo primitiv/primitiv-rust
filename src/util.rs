@@ -13,7 +13,10 @@ macro_rules! impl_wrap {
             #[inline(always)]
             fn from_raw(ptr: *mut _primitiv::$type, owned: bool) -> Self {
                 assert!(!ptr.is_null());
-                $name { inner: ptr, owned: owned }
+                $name {
+                    inner: ptr,
+                    owned: owned,
+                }
             }
 
             #[inline(always)]
@@ -31,7 +34,7 @@ macro_rules! impl_wrap {
                 self.owned
             }
         }
-    }
+    };
 }
 
 macro_rules! impl_wrap_owned {
@@ -58,7 +61,7 @@ macro_rules! impl_wrap_owned {
                 true
             }
         }
-    }
+    };
 }
 
 macro_rules! impl_drop {
@@ -72,5 +75,5 @@ macro_rules! impl_drop {
                 }
             }
         }
-    }
+    };
 }

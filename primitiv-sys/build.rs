@@ -4,7 +4,7 @@ use std::env;
 use std::error::Error;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::{Command, exit};
+use std::process::{exit, Command};
 use std::result::Result;
 
 const FRAMEWORK_LIBRARY: &'static str = "primitiv";
@@ -132,9 +132,9 @@ fn build_from_src() -> Result<(), Box<Error>> {
                 .arg("4")
         });
         run("make", |command| {
-            command.arg("install").arg(
-                format!("--directory={}", build_dir_s),
-            )
+            command
+                .arg("install")
+                .arg(format!("--directory={}", build_dir_s))
         });
     }
     env::set_var("PRIMITIV_LIBRARY_DIR", out_dir.join("lib"));

@@ -1,3 +1,4 @@
+use devices::AnyDevice;
 use primitiv_sys as _primitiv;
 use std::ffi::CString;
 use std::io;
@@ -5,7 +6,6 @@ use std::path::Path;
 use std::ptr;
 use ApiResult;
 use Device;
-use devices::AnyDevice;
 use Initializer;
 use Shape;
 use Tensor;
@@ -162,9 +162,7 @@ impl Parameter {
                     device.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
                 ),
                 (),
-            ).map_err(|status| {
-                io::Error::new(io::ErrorKind::Other, status.message())
-            })
+            ).map_err(|status| io::Error::new(io::ErrorKind::Other, status.message()))
         }
     }
 
@@ -174,15 +172,9 @@ impl Parameter {
             let path_c = CString::new(path.as_ref().to_str().unwrap()).unwrap();
             let path_ptr = path_c.as_ptr();
             Result::from_api_status(
-                _primitiv::primitivSaveParameter(
-                self.as_ptr(),
-                path_ptr,
-                with_stats as u32,
-                ),
+                _primitiv::primitivSaveParameter(self.as_ptr(), path_ptr, with_stats as u32),
                 (),
-            ).map_err(|status| {
-                io::Error::new(io::ErrorKind::Other, status.message())
-            })
+            ).map_err(|status| io::Error::new(io::ErrorKind::Other, status.message()))
         }
     }
 

@@ -1,9 +1,9 @@
+use devices::AnyDevice;
 use primitiv_sys as _primitiv;
 use std::ops;
 use std::ptr;
 use ApiResult;
 use Device;
-use devices::AnyDevice;
 use Parameter;
 use Shape;
 use Tensor;
@@ -28,16 +28,18 @@ macro_rules! impl_tensor_unary_func {
         pub fn $name<T: AsRef<Tensor>>(x: T) -> Tensor {
             tensor_func_body!($api_fn, x.as_ref().as_ptr())
         }
-    }
+    };
 }
 
 macro_rules! impl_tensor_binary_func {
-    ($name:ident,
-     $api_fn:ident,
-     $name_xc:ident,
-     $api_fn_xc:ident,
-     $name_cx:ident,
-     $api_fn_cx:ident) => {
+    (
+        $name:ident,
+        $api_fn:ident,
+        $name_xc:ident,
+        $api_fn_xc:ident,
+        $name_cx:ident,
+        $api_fn_cx:ident
+    ) => {
         pub fn $name<T1: AsRef<Tensor>, T2: AsRef<Tensor>>(a: T1, b: T2) -> Tensor {
             tensor_func_body!($api_fn, a.as_ref().as_ptr(), b.as_ref().as_ptr())
         }
@@ -49,13 +51,11 @@ macro_rules! impl_tensor_binary_func {
         pub fn $name_cx<T: AsRef<Tensor>>(k: f32, x: T) -> Tensor {
             tensor_func_body!($api_fn_cx, k, x.as_ref().as_ptr())
         }
-    }
+    };
 }
 
 macro_rules! impl_tensor_unary_op {
-    ($name:ident,
-     $op_fn:ident,
-     $api_fn:ident) => {
+    ($name:ident, $op_fn:ident, $api_fn:ident) => {
         impl ops::$name for Tensor {
             type Output = Tensor;
 
@@ -63,15 +63,11 @@ macro_rules! impl_tensor_unary_op {
                 tensor_func_body!($api_fn, self.as_ptr())
             }
         }
-    }
+    };
 }
 
 macro_rules! impl_tensor_binary_with_constant_op {
-    ($scalar:ty,
-     $name:ident,
-     $op_fn:ident,
-     $api_fn_xc:ident,
-     $api_fn_cx:ident) => {
+    ($scalar:ty, $name:ident, $op_fn:ident, $api_fn_xc:ident, $api_fn_cx:ident) => {
         impl ops::$name<$scalar> for Tensor {
             type Output = Tensor;
 
@@ -103,15 +99,11 @@ macro_rules! impl_tensor_binary_with_constant_op {
                 tensor_func_body!($api_fn_cx, self as f32, rhs.as_ptr())
             }
         }
-    }
+    };
 }
 
 macro_rules! impl_tensor_binary_op {
-    ($name:ident,
-     $op_fn:ident,
-     $api_fn:ident,
-     $api_fn_xc:ident,
-     $api_fn_cx:ident) => {
+    ($name:ident, $op_fn:ident, $api_fn:ident, $api_fn_xc:ident, $api_fn_cx:ident) => {
         impl_tensor_binary_with_constant_op!(i8, $name, $op_fn, $api_fn_xc, $api_fn_cx);
         impl_tensor_binary_with_constant_op!(u8, $name, $op_fn, $api_fn_xc, $api_fn_cx);
         impl_tensor_binary_with_constant_op!(i16, $name, $op_fn, $api_fn_xc, $api_fn_cx);
@@ -154,7 +146,7 @@ macro_rules! impl_tensor_binary_op {
                 tensor_func_body!($api_fn, self.as_ptr(), rhs.as_ptr())
             }
         }
-    }
+    };
 }
 
 impl_tensor_unary_func!(positive, primitivApplyTensorPositive);
@@ -303,7 +295,8 @@ pub fn split<T: AsRef<Tensor>>(x: T, dim: u32, n: u32) -> Vec<Tensor> {
 }
 
 pub fn concat<TS: AsRef<[T]>, T: AsRef<Tensor>>(xs: TS, dim: u32) -> Tensor {
-    let x_ptrs = xs.as_ref()
+    let x_ptrs = xs
+        .as_ref()
         .iter()
         .map(|x| x.as_ref().as_ptr())
         .collect::<Vec<_>>();
@@ -370,7 +363,8 @@ pub fn sum<T: AsRef<Tensor>>(x: T, dim: u32) -> Tensor {
 }
 
 pub fn sum_tensors<TS: AsRef<[T]>, T: AsRef<Tensor>>(xs: TS) -> Tensor {
-    let x_ptrs = xs.as_ref()
+    let x_ptrs = xs
+        .as_ref()
         .iter()
         .map(|x| x.as_ref().as_ptr())
         .collect::<Vec<_>>();
@@ -382,7 +376,8 @@ pub fn mean<T: AsRef<Tensor>>(x: T, dim: u32) -> Tensor {
 }
 
 pub fn mean_tensors<TS: AsRef<[T]>, T: AsRef<Tensor>>(xs: TS) -> Tensor {
-    let x_ptrs = xs.as_ref()
+    let x_ptrs = xs
+        .as_ref()
         .iter()
         .map(|x| x.as_ref().as_ptr())
         .collect::<Vec<_>>();
@@ -537,11 +532,11 @@ pub fn dropout<T: AsRef<Tensor>>(x: T, rate: f32, enabled: bool) -> Tensor {
 }
 
 pub mod random {
+    use devices::AnyDevice;
     use primitiv_sys as _primitiv;
     use std::ptr;
     use ApiResult;
     use Device;
-    use devices::AnyDevice;
     use Shape;
     use Tensor;
     use Wrap;
@@ -684,7 +679,8 @@ pub mod batch {
     }
 
     pub fn concat<TS: AsRef<[T]>, T: AsRef<Tensor>>(xs: TS) -> Tensor {
-        let x_ptrs = xs.as_ref()
+        let x_ptrs = xs
+            .as_ref()
             .iter()
             .map(|x| x.as_ref().as_ptr())
             .collect::<Vec<_>>();

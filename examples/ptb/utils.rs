@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::io;
-use std::io::{BufReader, BufRead};
+use std::io::{BufRead, BufReader};
 use std::path::Path;
 
 // Common utility functions for PTB examples.
@@ -42,9 +42,10 @@ where
     Corpus: AsRef<[Sentence]>,
     Sentence: AsRef<[u32]>,
 {
-    corpus.as_ref().iter().fold(0, |sum, sent| {
-        sum + sent.as_ref().len() - 1
-    })
+    corpus
+        .as_ref()
+        .iter()
+        .fold(0, |sum, sent| sum + sent.as_ref().len() - 1)
 }
 
 // Extracts a minibatch from loaded corpus

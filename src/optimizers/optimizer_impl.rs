@@ -22,7 +22,9 @@ impl SGD {
                 &mut optimizer_ptr,
             ));
             assert!(!optimizer_ptr.is_null());
-            SGD { inner: optimizer_ptr }
+            SGD {
+                inner: optimizer_ptr,
+            }
         }
     }
 }
@@ -52,7 +54,9 @@ impl MomentumSGD {
                 &mut optimizer_ptr,
             ));
             assert!(!optimizer_ptr.is_null());
-            MomentumSGD { inner: optimizer_ptr }
+            MomentumSGD {
+                inner: optimizer_ptr,
+            }
         }
     }
 }
@@ -82,7 +86,9 @@ impl AdaGrad {
                 &mut optimizer_ptr,
             ));
             assert!(!optimizer_ptr.is_null());
-            AdaGrad { inner: optimizer_ptr }
+            AdaGrad {
+                inner: optimizer_ptr,
+            }
         }
     }
 }
@@ -113,7 +119,9 @@ impl RMSProp {
                 &mut optimizer_ptr,
             ));
             assert!(!optimizer_ptr.is_null());
-            RMSProp { inner: optimizer_ptr }
+            RMSProp {
+                inner: optimizer_ptr,
+            }
         }
     }
 }
@@ -143,7 +151,9 @@ impl AdaDelta {
                 &mut optimizer_ptr,
             ));
             assert!(!optimizer_ptr.is_null());
-            AdaDelta { inner: optimizer_ptr }
+            AdaDelta {
+                inner: optimizer_ptr,
+            }
         }
     }
 }
@@ -175,7 +185,9 @@ impl Adam {
                 &mut optimizer_ptr,
             ));
             assert!(!optimizer_ptr.is_null());
-            Adam { inner: optimizer_ptr }
+            Adam {
+                inner: optimizer_ptr,
+            }
         }
     }
 }

@@ -1,12 +1,12 @@
+use model_internal;
 use primitiv_sys as _primitiv;
 use std::ffi::CString;
 use std::io;
 use std::path::Path;
 use ApiResult;
-use Parameter;
 use Model;
+use Parameter;
 use Wrap;
-use model_internal;
 
 /// `Optimizer` trait
 pub trait Optimizer: Wrap<_primitiv::primitivOptimizer_t> + Default {
@@ -15,14 +15,10 @@ pub trait Optimizer: Wrap<_primitiv::primitivOptimizer_t> + Default {
         unsafe {
             let path_c = CString::new(path.as_ref().to_str().unwrap()).unwrap();
             let path_ptr = path_c.as_ptr();
-            Result::from_api_status(_primitiv::primitivLoadOptimizer(
-                self.as_mut_ptr(),
-                path_ptr,
-                ),
+            Result::from_api_status(
+                _primitiv::primitivLoadOptimizer(self.as_mut_ptr(), path_ptr),
                 (),
-            ).map_err(|status| {
-                io::Error::new(io::ErrorKind::Other, status.message())
-            })
+            ).map_err(|status| io::Error::new(io::ErrorKind::Other, status.message()))
         }
     }
 
@@ -34,9 +30,7 @@ pub trait Optimizer: Wrap<_primitiv::primitivOptimizer_t> + Default {
             Result::from_api_status(
                 _primitiv::primitivSaveOptimizer(self.as_ptr(), path_ptr),
                 (),
-            ).map_err(|status| {
-                io::Error::new(io::ErrorKind::Other, status.message())
-            })
+            ).map_err(|status| io::Error::new(io::ErrorKind::Other, status.message()))
         }
     }
 
@@ -270,5 +264,5 @@ macro_rules! impl_optimizer {
         impl_wrap_owned!($name, primitivOptimizer_t);
         impl_drop!($name, primitivDeleteOptimizer);
         impl Optimizer for $name {}
-    }
+    };
 }

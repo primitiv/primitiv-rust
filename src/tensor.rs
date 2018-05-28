@@ -1,7 +1,7 @@
+use devices::AnyDevice;
 use primitiv_sys as _primitiv;
 use std::ptr;
 use ApiResult;
-use devices::AnyDevice;
 use Result;
 use Shape;
 use Wrap;

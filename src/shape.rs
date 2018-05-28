@@ -336,7 +336,7 @@ macro_rules! impl_shape_from_array {
                 Shape::from_dims(&dims, 1)
             }
         }
-    }
+    };
 }
 impl_shape_from_array!(0);
 impl_shape_from_array!(1);
@@ -355,7 +355,7 @@ macro_rules! impl_shape_from_tuple {
                 Shape::from_dims(&dims_with_batch.0, dims_with_batch.1)
             }
         }
-    }
+    };
 }
 impl_shape_from_tuple!(0);
 impl_shape_from_tuple!(1);

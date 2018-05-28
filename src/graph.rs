@@ -1,7 +1,7 @@
+use devices::AnyDevice;
 use primitiv_sys as _primitiv;
 use std::ffi::CString;
 use std::ptr;
-use devices::AnyDevice;
 use ApiResult;
 use Shape;
 use Tensor;

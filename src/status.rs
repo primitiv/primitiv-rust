@@ -1,7 +1,7 @@
 extern crate backtrace;
-use primitiv_sys as _primitiv;
-use libc::c_uint;
 use self::backtrace::Backtrace;
+use libc::c_uint;
+use primitiv_sys as _primitiv;
 use std::env;
 use std::ffi::CString;
 use std::fmt;
@@ -161,10 +161,10 @@ pub(crate) type Result<T> = result::Result<T, Status>;
 macro_rules! check_api_status {
     ($status:expr) => {
         match Result::from_api_status($status, 0) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(s) => {
                 panic!("{:?}", s);
-            },
+            }
         }
-    }
+    };
 }

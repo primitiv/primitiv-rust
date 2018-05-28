@@ -6,15 +6,15 @@ use rand::{thread_rng, Rng};
 use std::cmp::min;
 use std::io::{stdout, Write};
 
+use primitiv::devices as D;
+use primitiv::functions as F;
+use primitiv::initializers as I;
+use primitiv::optimizers as O;
 use primitiv::Graph;
 use primitiv::Node;
 use primitiv::Optimizer;
 use primitiv::Parameter;
 use primitiv::Shape;
-use primitiv::devices as D;
-use primitiv::functions as F;
-use primitiv::initializers as I;
-use primitiv::optimizers as O;
 
 mod utils;
 
@@ -108,13 +108,11 @@ fn main() {
     let num_valid_labels = utils::count_labels(&valid_corpus);
     println!(
         "train: {} sentences, {} labels",
-        num_train_sents,
-        num_train_labels
+        num_train_sents, num_train_labels
     );
     println!(
         "valid: {} sentences, {} labels",
-        num_valid_sents,
-        num_valid_labels
+        num_valid_sents, num_valid_labels
     );
 
     let mut dev = D::Naive::new(); // let mut dev = D::CUDA::new(0);

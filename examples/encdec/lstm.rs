@@ -1,7 +1,7 @@
-use primitiv::Parameter;
-use primitiv::Variable;
 use primitiv::functions as F;
 use primitiv::initializers as I;
+use primitiv::Parameter;
+use primitiv::Variable;
 
 /// Hand-written LSTM with input/forget/output gates and no peepholes.
 /// Formulation:

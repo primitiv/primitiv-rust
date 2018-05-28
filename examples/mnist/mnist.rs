@@ -11,8 +11,8 @@ use primitiv::Optimizer;
 use primitiv::Parameter;
 
 use primitiv::devices as D;
-use primitiv::node_functions as F;
 use primitiv::initializers as I;
+use primitiv::node_functions as F;
 use primitiv::optimizers as O;
 
 const NUM_TRAIN_SAMPLES: u32 = 60000;

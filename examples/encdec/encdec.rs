@@ -8,6 +8,10 @@ use std::env::args;
 use std::io::{stdin, stdout, BufRead, Write};
 use std::process::exit;
 
+use primitiv::devices as D;
+use primitiv::functions as F;
+use primitiv::initializers as I;
+use primitiv::optimizers as O;
 use primitiv::Graph;
 use primitiv::Model;
 use primitiv::Node;
@@ -15,16 +19,14 @@ use primitiv::Optimizer;
 use primitiv::Parameter;
 use primitiv::Tensor;
 use primitiv::Variable;
-use primitiv::devices as D;
-use primitiv::functions as F;
-use primitiv::initializers as I;
-use primitiv::optimizers as O;
 
 mod lstm;
 mod utils;
 use lstm::LSTM;
-use utils::{count_labels, line_to_sent, load_corpus, load_ppl, make_batch, make_inv_vocab,
-            make_vocab, save_ppl};
+use utils::{
+    count_labels, line_to_sent, load_corpus, load_ppl, make_batch, make_inv_vocab, make_vocab,
+    save_ppl,
+};
 
 const SRC_VOCAB_SIZE: usize = 4000;
 const TRG_VOCAB_SIZE: usize = 5000;

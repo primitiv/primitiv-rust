@@ -1,10 +1,10 @@
-use Device;
-use Parameter;
-use Wrap;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hasher;
 use std::io;
 use std::path::Path;
+use Device;
+use Parameter;
+use Wrap;
 
 pub trait Model: Sized {
     /// Loads all parameters from a file.
@@ -122,10 +122,6 @@ impl Drop for AnyModel {
 
 pub(crate) mod internal {
     use super::Model;
-    use ApiResult;
-    use Device;
-    use Parameter;
-    use Wrap;
     use devices::AnyDevice;
     use primitiv_sys as _primitiv;
     use std::collections::HashMap;
@@ -134,6 +130,10 @@ pub(crate) mod internal {
     use std::path::Path;
     use std::ptr;
     use std::sync::{self, Arc, RwLock};
+    use ApiResult;
+    use Device;
+    use Parameter;
+    use Wrap;
 
     lazy_static! {
         static ref MODEL_MAP: RwLock<HashMap<u64, Arc<RwLock<ModelEntity>>>> =
@@ -203,7 +203,8 @@ pub(crate) mod internal {
 
     pub(crate) fn get_entity_mut<M: Model + Sized>(model: &mut M) -> WritableLock<ModelEntity> {
         let mut map = MODEL_MAP.write().unwrap();
-        let entity = map.entry(model.identifier())
+        let entity = map
+            .entry(model.identifier())
             .or_insert_with(|| Arc::new(RwLock::new(ModelEntity::new())))
             .clone();
         WritableLock(entity)
