@@ -1,9 +1,10 @@
 extern crate proc_macro;
+extern crate proc_macro2;
 extern crate syn;
 #[macro_use]
 extern crate quote;
 
-use proc_macro::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
 use syn::*;
@@ -27,7 +28,7 @@ use syn::*;
 // ```
 
 #[proc_macro_derive(Model, attributes(primitiv))]
-pub fn derive_model(input: TokenStream) -> TokenStream {
+pub fn derive_model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input: DeriveInput = syn::parse(input).unwrap();
     match expand_derive_model(&input).into() {
         Ok(expanded) => expanded.into(),
@@ -35,7 +36,7 @@ pub fn derive_model(input: TokenStream) -> TokenStream {
     }
 }
 
-fn expand_derive_model(input: &DeriveInput) -> Result<quote::Tokens, &'static str> {
+fn expand_derive_model(input: &DeriveInput) -> Result<TokenStream, &'static str> {
     let ident = &input.ident;
     let name = ident.to_string();
     let generics = input.generics.clone();
@@ -83,7 +84,7 @@ fn expand_derive_model(input: &DeriveInput) -> Result<quote::Tokens, &'static st
         }
     };
 
-    let dummy_const = Ident::from(&format!("_IMPL_MODEL_FOR_{}", ident)[..]);
+    let dummy_const = Ident::new(&format!("_IMPL_MODEL_FOR_{}", ident), Span::call_site());
     let generated = quote! {
         #[allow(non_upper_case_globals)]
         const #dummy_const: () = {
@@ -95,18 +96,23 @@ fn expand_derive_model(input: &DeriveInput) -> Result<quote::Tokens, &'static st
     Ok(generated)
 }
 
-fn impl_body_from_struct(_name: &Ident, fields: &Fields) -> Option<quote::Tokens> {
+fn impl_body_from_struct(_name: &Ident, fields: &Fields) -> Option<TokenStream> {
     match fields {
-        Fields::Named(ref f) => Some(map_fields(&f.named, true, Some(&Ident::from("self")), None)),
+        Fields::Named(ref f) => Some(map_fields(
+            &f.named,
+            true,
+            Some(&Ident::new("self", Span::call_site())),
+            None,
+        )),
         Fields::Unnamed(ref f) => Some(map_fields(
             &f.unnamed,
             false,
-            Some(&Ident::from("self")),
+            Some(&Ident::new("self", Span::call_site())),
             None,
         )),
         Fields::Unit => None,
     }.and_then(|tokens| {
-        let stmts: Vec<quote::Tokens> = tokens.into_iter().filter_map(|token| token).collect();
+        let stmts: Vec<TokenStream> = tokens.into_iter().filter_map(|token| token).collect();
         if stmts.len() > 0 {
             Some(quote!(#(#stmts)*))
         } else {
@@ -115,11 +121,8 @@ fn impl_body_from_struct(_name: &Ident, fields: &Fields) -> Option<quote::Tokens
     })
 }
 
-fn impl_body_from_enum(
-    name: &Ident,
-    variants: &Punctuated<Variant, Comma>,
-) -> Option<quote::Tokens> {
-    let stmts: Vec<(quote::Tokens, bool)> = variants
+fn impl_body_from_enum(name: &Ident, variants: &Punctuated<Variant, Comma>) -> Option<TokenStream> {
+    let stmts: Vec<(TokenStream, bool)> = variants
         .iter()
         .map(|variant| {
             let variant_ident = &variant.ident;
@@ -141,8 +144,10 @@ fn impl_body_from_enum(
                                 }
                                 None => {
                                     let ident = field.ident.as_ref().unwrap();
-                                    let unused_ident =
-                                        Ident::from(&format!("_{}", ident.to_string())[..]);
+                                    let unused_ident = Ident::new(
+                                        &format!("_{}", ident.to_string()),
+                                        Span::call_site(),
+                                    );
                                     fields.push(quote!(#ident: ref mut #unused_ident));
                                 }
                             });
@@ -168,12 +173,14 @@ fn impl_body_from_enum(
                             .enumerate()
                             .for_each(|(i, token)| match token {
                                 Some(stmt) => {
-                                    let ident = Ident::from(&format!("attr{}", i)[..]);
+                                    let ident =
+                                        Ident::new(&format!("attr{}", i), Span::call_site());
                                     fields.push(quote!(ref mut #ident));
                                     stmts.push(stmt);
                                 }
                                 None => {
-                                    let ident = Ident::from(&format!("_attr{}", i)[..]);
+                                    let ident =
+                                        Ident::new(&format!("_attr{}", i), Span::call_site());
                                     fields.push(quote!(ref mut #ident));
                                 }
                             });
@@ -208,7 +215,7 @@ fn map_fields(
     named: bool,
     root_ident: Option<&Ident>,
     root_name: Option<&str>,
-) -> Vec<Option<quote::Tokens>> {
+) -> Vec<Option<TokenStream>> {
     let iter = fields.iter().enumerate();
     let stmts = if named {
         iter.map(|(_i, field)| {
@@ -236,7 +243,7 @@ fn map_fields(
                     (quote!(#ident.#index), false)
                 }
                 None => {
-                    let field_ident = Ident::from(&format!("attr{}", i)[..]);
+                    let field_ident = Ident::new(&format!("attr{}", i), Span::call_site());
                     (quote!(#field_ident), true)
                 }
             };
@@ -256,11 +263,11 @@ fn map_fields(
 }
 
 fn parse_field(
-    field: &quote::Tokens,
+    field: &TokenStream,
     ty: &Type,
     attrs: &[FieldAttr],
     is_ref: bool,
-) -> Option<quote::Tokens> {
+) -> Option<TokenStream> {
     match FieldType::from_ty(ty, attrs) {
         FieldType::Array(sub_type) | FieldType::Vec(sub_type) => {
             parse_field(&quote!(f), sub_type, attrs, true).map(|stmt| {
@@ -342,7 +349,16 @@ impl<'a> FieldType<'a> {
         match ty {
             Type::Array(ref t) => FieldType::Array(&t.elem),
             Type::Tuple(ref t) => FieldType::Tuple(t.elems.iter().collect()),
-            Type::Path(ref t) => match t.path.segments.iter().last().unwrap().ident.as_ref() {
+            Type::Path(ref t) => match t
+                .path
+                .segments
+                .iter()
+                .last()
+                .unwrap()
+                .ident
+                .to_string()
+                .as_str()
+            {
                 "Vec" => FieldType::Vec(FieldType::generic_subtype(ty).unwrap()),
                 "Option" => FieldType::Option(FieldType::generic_subtype(ty).unwrap()),
                 "Parameter" => FieldType::Parameter,

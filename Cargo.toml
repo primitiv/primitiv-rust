@@ -16,7 +16,7 @@ primitiv-sys = { version = "0.3", path = "primitiv-sys" }
 primitiv-derive = { version = "0.1", path = "primitiv-derive" }
 
 [dev-dependencies]
-rand = "0.3"
+rand = "0.5"
 
 [features]
 eigen = ["primitiv-sys/eigen"]

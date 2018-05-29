@@ -8,8 +8,9 @@ license = "Apache-2.0"
 repository = "https://github.com/primitiv/primitiv-rust"
 
 [dependencies]
-syn = "0.13"
-quote = "0.5"
+proc-macro2 = "0.4"
+syn = "0.14"
+quote = "0.6"
 
 [lib]
 proc-macro = true
