@@ -50,7 +50,9 @@ pub struct EncoderDecoder<V: Variable> {
     ptrg_lookup: Parameter,
     pwhy: Parameter,
     pby: Parameter,
+    #[primitiv(submodel)]
     src_lstm: LSTM<V>,
+    #[primitiv(submodel)]
     trg_lstm: LSTM<V>,
     trg_lookup: V,
     why: V,
