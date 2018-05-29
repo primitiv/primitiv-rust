@@ -1,13 +1,13 @@
 use device::Device;
 use primitiv_sys as _primitiv;
-use std::ptr;
+use std::ptr::{self, NonNull};
 use ApiResult;
 use Wrap;
 
 /// Device class for the Eigen3 backend.
 #[derive(Debug)]
 pub struct Eigen {
-    inner: *mut _primitiv::primitivDevice_t,
+    inner: NonNull<_primitiv::primitivDevice_t>,
     owned: bool,
 }
 
@@ -19,11 +19,7 @@ impl Eigen {
         unsafe {
             let mut device_ptr: *mut _primitiv::primitivDevice_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivCreateEigenDevice(&mut device_ptr));
-            assert!(!device_ptr.is_null());
-            Eigen {
-                inner: device_ptr,
-                owned: true,
-            }
+            Eigen::from_raw(device_ptr, true)
         }
     }
 
@@ -35,11 +31,7 @@ impl Eigen {
                 rng_seed,
                 &mut device_ptr,
             ));
-            assert!(!device_ptr.is_null());
-            Eigen {
-                inner: device_ptr,
-                owned: true,
-            }
+            Eigen::from_raw(device_ptr, true)
         }
     }
 }

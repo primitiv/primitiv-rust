@@ -1,5 +1,5 @@
 use primitiv_sys as _primitiv;
-use std::ptr;
+use std::ptr::{self, NonNull};
 use ApiResult;
 use Optimizer;
 use Wrap;
@@ -7,7 +7,7 @@ use Wrap;
 /// Simple stochastic gradient descent.
 #[derive(Debug)]
 pub struct SGD {
-    inner: *mut _primitiv::primitivOptimizer_t,
+    inner: NonNull<_primitiv::primitivOptimizer_t>,
 }
 
 impl_optimizer!(SGD);
@@ -21,10 +21,7 @@ impl SGD {
                 eta,
                 &mut optimizer_ptr,
             ));
-            assert!(!optimizer_ptr.is_null());
-            SGD {
-                inner: optimizer_ptr,
-            }
+            SGD::from_raw(optimizer_ptr, true)
         }
     }
 }
@@ -38,7 +35,7 @@ impl Default for SGD {
 /// Stochastic gradient descent with momentum.
 #[derive(Debug)]
 pub struct MomentumSGD {
-    inner: *mut _primitiv::primitivOptimizer_t,
+    inner: NonNull<_primitiv::primitivOptimizer_t>,
 }
 
 impl_optimizer!(MomentumSGD);
@@ -53,10 +50,7 @@ impl MomentumSGD {
                 momentum,
                 &mut optimizer_ptr,
             ));
-            assert!(!optimizer_ptr.is_null());
-            MomentumSGD {
-                inner: optimizer_ptr,
-            }
+            MomentumSGD::from_raw(optimizer_ptr, true)
         }
     }
 }
@@ -70,7 +64,7 @@ impl Default for MomentumSGD {
 /// AdaGrad optimizer.
 #[derive(Debug)]
 pub struct AdaGrad {
-    inner: *mut _primitiv::primitivOptimizer_t,
+    inner: NonNull<_primitiv::primitivOptimizer_t>,
 }
 
 impl_optimizer!(AdaGrad);
@@ -85,10 +79,7 @@ impl AdaGrad {
                 eps,
                 &mut optimizer_ptr,
             ));
-            assert!(!optimizer_ptr.is_null());
-            AdaGrad {
-                inner: optimizer_ptr,
-            }
+            AdaGrad::from_raw(optimizer_ptr, true)
         }
     }
 }
@@ -102,7 +93,7 @@ impl Default for AdaGrad {
 /// RMSProp optimizer.
 #[derive(Debug)]
 pub struct RMSProp {
-    inner: *mut _primitiv::primitivOptimizer_t,
+    inner: NonNull<_primitiv::primitivOptimizer_t>,
 }
 
 impl_optimizer!(RMSProp);
@@ -118,10 +109,7 @@ impl RMSProp {
                 eps,
                 &mut optimizer_ptr,
             ));
-            assert!(!optimizer_ptr.is_null());
-            RMSProp {
-                inner: optimizer_ptr,
-            }
+            RMSProp::from_raw(optimizer_ptr, true)
         }
     }
 }
@@ -135,7 +123,7 @@ impl Default for RMSProp {
 /// AdaDelta optimizer.
 #[derive(Debug)]
 pub struct AdaDelta {
-    inner: *mut _primitiv::primitivOptimizer_t,
+    inner: NonNull<_primitiv::primitivOptimizer_t>,
 }
 
 impl_optimizer!(AdaDelta);
@@ -150,10 +138,7 @@ impl AdaDelta {
                 eps,
                 &mut optimizer_ptr,
             ));
-            assert!(!optimizer_ptr.is_null());
-            AdaDelta {
-                inner: optimizer_ptr,
-            }
+            AdaDelta::from_raw(optimizer_ptr, true)
         }
     }
 }
@@ -167,7 +152,7 @@ impl Default for AdaDelta {
 /// Adam optimizer.
 #[derive(Debug)]
 pub struct Adam {
-    inner: *mut _primitiv::primitivOptimizer_t,
+    inner: NonNull<_primitiv::primitivOptimizer_t>,
 }
 
 impl_optimizer!(Adam);
@@ -184,10 +169,7 @@ impl Adam {
                 eps,
                 &mut optimizer_ptr,
             ));
-            assert!(!optimizer_ptr.is_null());
-            Adam {
-                inner: optimizer_ptr,
-            }
+            Adam::from_raw(optimizer_ptr, true)
         }
     }
 }

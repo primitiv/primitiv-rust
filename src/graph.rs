@@ -1,7 +1,7 @@
 use devices::AnyDevice;
 use primitiv_sys as _primitiv;
 use std::ffi::CString;
-use std::ptr;
+use std::ptr::{self, NonNull};
 use ApiResult;
 use Shape;
 use Tensor;
@@ -10,7 +10,7 @@ use Wrap;
 /// Pointer of a node in the computation graph.
 #[derive(Debug)]
 pub struct Node {
-    inner: *mut _primitiv::primitivNode_t,
+    inner: NonNull<_primitiv::primitivNode_t>,
 }
 
 impl_wrap_owned!(Node, primitivNode_t);
@@ -22,8 +22,7 @@ impl Node {
         unsafe {
             let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivCreateNode(&mut node_ptr));
-            assert!(!node_ptr.is_null());
-            Node { inner: node_ptr }
+            Node::from_raw(node_ptr, true)
         }
     }
 
@@ -35,7 +34,6 @@ impl Node {
                 self.as_ptr(),
                 &mut graph_ptr,
             ));
-            assert!(!graph_ptr.is_null());
             Graph::from_raw(graph_ptr, false)
         }
     }
@@ -84,7 +82,6 @@ impl Node {
                 self.as_ptr(),
                 &mut shape_ptr,
             ));
-            assert!(!shape_ptr.is_null());
             Shape::from_raw(shape_ptr, true)
         }
     }
@@ -97,7 +94,6 @@ impl Node {
                 self.as_ptr(),
                 &mut device_ptr,
             ));
-            assert!(!device_ptr.is_null());
             AnyDevice::from_raw(device_ptr, false)
         }
     }
@@ -202,10 +198,10 @@ impl Clone for Node {
     #[inline]
     fn clone_from(&mut self, source: &Self) {
         unsafe {
-            check_api_status!(_primitiv::primitivDeleteNode(self.inner));
+            check_api_status!(_primitiv::primitivDeleteNode(self.as_mut_ptr()));
             let mut node_ptr: *mut _primitiv::primitivNode_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivCloneNode(source.as_ptr(), &mut node_ptr));
-            self.inner = node_ptr;
+            self.inner = NonNull::new(node_ptr).expect("pointer must not be null");
         }
     }
 }
@@ -226,7 +222,7 @@ impl Default for Node {
 /// Computation graph.
 #[derive(Debug)]
 pub struct Graph {
-    inner: *mut _primitiv::primitivGraph_t,
+    inner: NonNull<_primitiv::primitivGraph_t>,
     owned: bool,
 }
 
@@ -237,10 +233,9 @@ impl Graph {
     /// Creates a new Graph object.
     pub fn new() -> Self {
         unsafe {
-            let mut inner: *mut _primitiv::primitivGraph_t = ptr::null_mut();
-            check_api_status!(_primitiv::primitivCreateGraph(&mut inner));
-            assert!(!inner.is_null());
-            Graph { inner, owned: true }
+            let mut graph_ptr: *mut _primitiv::primitivGraph_t = ptr::null_mut();
+            check_api_status!(_primitiv::primitivCreateGraph(&mut graph_ptr));
+            Graph::from_raw(graph_ptr, true)
         }
     }
 
@@ -270,7 +265,9 @@ impl Graph {
                 node.as_ptr(),
                 &mut tensor_ptr,
             ));
-            assert!(!tensor_ptr.is_null());
+            // NOTE(chantera): This makes the returned pointer mutable, which is inconsistent with
+            // core API behavior. The core API will be fixed so that it returns a new Tensor object
+            // instead of a const reference.
             Tensor::from_raw(tensor_ptr as *mut _, false)
         }
     }
@@ -294,7 +291,6 @@ impl Graph {
                 node.as_ptr(),
                 &mut shape_ptr,
             ));
-            assert!(!shape_ptr.is_null());
             Shape::from_raw(shape_ptr, true)
         }
     }
@@ -308,7 +304,6 @@ impl Graph {
                 node.as_ptr(),
                 &mut device_ptr,
             ));
-            assert!(!device_ptr.is_null());
             AnyDevice::from_raw(device_ptr, false)
         }
     }

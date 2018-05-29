@@ -17,7 +17,6 @@ macro_rules! tensor_func_body {
                 $($arg),*,
                 &mut tensor_ptr,
             ));
-            assert!(!tensor_ptr.is_null());
             Tensor::from_raw(tensor_ptr, true)
         }
     }
@@ -286,10 +285,7 @@ pub fn split<T: AsRef<Tensor>>(x: T, dim: u32, n: u32) -> Vec<Tensor> {
         ));
         tensor_ptrs
             .into_iter()
-            .map(|tensor_ptr| {
-                assert!(!tensor_ptr.is_null());
-                Tensor::from_raw(tensor_ptr, true)
-            })
+            .map(|tensor_ptr| Tensor::from_raw(tensor_ptr, true))
             .collect()
     }
 }
@@ -670,10 +666,7 @@ pub mod batch {
             ));
             tensor_ptrs
                 .into_iter()
-                .map(|tensor_ptr| {
-                    assert!(!tensor_ptr.is_null());
-                    Tensor::from_raw(tensor_ptr, true)
-                })
+                .map(|tensor_ptr| Tensor::from_raw(tensor_ptr, true))
                 .collect()
         }
     }

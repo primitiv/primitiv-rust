@@ -18,7 +18,6 @@ macro_rules! node_func_body {
                 $($arg),*,
                 &mut node_ptr,
             ));
-            assert!(!node_ptr.is_null());
             Node::from_raw(node_ptr, true)
         }
     }
@@ -305,10 +304,7 @@ pub fn split<N: AsRef<Node>>(x: N, dim: u32, n: u32) -> Vec<Node> {
         ));
         node_ptrs
             .into_iter()
-            .map(|node_ptr| {
-                assert!(!node_ptr.is_null());
-                Node::from_raw(node_ptr, true)
-            })
+            .map(|node_ptr| Node::from_raw(node_ptr, true))
             .collect()
     }
 }
@@ -760,10 +756,7 @@ pub mod batch {
             ));
             node_ptrs
                 .into_iter()
-                .map(|node_ptr| {
-                    assert!(!node_ptr.is_null());
-                    Node::from_raw(node_ptr, true)
-                })
+                .map(|node_ptr| Node::from_raw(node_ptr, true))
                 .collect()
         }
     }

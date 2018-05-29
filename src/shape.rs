@@ -2,7 +2,7 @@ use primitiv_sys as _primitiv;
 use std::cmp::{Eq, PartialEq};
 use std::ffi::CString;
 use std::fmt;
-use std::ptr;
+use std::ptr::{self, NonNull};
 use ApiResult;
 use Result;
 use Wrap;
@@ -10,7 +10,7 @@ use Wrap;
 /// Data structure to represent the shape of the node.
 #[derive(Debug)]
 pub struct Shape {
-    inner: *mut _primitiv::primitivShape_t,
+    inner: NonNull<_primitiv::primitivShape_t>,
 }
 
 impl_wrap_owned!(Shape, primitivShape_t);
@@ -22,8 +22,7 @@ impl Shape {
         unsafe {
             let mut shape_ptr: *mut _primitiv::primitivShape_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivCreateShape(&mut shape_ptr));
-            assert!(!shape_ptr.is_null());
-            Shape { inner: shape_ptr }
+            Shape::from_raw(shape_ptr, true)
         }
     }
 
@@ -37,7 +36,7 @@ impl Shape {
                 batch,
                 &mut shape_ptr,
             ));
-            Shape { inner: shape_ptr }
+            Shape::from_raw(shape_ptr, true)
         }
     }
 
@@ -234,7 +233,7 @@ impl Shape {
                 m,
                 &mut shape_ptr,
             ));
-            Shape { inner: shape_ptr }
+            Shape::from_raw(shape_ptr, true)
         }
     }
 
@@ -247,7 +246,7 @@ impl Shape {
                 batch,
                 &mut shape_ptr,
             ));
-            Shape { inner: shape_ptr }
+            Shape::from_raw(shape_ptr, true)
         }
     }
 
@@ -282,13 +281,13 @@ impl Clone for Shape {
     #[inline]
     fn clone_from(&mut self, source: &Self) {
         unsafe {
-            check_api_status!(_primitiv::primitivDeleteShape(self.inner));
+            check_api_status!(_primitiv::primitivDeleteShape(self.as_mut_ptr()));
             let mut shape_ptr: *mut _primitiv::primitivShape_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivCloneShape(
                 source.as_ptr(),
                 &mut shape_ptr,
             ));
-            self.inner = shape_ptr;
+            self.inner = NonNull::new(shape_ptr).expect("pointer must not be null");
         }
     }
 }

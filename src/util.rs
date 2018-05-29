@@ -12,21 +12,20 @@ macro_rules! impl_wrap {
         impl Wrap<_primitiv::$type> for $name {
             #[inline(always)]
             fn from_raw(ptr: *mut _primitiv::$type, owned: bool) -> Self {
-                assert!(!ptr.is_null());
                 $name {
-                    inner: ptr,
-                    owned: owned,
+                    inner: NonNull::new(ptr).expect("pointer must not be null"),
+                    owned,
                 }
             }
 
             #[inline(always)]
             fn as_ptr(&self) -> *const _primitiv::$type {
-                self.inner
+                self.inner.as_ptr()
             }
 
             #[inline(always)]
             fn as_mut_ptr(&mut self) -> *mut _primitiv::$type {
-                self.inner
+                self.inner.as_ptr()
             }
 
             #[inline(always)]
@@ -42,18 +41,19 @@ macro_rules! impl_wrap_owned {
         impl Wrap<_primitiv::$type> for $name {
             #[inline(always)]
             fn from_raw(ptr: *mut _primitiv::$type, _owned: bool) -> Self {
-                assert!(!ptr.is_null());
-                $name { inner: ptr }
+                $name {
+                    inner: NonNull::new(ptr).expect("pointer must not be null"),
+                }
             }
 
             #[inline(always)]
             fn as_ptr(&self) -> *const _primitiv::$type {
-                self.inner
+                self.inner.as_ptr()
             }
 
             #[inline(always)]
             fn as_mut_ptr(&mut self) -> *mut _primitiv::$type {
-                self.inner
+                self.inner.as_ptr()
             }
 
             #[inline(always)]
@@ -70,7 +70,7 @@ macro_rules! impl_drop {
             fn drop(&mut self) {
                 if self.is_owned() {
                     unsafe {
-                        check_api_status!(_primitiv::$call(self.inner));
+                        check_api_status!(_primitiv::$call(self.as_mut_ptr()));
                     }
                 }
             }

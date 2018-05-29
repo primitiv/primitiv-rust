@@ -128,7 +128,7 @@ pub(crate) mod internal {
     use std::ffi::CString;
     use std::io;
     use std::path::Path;
-    use std::ptr;
+    use std::ptr::{self, NonNull};
     use std::sync::{self, Arc, RwLock};
     use ApiResult;
     use Device;
@@ -213,7 +213,7 @@ pub(crate) mod internal {
     /// Set of parameters and specific algorithms.
     #[derive(Debug)]
     pub(crate) struct ModelEntity {
-        inner: *mut _primitiv::primitivModel_t,
+        inner: NonNull<_primitiv::primitivModel_t>,
         owned: bool,
     }
 
@@ -229,11 +229,7 @@ pub(crate) mod internal {
             unsafe {
                 let mut model_ptr: *mut _primitiv::primitivModel_t = ptr::null_mut();
                 check_api_status!(_primitiv::primitivCreateModel(&mut model_ptr));
-                assert!(!model_ptr.is_null());
-                ModelEntity {
-                    inner: model_ptr,
-                    owned: true,
-                }
+                ModelEntity::from_raw(model_ptr, true)
             }
         }
 
@@ -327,10 +323,7 @@ pub(crate) mod internal {
                         &mut parameter_ptr,
                     ),
                     (),
-                ).map(|()| {
-                    assert!(!parameter_ptr.is_null());
-                    Parameter::from_raw(parameter_ptr as *mut _, false)
-                });
+                ).map(|()| Parameter::from_raw(parameter_ptr as *mut _, false));
                 result.ok()
             }
         }
@@ -360,10 +353,7 @@ pub(crate) mod internal {
                         &mut model_ptr,
                     ),
                     (),
-                ).map(|()| {
-                    assert!(!model_ptr.is_null());
-                    ModelEntity::from_raw(model_ptr as *mut _, false)
-                });
+                ).map(|()| ModelEntity::from_raw(model_ptr as *mut _, false));
                 result.ok()
             }
         }
