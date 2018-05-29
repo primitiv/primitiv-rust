@@ -240,10 +240,7 @@ impl Graph {
             let mut inner: *mut _primitiv::primitivGraph_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivCreateGraph(&mut inner));
             assert!(!inner.is_null());
-            Graph {
-                inner: inner,
-                owned: true,
-            }
+            Graph { inner, owned: true }
         }
     }
 
@@ -354,5 +351,11 @@ impl Graph {
             ));
             retval
         }
+    }
+}
+
+impl Default for Graph {
+    fn default() -> Graph {
+        Graph::new()
     }
 }

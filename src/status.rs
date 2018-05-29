@@ -73,9 +73,9 @@ pub(crate) struct Status {
 impl Status {
     fn new(code: Code, message: String, trace: Option<Backtrace>) -> Self {
         Status {
-            code: code,
-            message: message,
-            trace: trace,
+            code,
+            message,
+            trace,
         }
     }
 
@@ -111,11 +111,8 @@ impl Debug for Status {
             self.code().to_int(),
             self.message()
         ));
-        match self.trace {
-            Some(ref trace) => {
-                try!(write!(f, ", backtrace: \"\n{:?}\n\"", trace));
-            }
-            None => {}
+        if let Some(ref trace) = self.trace {
+            try!(write!(f, ", backtrace: \"\n{:?}\n\"", trace));
         }
         try!(write!(f, "}}"));
         Ok(())

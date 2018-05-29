@@ -191,7 +191,7 @@ pub(crate) mod internal {
         let key = model.identifier();
         let entity = {
             let map = MODEL_MAP.read().unwrap();
-            map.get(&key).map(|e| e.clone())
+            map.get(&key).cloned()
         }.unwrap_or_else(|| {
             let mut map = MODEL_MAP.write().unwrap();
             let e = Arc::new(RwLock::new(ModelEntity::new()));

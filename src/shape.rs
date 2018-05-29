@@ -293,6 +293,12 @@ impl Clone for Shape {
     }
 }
 
+impl Default for Shape {
+    fn default() -> Shape {
+        Shape::new()
+    }
+}
+
 impl PartialEq for Shape {
     fn eq(&self, other: &Shape) -> bool {
         unsafe {
