@@ -5,6 +5,8 @@ extern crate primitiv_derive;
 #[macro_use]
 extern crate lazy_static;
 extern crate libc;
+#[cfg(feature = "serialize")]
+extern crate serde;
 
 #[doc(hidden)]
 pub use primitiv_derive::*;
@@ -44,3 +46,5 @@ pub use functions::Variable;
 pub mod devices;
 pub mod initializers;
 pub mod optimizers;
+#[cfg(feature = "serialize")]
+mod serialize;
