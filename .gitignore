@@ -1,3 +1,8 @@
 /target/
+/primitiv-sys/target/
+/primitiv-sys/src/bindings.rs
 **/*.rs.bk
 Cargo.lock
+/examples/*/*.config
+/examples/*/*.parama
+/examples/*/data
