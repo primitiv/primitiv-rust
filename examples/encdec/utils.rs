@@ -40,7 +40,9 @@ pub fn make_vocab<P: AsRef<Path>>(path: P, size: usize) -> Result<HashMap<String
     freq.into_iter()
         .enumerate()
         .take_while(|&(i, _)| i < size - 3)
-        .for_each(|(i, x)| { vocab.insert(x.0, i as u32 + 3); });
+        .for_each(|(i, x)| {
+            vocab.insert(x.0, i as u32 + 3);
+        });
     Ok(vocab)
 }
 

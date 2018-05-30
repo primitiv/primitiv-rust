@@ -1,3 +1,4 @@
+#[macro_use]
 extern crate primitiv;
 extern crate rand;
 
@@ -7,22 +8,25 @@ use std::env::args;
 use std::io::{stdin, stdout, BufRead, Write};
 use std::process::exit;
 
+use primitiv::devices as D;
+use primitiv::functions as F;
+use primitiv::initializers as I;
+use primitiv::optimizers as O;
 use primitiv::Graph;
 use primitiv::Model;
-use primitiv::ModelImpl;
 use primitiv::Node;
 use primitiv::Optimizer;
 use primitiv::Parameter;
-use primitiv::devices as D;
-use primitiv::initializers as I;
-use primitiv::functions as F;
-use primitiv::optimizers as O;
+use primitiv::Tensor;
+use primitiv::Variable;
 
 mod lstm;
 mod utils;
 use lstm::LSTM;
-use utils::{count_labels, line_to_sent, load_corpus, load_ppl, make_batch, make_inv_vocab,
-            make_vocab, save_ppl};
+use utils::{
+    count_labels, line_to_sent, load_corpus, load_ppl, make_batch, make_inv_vocab, make_vocab,
+    save_ppl,
+};
 
 const SRC_VOCAB_SIZE: usize = 4000;
 const TRG_VOCAB_SIZE: usize = 5000;
@@ -39,24 +43,25 @@ static SRC_VALID_FILE: &'static str = "data/dev.en";
 static TRG_VALID_FILE: &'static str = "data/dev.ja";
 
 /// Encoder-decoder translation model.
-pub struct EncoderDecoder {
-    model: Model,
+#[derive(Model)]
+pub struct EncoderDecoder<V: Variable> {
     dropout_rate: f32,
     psrc_lookup: Parameter,
     ptrg_lookup: Parameter,
     pwhy: Parameter,
     pby: Parameter,
-    src_lstm: LSTM,
-    trg_lstm: LSTM,
-    trg_lookup: Node,
-    why: Node,
-    by: Node,
+    #[primitiv(submodel)]
+    src_lstm: LSTM<V>,
+    #[primitiv(submodel)]
+    trg_lstm: LSTM<V>,
+    trg_lookup: V,
+    why: V,
+    by: V,
 }
 
-impl EncoderDecoder {
+impl<V: Variable> EncoderDecoder<V> {
     pub fn new() -> Self {
-        let mut m = EncoderDecoder {
-            model: Model::new(),
+        EncoderDecoder {
             dropout_rate: DROPOUT_RATE,
             psrc_lookup: Parameter::new(),
             ptrg_lookup: Parameter::new(),
@@ -64,17 +69,10 @@ impl EncoderDecoder {
             pby: Parameter::new(),
             src_lstm: LSTM::new(),
             trg_lstm: LSTM::new(),
-            trg_lookup: Node::new(),
-            why: Node::new(),
-            by: Node::new(),
-        };
-        m.model.add_parameter("src_lookup", &mut m.psrc_lookup);
-        m.model.add_parameter("trg_lookup", &mut m.ptrg_lookup);
-        m.model.add_parameter("why", &mut m.pwhy);
-        m.model.add_parameter("by", &mut m.pby);
-        m.model.add_submodel("src_lstm", &mut m.src_lstm);
-        m.model.add_submodel("trg_lstm", &mut m.trg_lstm);
-        m
+            trg_lookup: V::new(),
+            why: V::new(),
+            by: V::new(),
+        }
     }
 
     /// Initializes the model.
@@ -97,10 +95,8 @@ impl EncoderDecoder {
             [trg_vocab_size as u32, hidden_size],
             &I::XavierUniform::new(1.0),
         );
-        self.pby.init_by_initializer(
-            [trg_vocab_size as u32],
-            &I::Constant::new(1.0),
-        );
+        self.pby
+            .init_by_initializer([trg_vocab_size as u32], &I::Constant::new(1.0));
         self.src_lstm.init(embed_size, hidden_size);
         self.trg_lstm.init(embed_size, hidden_size);
     }
@@ -112,7 +108,7 @@ impl EncoderDecoder {
         Words: AsRef<[u32]>,
     {
         // Reversed encoding.
-        let src_lookup = F::parameter::<Node>(&mut self.psrc_lookup);
+        let src_lookup = F::parameter::<V>(&mut self.psrc_lookup);
         self.src_lstm.restart(None, None);
         for it in inputs.as_ref().iter().rev() {
             let x = F::pick(&src_lookup, it.as_ref(), 1);
@@ -124,14 +120,12 @@ impl EncoderDecoder {
         self.trg_lookup = F::parameter(&mut self.ptrg_lookup);
         self.why = F::parameter(&mut self.pwhy);
         self.by = F::parameter(&mut self.pby);
-        self.trg_lstm.restart(
-            Some(self.src_lstm.get_c()),
-            Some(self.src_lstm.get_h()),
-        );
+        self.trg_lstm
+            .restart(Some(self.src_lstm.get_c()), Some(self.src_lstm.get_h()));
     }
 
     /// One step decoding.
-    pub fn decode_step<Words: AsRef<[u32]>>(&mut self, trg_words: Words, train: bool) -> Node {
+    pub fn decode_step<Words: AsRef<[u32]>>(&mut self, trg_words: Words, train: bool) -> V {
         let x = F::pick(&self.trg_lookup, trg_words.as_ref(), 1);
         let x = F::dropout(x, self.dropout_rate, train);
         let h = self.trg_lstm.forward(x);
@@ -140,7 +134,7 @@ impl EncoderDecoder {
     }
 
     /// Calculates the loss function over given target sentences.
-    pub fn loss<Batch, Words>(&mut self, trg_batch: Batch, train: bool) -> Node
+    pub fn loss<Batch, Words>(&mut self, trg_batch: Batch, train: bool) -> V
     where
         Batch: AsRef<[Words]>,
         Words: AsRef<[u32]>,
@@ -159,23 +153,9 @@ impl EncoderDecoder {
     }
 }
 
-impl AsRef<Model> for EncoderDecoder {
-    #[inline]
-    fn as_ref(&self) -> &Model {
-        &self.model
-    }
-}
-
-impl AsMut<Model> for EncoderDecoder {
-    #[inline]
-    fn as_mut(&mut self) -> &mut Model {
-        &mut self.model
-    }
-}
-
 /// Training encoder decoder model.
 pub fn train<O: Optimizer>(
-    encdec: &mut EncoderDecoder,
+    encdec: &mut EncoderDecoder<Node>,
     optimizer: &mut O,
     prefix: &str,
     mut best_valid_ppl: f32,
@@ -200,13 +180,11 @@ pub fn train<O: Optimizer>(
     let num_valid_labels = count_labels(&valid_trg_corpus);
     println!(
         "train: {} sentences, {} labels",
-        num_train_sents,
-        num_train_labels
+        num_train_sents, num_train_labels
     );
     println!(
         "valid: {} sentences, {} labels",
-        num_valid_sents,
-        num_valid_labels
+        num_valid_sents, num_valid_labels
     );
 
     // Batch randomizer.
@@ -286,19 +264,15 @@ pub fn train<O: Optimizer>(
 }
 
 /// Generates translation by consuming stdin.
-pub fn test(encdec: &mut EncoderDecoder) {
+pub fn test(encdec: &mut EncoderDecoder<Tensor>) {
     let src_vocab = make_vocab(SRC_TRAIN_FILE, SRC_VOCAB_SIZE).unwrap();
     let trg_vocab = make_vocab(TRG_TRAIN_FILE, TRG_VOCAB_SIZE).unwrap();
     let inv_trg_vocab = make_inv_vocab(&trg_vocab);
-
-    let mut g = Graph::new();
-    Graph::set_default(&mut g);
 
     let stdin = stdin();
     for line in stdin.lock().lines() {
         let src_corpus = [line_to_sent(&line.unwrap(), &src_vocab)];
         let src_batch = make_batch(&src_corpus, &[0], &src_vocab);
-        g.clear();
         encdec.encode(&src_batch, false);
 
         // Generates target words one-by-one.
@@ -344,13 +318,13 @@ fn main() {
         exit(1);
     }
 
-    eprintln!("initializing device ... ");
+    eprint!("initializing device ... ");
     let mut dev = D::Naive::new(); // let mut dev = D::CUDA::new(0);
     D::set_default(&mut dev);
     eprintln!("done.");
 
     if mode == "train" {
-        let mut encdec = EncoderDecoder::new();
+        let mut encdec = EncoderDecoder::<Node>::new();
         encdec.init(
             SRC_VOCAB_SIZE,
             TRG_VOCAB_SIZE,
@@ -364,7 +338,7 @@ fn main() {
     } else if mode == "resume" {
         eprint!("loading model/optimizer ... ");
         stdout().flush().unwrap();
-        let mut encdec = EncoderDecoder::new();
+        let mut encdec = EncoderDecoder::<Node>::new();
         encdec.load(format!("{}.model", prefix), true).unwrap();
         let mut optimizer = O::Adam::default();
         optimizer.load(format!("{}.optimizer", prefix)).unwrap();
@@ -375,7 +349,7 @@ fn main() {
         assert!(mode == "test");
         eprint!("loading model ... ");
         stdout().flush().unwrap();
-        let mut encdec = EncoderDecoder::new();
+        let mut encdec = EncoderDecoder::<Tensor>::new();
         encdec.load(format!("{}.model", prefix), true).unwrap();
         eprintln!("done.");
         test(&mut encdec);

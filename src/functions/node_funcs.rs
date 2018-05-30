@@ -1,9 +1,9 @@
+use devices::AnyDevice;
 use primitiv_sys as _primitiv;
 use std::ops;
 use std::ptr;
 use ApiResult;
 use Device;
-use devices::AnyDevice;
 use Graph;
 use Node;
 use Parameter;
@@ -18,7 +18,6 @@ macro_rules! node_func_body {
                 $($arg),*,
                 &mut node_ptr,
             ));
-            assert!(!node_ptr.is_null());
             Node::from_raw(node_ptr, true)
         }
     }
@@ -29,16 +28,18 @@ macro_rules! impl_node_unary_func {
         pub fn $name<N: AsRef<Node>>(x: N) -> Node {
             node_func_body!($api_fn, x.as_ref().as_ptr())
         }
-    }
+    };
 }
 
 macro_rules! impl_node_binary_func {
-    ($name:ident,
-     $api_fn:ident,
-     $name_xc:ident,
-     $api_fn_xc:ident,
-     $name_cx:ident,
-     $api_fn_cx:ident) => {
+    (
+        $name:ident,
+        $api_fn:ident,
+        $name_xc:ident,
+        $api_fn_xc:ident,
+        $name_cx:ident,
+        $api_fn_cx:ident
+    ) => {
         pub fn $name<N1: AsRef<Node>, N2: AsRef<Node>>(a: N1, b: N2) -> Node {
             node_func_body!($api_fn, a.as_ref().as_ptr(), b.as_ref().as_ptr())
         }
@@ -50,13 +51,11 @@ macro_rules! impl_node_binary_func {
         pub fn $name_cx<N: AsRef<Node>>(k: f32, x: N) -> Node {
             node_func_body!($api_fn_cx, k, x.as_ref().as_ptr())
         }
-    }
+    };
 }
 
 macro_rules! impl_node_unary_op {
-    ($name:ident,
-     $op_fn:ident,
-     $api_fn:ident) => {
+    ($name:ident, $op_fn:ident, $api_fn:ident) => {
         impl ops::$name for Node {
             type Output = Node;
 
@@ -64,15 +63,11 @@ macro_rules! impl_node_unary_op {
                 node_func_body!($api_fn, self.as_ptr())
             }
         }
-    }
+    };
 }
 
 macro_rules! impl_node_binary_with_constant_op {
-    ($scalar:ty,
-     $name:ident,
-     $op_fn:ident,
-     $api_fn_xc:ident,
-     $api_fn_cx:ident) => {
+    ($scalar:ty, $name:ident, $op_fn:ident, $api_fn_xc:ident, $api_fn_cx:ident) => {
         impl ops::$name<$scalar> for Node {
             type Output = Node;
 
@@ -104,15 +99,11 @@ macro_rules! impl_node_binary_with_constant_op {
                 node_func_body!($api_fn_cx, self as f32, rhs.as_ptr())
             }
         }
-    }
+    };
 }
 
 macro_rules! impl_node_binary_op {
-    ($name:ident,
-     $op_fn:ident,
-     $api_fn:ident,
-     $api_fn_xc:ident,
-     $api_fn_cx:ident) => {
+    ($name:ident, $op_fn:ident, $api_fn:ident, $api_fn_xc:ident, $api_fn_cx:ident) => {
         impl_node_binary_with_constant_op!(i8, $name, $op_fn, $api_fn_xc, $api_fn_cx);
         impl_node_binary_with_constant_op!(u8, $name, $op_fn, $api_fn_xc, $api_fn_cx);
         impl_node_binary_with_constant_op!(i16, $name, $op_fn, $api_fn_xc, $api_fn_cx);
@@ -155,7 +146,7 @@ macro_rules! impl_node_binary_op {
                 node_func_body!($api_fn, self.as_ptr(), rhs.as_ptr())
             }
         }
-    }
+    };
 }
 
 impl_node_unary_func!(positive, primitivApplyNodePositive);
@@ -313,16 +304,17 @@ pub fn split<N: AsRef<Node>>(x: N, dim: u32, n: u32) -> Vec<Node> {
         ));
         node_ptrs
             .into_iter()
-            .map(|node_ptr| {
-                assert!(!node_ptr.is_null());
-                Node::from_raw(node_ptr, true)
-            })
+            .map(|node_ptr| Node::from_raw(node_ptr, true))
             .collect()
     }
 }
 
-pub fn concat<N: AsRef<Node>>(xs: &[N], dim: u32) -> Node {
-    let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
+pub fn concat<NS: AsRef<[N]>, N: AsRef<Node>>(xs: NS, dim: u32) -> Node {
+    let x_ptrs = xs
+        .as_ref()
+        .iter()
+        .map(|x| x.as_ref().as_ptr())
+        .collect::<Vec<_>>();
     node_func_body!(primitivApplyNodeConcat, x_ptrs.as_ptr(), x_ptrs.len(), dim)
 }
 
@@ -345,6 +337,7 @@ pub fn matmul<N1: AsRef<Node>, N2: AsRef<Node>>(a: N1, b: N2) -> Node {
     )
 }
 
+impl_node_unary_func!(abs, primitivApplyNodeAbs);
 impl_node_unary_func!(sqrt, primitivApplyNodeSqrt);
 impl_node_unary_func!(exp, primitivApplyNodeExp);
 impl_node_unary_func!(log, primitivApplyNodeLog);
@@ -367,12 +360,24 @@ pub fn elu<N: AsRef<Node>>(x: N, a: f32) -> Node {
 
 impl_node_unary_func!(selu, primitivApplyNodeSelu);
 
+pub fn max<N: AsRef<Node>>(x: N, dim: u32) -> Node {
+    node_func_body!(primitivApplyNodeMax, x.as_ref().as_ptr(), dim)
+}
+
+pub fn min<N: AsRef<Node>>(x: N, dim: u32) -> Node {
+    node_func_body!(primitivApplyNodeMin, x.as_ref().as_ptr(), dim)
+}
+
 pub fn sum<N: AsRef<Node>>(x: N, dim: u32) -> Node {
     node_func_body!(primitivApplyNodeSum, x.as_ref().as_ptr(), dim)
 }
 
-pub fn sum_nodes<N: AsRef<Node>>(xs: &[N]) -> Node {
-    let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
+pub fn sum_nodes<NS: AsRef<[N]>, N: AsRef<Node>>(xs: NS) -> Node {
+    let x_ptrs = xs
+        .as_ref()
+        .iter()
+        .map(|x| x.as_ref().as_ptr())
+        .collect::<Vec<_>>();
     node_func_body!(primitivApplyNodeSumNodes, x_ptrs.as_ptr(), x_ptrs.len())
 }
 
@@ -380,8 +385,12 @@ pub fn mean<N: AsRef<Node>>(x: N, dim: u32) -> Node {
     node_func_body!(primitivApplyNodeMean, x.as_ref().as_ptr(), dim)
 }
 
-pub fn mean_nodes<N: AsRef<Node>>(xs: &[N]) -> Node {
-    let x_ptrs = xs.iter().map(|x| x.as_ref().as_ptr()).collect::<Vec<_>>();
+pub fn mean_nodes<NS: AsRef<[N]>, N: AsRef<Node>>(xs: NS) -> Node {
+    let x_ptrs = xs
+        .as_ref()
+        .iter()
+        .map(|x| x.as_ref().as_ptr())
+        .collect::<Vec<_>>();
     node_func_body!(primitivApplyNodeMeanNodes, x_ptrs.as_ptr(), x_ptrs.len())
 }
 
@@ -558,11 +567,11 @@ pub fn dropout<N: AsRef<Node>>(x: N, rate: f32, enabled: bool) -> Node {
 }
 
 pub mod random {
+    use devices::AnyDevice;
     use primitiv_sys as _primitiv;
     use std::ptr;
     use ApiResult;
     use Device;
-    use devices::AnyDevice;
     use Graph;
     use Node;
     use Shape;
@@ -718,6 +727,48 @@ pub mod batch {
     use ApiResult;
     use Node;
     use Wrap;
+
+    pub fn pick<N: AsRef<Node>>(x: N, ids: &[u32]) -> Node {
+        node_func_body!(
+            primitivApplyNodeBatchPick,
+            x.as_ref().as_ptr(),
+            ids.as_ptr(),
+            ids.len()
+        )
+    }
+
+    pub fn slice<N: AsRef<Node>>(x: N, lower: u32, upper: u32) -> Node {
+        node_func_body!(
+            primitivApplyNodeBatchSlice,
+            x.as_ref().as_ptr(),
+            lower,
+            upper
+        )
+    }
+
+    pub fn split<N: AsRef<Node>>(x: N, n: u32) -> Vec<Node> {
+        unsafe {
+            let mut node_ptrs = vec![ptr::null_mut(); n as usize];
+            check_api_status!(_primitiv::primitivApplyNodeBatchSplit(
+                x.as_ref().as_ptr(),
+                n,
+                node_ptrs.as_mut_ptr(),
+            ));
+            node_ptrs
+                .into_iter()
+                .map(|node_ptr| Node::from_raw(node_ptr, true))
+                .collect()
+        }
+    }
+
+    pub fn concat<NS: AsRef<[N]>, N: AsRef<Node>>(xs: NS) -> Node {
+        let x_ptrs = xs
+            .as_ref()
+            .iter()
+            .map(|x| x.as_ref().as_ptr())
+            .collect::<Vec<_>>();
+        node_func_body!(primitivApplyNodeBatchConcat, x_ptrs.as_ptr(), x_ptrs.len())
+    }
 
     impl_node_unary_func!(sum, primitivApplyNodeBatchSum);
     impl_node_unary_func!(mean, primitivApplyNodeBatchMean);

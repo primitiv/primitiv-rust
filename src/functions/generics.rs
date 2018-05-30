@@ -1,4 +1,7 @@
+use devices::AnyDevice;
+use std::fmt::Debug;
 use std::marker::PhantomData;
+use std::ops;
 use Device;
 use Node;
 use Parameter;
@@ -8,7 +11,589 @@ use Tensor;
 use super::node_funcs;
 use super::tensor_funcs;
 
+pub mod exports {
+    pub use super::Variable;
+    pub use super::{
+        abs, add, add_const, add_var, batch, broadcast, concat, constant, constant_on, conv2d,
+        copy, copy_on, cos, divide, divide_const, divide_var, dropout, elu, exp, flatten, identity,
+        identity_on, input, input_on, log, log_softmax, logsumexp, lrelu, matmul, max, max_pool2d,
+        mean, mean_vars, min, multiply, multiply_const, multiply_var, negative, ones, ones_on,
+        parameter, pick, positive, pow, pow_const, pow_var, pown, prelu, random, relu, reshape,
+        selu, sigmoid, sin, slice, softmax, softmax_cross_entropy, softmax_cross_entropy_with_ids,
+        softplus, split, sqrt, stop_gradient, subtract, subtract_const, subtract_var, sum,
+        sum_vars, tan, tanh, transpose, zeros, zeros_on,
+    };
+}
+pub trait Variable:
+    Clone
+    + Default
+    + AsRef<Self>
+    + Sized
+    + Debug
+    + ops::Neg<Output = Self>
+    + ops::Add<Self, Output = Self>
+    + for<'a> ops::Add<&'a Self, Output = Self>
+    + ops::Add<i8, Output = Self>
+    + ops::Add<u8, Output = Self>
+    + ops::Add<i16, Output = Self>
+    + ops::Add<u16, Output = Self>
+    + ops::Add<i32, Output = Self>
+    + ops::Add<u32, Output = Self>
+    + ops::Add<i64, Output = Self>
+    + ops::Add<u64, Output = Self>
+    + ops::Add<f32, Output = Self>
+    + ops::Add<f64, Output = Self>
+    + ops::Sub<Self, Output = Self>
+    + for<'a> ops::Sub<&'a Self, Output = Self>
+    + ops::Sub<i8, Output = Self>
+    + ops::Sub<u8, Output = Self>
+    + ops::Sub<i16, Output = Self>
+    + ops::Sub<u16, Output = Self>
+    + ops::Sub<i32, Output = Self>
+    + ops::Sub<u32, Output = Self>
+    + ops::Sub<i64, Output = Self>
+    + ops::Sub<u64, Output = Self>
+    + ops::Sub<f32, Output = Self>
+    + ops::Sub<f64, Output = Self>
+    + ops::Mul<Self, Output = Self>
+    + for<'a> ops::Mul<&'a Self, Output = Self>
+    + ops::Mul<i8, Output = Self>
+    + ops::Mul<u8, Output = Self>
+    + ops::Mul<i16, Output = Self>
+    + ops::Mul<u16, Output = Self>
+    + ops::Mul<i32, Output = Self>
+    + ops::Mul<u32, Output = Self>
+    + ops::Mul<i64, Output = Self>
+    + ops::Mul<u64, Output = Self>
+    + ops::Mul<f32, Output = Self>
+    + ops::Mul<f64, Output = Self>
+    + ops::Div<Self, Output = Self>
+    + for<'a> ops::Div<&'a Self, Output = Self>
+    + ops::Div<i8, Output = Self>
+    + ops::Div<u8, Output = Self>
+    + ops::Div<i16, Output = Self>
+    + ops::Div<u16, Output = Self>
+    + ops::Div<i32, Output = Self>
+    + ops::Div<u32, Output = Self>
+    + ops::Div<i64, Output = Self>
+    + ops::Div<u64, Output = Self>
+    + ops::Div<f32, Output = Self>
+    + ops::Div<f64, Output = Self>
+{
+    type F: Functions<Self>;
+
+    fn new() -> Self {
+        Self::default()
+    }
+
+    fn valid(&self) -> bool;
+
+    fn shape(&self) -> Shape;
+
+    fn device(&self) -> AnyDevice;
+
+    fn to_float(&self) -> f32;
+
+    fn to_vector(&self) -> Vec<f32>;
+
+    fn argmax(&self, dim: u32) -> Vec<u32>;
+
+    fn argmin(&self, dim: u32) -> Vec<u32>;
+}
+
+impl Variable for Node {
+    type F = FuncImpls<Node>;
+
+    fn valid(&self) -> bool {
+        self.valid()
+    }
+
+    fn shape(&self) -> Shape {
+        self.shape()
+    }
+
+    fn device(&self) -> AnyDevice {
+        self.device()
+    }
+
+    fn to_float(&self) -> f32 {
+        self.to_float()
+    }
+
+    fn to_vector(&self) -> Vec<f32> {
+        self.to_vector()
+    }
+
+    fn argmax(&self, dim: u32) -> Vec<u32> {
+        self.argmax(dim)
+    }
+
+    fn argmin(&self, dim: u32) -> Vec<u32> {
+        self.argmin(dim)
+    }
+}
+
+impl Variable for Tensor {
+    type F = FuncImpls<Tensor>;
+
+    fn valid(&self) -> bool {
+        self.valid()
+    }
+
+    fn shape(&self) -> Shape {
+        self.shape()
+    }
+
+    fn device(&self) -> AnyDevice {
+        self.device()
+    }
+
+    fn to_float(&self) -> f32 {
+        self.to_float()
+    }
+
+    fn to_vector(&self) -> Vec<f32> {
+        self.to_vector()
+    }
+
+    fn argmax(&self, dim: u32) -> Vec<u32> {
+        self.argmax(dim)
+    }
+
+    fn argmin(&self, dim: u32) -> Vec<u32> {
+        self.argmin(dim)
+    }
+}
+
+pub fn positive<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::negative(x)
+}
+
+pub fn negative<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::negative(x)
+}
+
+pub fn add<T1: AsRef<V>, T2: AsRef<V>, V: Variable>(a: T1, b: T2) -> V {
+    <V as Variable>::F::add(a, b)
+}
+
+pub fn add_const<T: AsRef<V>, V: Variable>(x: T, k: f32) -> V {
+    <V as Variable>::F::add_const(x, k)
+}
+
+pub fn add_var<T: AsRef<V>, V: Variable>(k: f32, x: T) -> V {
+    <V as Variable>::F::add_var(k, x)
+}
+
+pub fn subtract<T1: AsRef<V>, T2: AsRef<V>, V: Variable>(a: T1, b: T2) -> V {
+    <V as Variable>::F::subtract(a, b)
+}
+
+pub fn subtract_const<T: AsRef<V>, V: Variable>(x: T, k: f32) -> V {
+    <V as Variable>::F::subtract_const(x, k)
+}
+
+pub fn subtract_var<T: AsRef<V>, V: Variable>(k: f32, x: T) -> V {
+    <V as Variable>::F::subtract_var(k, x)
+}
+
+pub fn multiply<T1: AsRef<V>, T2: AsRef<V>, V: Variable>(a: T1, b: T2) -> V {
+    <V as Variable>::F::multiply(a, b)
+}
+
+pub fn multiply_const<T: AsRef<V>, V: Variable>(x: T, k: f32) -> V {
+    <V as Variable>::F::multiply_const(x, k)
+}
+
+pub fn multiply_var<T: AsRef<V>, V: Variable>(k: f32, x: T) -> V {
+    <V as Variable>::F::multiply_var(k, x)
+}
+
+pub fn divide<T1: AsRef<V>, T2: AsRef<V>, V: Variable>(a: T1, b: T2) -> V {
+    <V as Variable>::F::divide(a, b)
+}
+
+pub fn divide_const<T: AsRef<V>, V: Variable>(x: T, k: f32) -> V {
+    <V as Variable>::F::divide_const(x, k)
+}
+
+pub fn divide_var<T: AsRef<V>, V: Variable>(k: f32, x: T) -> V {
+    <V as Variable>::F::divide_var(k, x)
+}
+
+pub fn pow<T1: AsRef<V>, T2: AsRef<V>, V: Variable>(a: T1, b: T2) -> V {
+    <V as Variable>::F::pow(a, b)
+}
+
+pub fn pow_const<T: AsRef<V>, V: Variable>(x: T, k: f32) -> V {
+    <V as Variable>::F::pow_const(x, k)
+}
+
+pub fn pow_var<T: AsRef<V>, V: Variable>(k: f32, x: T) -> V {
+    <V as Variable>::F::pow_var(k, x)
+}
+
+pub fn pown<T: AsRef<V>, V: Variable>(x: T, k: i32) -> V {
+    <V as Variable>::F::pown(x, k)
+}
+
+pub fn input<S: Into<Shape>, V: Variable>(shape: S, data: &[f32]) -> V {
+    <V as Variable>::F::input(shape, data)
+}
+
+pub fn input_on<S: Into<Shape>, D: Device, V: Variable>(
+    shape: S,
+    data: &[f32],
+    dev: Option<&mut D>,
+) -> V {
+    <V as Variable>::F::input_on(shape, data, dev)
+}
+
+pub fn parameter<V: Variable>(param: &mut Parameter) -> V {
+    <V as Variable>::F::parameter(param)
+}
+
+pub fn copy<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::copy(x)
+}
+
+pub fn copy_on<T: AsRef<V>, D: Device, V: Variable>(x: T, dev: Option<&mut D>) -> V {
+    <V as Variable>::F::copy_on(x, dev)
+}
+
+pub fn pick<T: AsRef<V>, V: Variable>(x: T, ids: &[u32], dim: u32) -> V {
+    <V as Variable>::F::pick(x, ids, dim)
+}
+
+pub fn slice<T: AsRef<V>, V: Variable>(x: T, dim: u32, lower: u32, upper: u32) -> V {
+    <V as Variable>::F::slice(x, dim, lower, upper)
+}
+
+pub fn split<T: AsRef<V>, V: Variable>(x: T, dim: u32, n: u32) -> Vec<V> {
+    <V as Variable>::F::split(x, dim, n)
+}
+
+pub fn concat<TS: AsRef<[T]>, T: AsRef<V>, V: Variable>(xs: TS, dim: u32) -> V {
+    <V as Variable>::F::concat(xs, dim)
+}
+
+pub fn reshape<T: AsRef<V>, S: Into<Shape>, V: Variable>(x: T, new_shape: S) -> V {
+    <V as Variable>::F::reshape(x, new_shape)
+}
+
+pub fn flatten<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::flatten(x)
+}
+
+pub fn transpose<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::transpose(x)
+}
+
+pub fn matmul<T1: AsRef<V>, T2: AsRef<V>, V: Variable>(a: T1, b: T2) -> V {
+    <V as Variable>::F::matmul(a, b)
+}
+
+pub fn abs<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::abs(x)
+}
+
+pub fn sqrt<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::sqrt(x)
+}
+
+pub fn exp<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::exp(x)
+}
+
+pub fn log<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::log(x)
+}
+
+pub fn tanh<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::tanh(x)
+}
+
+pub fn sigmoid<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::sigmoid(x)
+}
+
+pub fn softplus<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::softplus(x)
+}
+
+pub fn sin<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::sin(x)
+}
+
+pub fn cos<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::cos(x)
+}
+
+pub fn tan<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::tan(x)
+}
+
+pub fn relu<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::relu(x)
+}
+
+pub fn lrelu<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::lrelu(x)
+}
+
+pub fn prelu<T: AsRef<V>, V: Variable>(x: T, a: f32) -> V {
+    <V as Variable>::F::prelu(x, a)
+}
+
+pub fn elu<T: AsRef<V>, V: Variable>(x: T, a: f32) -> V {
+    <V as Variable>::F::elu(x, a)
+}
+
+pub fn selu<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::selu(x)
+}
+
+pub fn max<T: AsRef<V>, V: Variable>(x: T, dim: u32) -> V {
+    <V as Variable>::F::max(x, dim)
+}
+
+pub fn min<T: AsRef<V>, V: Variable>(x: T, dim: u32) -> V {
+    <V as Variable>::F::min(x, dim)
+}
+
+pub fn sum<T: AsRef<V>, V: Variable>(x: T, dim: u32) -> V {
+    <V as Variable>::F::sum(x, dim)
+}
+
+pub fn sum_vars<TS: AsRef<[T]>, T: AsRef<V>, V: Variable>(xs: TS) -> V {
+    <V as Variable>::F::sum_vars(xs)
+}
+
+pub fn mean<T: AsRef<V>, V: Variable>(x: T, dim: u32) -> V {
+    <V as Variable>::F::mean(x, dim)
+}
+
+pub fn mean_vars<TS: AsRef<[T]>, T: AsRef<V>, V: Variable>(xs: TS) -> V {
+    <V as Variable>::F::mean_vars(xs)
+}
+
+pub fn broadcast<T: AsRef<V>, V: Variable>(x: T, dim: u32, size: u32) -> V {
+    <V as Variable>::F::broadcast(x, dim, size)
+}
+
+pub fn logsumexp<T: AsRef<V>, V: Variable>(x: T, dim: u32) -> V {
+    <V as Variable>::F::logsumexp(x, dim)
+}
+
+pub fn log_softmax<T: AsRef<V>, V: Variable>(x: T, dim: u32) -> V {
+    <V as Variable>::F::log_softmax(x, dim)
+}
+
+pub fn softmax<T: AsRef<V>, V: Variable>(x: T, dim: u32) -> V {
+    <V as Variable>::F::softmax(x, dim)
+}
+
+pub fn softmax_cross_entropy<T1: AsRef<V>, T2: AsRef<V>, V: Variable>(x: T1, t: T2, dim: u32) -> V {
+    <V as Variable>::F::softmax_cross_entropy(x, t, dim)
+}
+
+pub fn softmax_cross_entropy_with_ids<T: AsRef<V>, V: Variable>(x: T, ids: &[u32], dim: u32) -> V {
+    <V as Variable>::F::softmax_cross_entropy_with_ids(x, ids, dim)
+}
+
+pub fn stop_gradient<T: AsRef<V>, V: Variable>(x: T) -> V {
+    <V as Variable>::F::stop_gradient(x)
+}
+
+pub fn conv2d<T1: AsRef<V>, T2: AsRef<V>, V: Variable>(
+    x: T1,
+    w: T2,
+    padding0: u32,
+    padding1: u32,
+    stride0: u32,
+    stride1: u32,
+    dilation0: u32,
+    dilation1: u32,
+) -> V {
+    <V as Variable>::F::conv2d(
+        x, w, padding0, padding1, stride0, stride1, dilation0, dilation1,
+    )
+}
+
+pub fn max_pool2d<T: AsRef<V>, V: Variable>(
+    x: T,
+    window0: u32,
+    window1: u32,
+    padding0: u32,
+    padding1: u32,
+    stride0: u32,
+    stride1: u32,
+) -> V {
+    <V as Variable>::F::max_pool2d(x, window0, window1, padding0, padding1, stride0, stride1)
+}
+
+pub fn constant<S: Into<Shape>, V: Variable>(shape: S, k: f32) -> V {
+    <V as Variable>::F::constant(shape, k)
+}
+
+pub fn constant_on<S: Into<Shape>, D: Device, V: Variable>(
+    shape: S,
+    k: f32,
+    dev: Option<&mut D>,
+) -> V {
+    <V as Variable>::F::constant_on(shape, k, dev)
+}
+
+pub fn identity<V: Variable>(size: u32) -> V {
+    <V as Variable>::F::identity(size)
+}
+
+pub fn identity_on<D: Device, V: Variable>(size: u32, dev: Option<&mut D>) -> V {
+    <V as Variable>::F::identity_on(size, dev)
+}
+
+pub fn zeros<S: Into<Shape>, V: Variable>(shape: S) -> V {
+    <V as Variable>::F::zeros(shape)
+}
+
+pub fn zeros_on<S: Into<Shape>, D: Device, V: Variable>(shape: S, dev: Option<&mut D>) -> V {
+    <V as Variable>::F::zeros_on(shape, dev)
+}
+
+pub fn ones<S: Into<Shape>, V: Variable>(shape: S) -> V {
+    <V as Variable>::F::ones(shape)
+}
+
+pub fn ones_on<S: Into<Shape>, D: Device, V: Variable>(shape: S, dev: Option<&mut D>) -> V {
+    <V as Variable>::F::ones_on(shape, dev)
+}
+
+pub fn dropout<T: AsRef<V>, V: Variable>(x: T, rate: f32, enabled: bool) -> V {
+    <V as Variable>::F::dropout(x, rate, enabled)
+}
+
+pub mod random {
+    use super::Functions;
+    use super::Variable;
+    use Device;
+    use Shape;
+
+    pub fn bernoulli<S: Into<Shape>, V: Variable>(shape: S, p: f32) -> V {
+        <V as Variable>::F::random_bernoulli(shape, p)
+    }
+
+    pub fn bernoulli_on<S: Into<Shape>, D: Device, V: Variable>(
+        shape: S,
+        p: f32,
+        dev: Option<&mut D>,
+    ) -> V {
+        <V as Variable>::F::random_bernoulli_on(shape, p, dev)
+    }
+
+    pub fn uniform<S: Into<Shape>, V: Variable>(shape: S, lower: f32, upper: f32) -> V {
+        <V as Variable>::F::random_uniform(shape, lower, upper)
+    }
+
+    pub fn uniform_on<S: Into<Shape>, D: Device, V: Variable>(
+        shape: S,
+        lower: f32,
+        upper: f32,
+        dev: Option<&mut D>,
+    ) -> V {
+        <V as Variable>::F::random_uniform_on(shape, lower, upper, dev)
+    }
+
+    pub fn normal<S: Into<Shape>, V: Variable>(shape: S, mean: f32, sd: f32) -> V {
+        <V as Variable>::F::random_normal(shape, mean, sd)
+    }
+
+    pub fn normal_on<S: Into<Shape>, D: Device, V: Variable>(
+        shape: S,
+        mean: f32,
+        sd: f32,
+        dev: Option<&mut D>,
+    ) -> V {
+        <V as Variable>::F::random_normal_on(shape, mean, sd, dev)
+    }
+
+    pub fn log_normal<S: Into<Shape>, V: Variable>(shape: S, mean: f32, sd: f32) -> V {
+        <V as Variable>::F::random_log_normal(shape, mean, sd)
+    }
+
+    pub fn log_normal_on<S: Into<Shape>, D: Device, V: Variable>(
+        shape: S,
+        mean: f32,
+        sd: f32,
+        dev: Option<&mut D>,
+    ) -> V {
+        <V as Variable>::F::random_log_normal_on(shape, mean, sd, dev)
+    }
+
+    pub fn gumbel<S: Into<Shape>, V: Variable>(shape: S, mu: f32, beta: f32) -> V {
+        <V as Variable>::F::random_gumbel(shape, mu, beta)
+    }
+
+    pub fn gumbel_on<S: Into<Shape>, D: Device, V: Variable>(
+        shape: S,
+        mu: f32,
+        beta: f32,
+        dev: Option<&mut D>,
+    ) -> V {
+        <V as Variable>::F::random_gumbel_on(shape, mu, beta, dev)
+    }
+}
+
+pub mod batch {
+    use super::Functions;
+    use super::Variable;
+
+    pub fn pick<T: AsRef<V>, V: Variable>(x: T, ids: &[u32]) -> V {
+        <V as Variable>::F::batch_pick(x, ids)
+    }
+
+    pub fn slice<T: AsRef<V>, V: Variable>(x: T, lower: u32, upper: u32) -> V {
+        <V as Variable>::F::batch_slice(x, lower, upper)
+    }
+
+    pub fn split<T: AsRef<V>, V: Variable>(x: T, n: u32) -> Vec<V> {
+        <V as Variable>::F::batch_split(x, n)
+    }
+
+    pub fn concat<TS: AsRef<[T]>, T: AsRef<V>, V: Variable>(xs: TS) -> V {
+        <V as Variable>::F::batch_concat(xs)
+    }
+
+    pub fn sum<T: AsRef<V>, V: Variable>(x: T) -> V {
+        <V as Variable>::F::batch_sum(x)
+    }
+
+    pub fn mean<T: AsRef<V>, V: Variable>(x: T) -> V {
+        <V as Variable>::F::batch_mean(x)
+    }
+
+    pub fn normalize<T: AsRef<V>, V: Variable>(x: T) -> V {
+        <V as Variable>::F::batch_normalize(x)
+    }
+}
+
 pub trait Functions<Var> {
+    fn positive<T: AsRef<Var>>(x: T) -> Var;
+    fn negative<T: AsRef<Var>>(x: T) -> Var;
+    fn add<T1: AsRef<Var>, T2: AsRef<Var>>(a: T1, b: T2) -> Var;
+    fn add_const<T: AsRef<Var>>(x: T, k: f32) -> Var;
+    fn add_var<T: AsRef<Var>>(k: f32, x: T) -> Var;
+    fn subtract<T1: AsRef<Var>, T2: AsRef<Var>>(a: T1, b: T2) -> Var;
+    fn subtract_const<T: AsRef<Var>>(x: T, k: f32) -> Var;
+    fn subtract_var<T: AsRef<Var>>(k: f32, x: T) -> Var;
+    fn multiply<T1: AsRef<Var>, T2: AsRef<Var>>(a: T1, b: T2) -> Var;
+    fn multiply_const<T: AsRef<Var>>(x: T, k: f32) -> Var;
+    fn multiply_var<T: AsRef<Var>>(k: f32, x: T) -> Var;
+    fn divide<T1: AsRef<Var>, T2: AsRef<Var>>(a: T1, b: T2) -> Var;
+    fn divide_const<T: AsRef<Var>>(x: T, k: f32) -> Var;
+    fn divide_var<T: AsRef<Var>>(k: f32, x: T) -> Var;
+    fn pow<T1: AsRef<Var>, T2: AsRef<Var>>(a: T1, b: T2) -> Var;
+    fn pow_const<T: AsRef<Var>>(x: T, k: f32) -> Var;
+    fn pow_var<T: AsRef<Var>>(k: f32, x: T) -> Var;
     fn pown<T: AsRef<Var>>(x: T, k: i32) -> Var;
     fn input<S: Into<Shape>>(shape: S, data: &[f32]) -> Var;
     fn input_on<S: Into<Shape>, D: Device>(shape: S, data: &[f32], dev: Option<&mut D>) -> Var;
@@ -18,11 +603,12 @@ pub trait Functions<Var> {
     fn pick<T: AsRef<Var>>(x: T, ids: &[u32], dim: u32) -> Var;
     fn slice<T: AsRef<Var>>(x: T, dim: u32, lower: u32, upper: u32) -> Var;
     fn split<T: AsRef<Var>>(x: T, dim: u32, n: u32) -> Vec<Var>;
-    fn concat<T: AsRef<Var>>(xs: &[T], dim: u32) -> Var;
+    fn concat<TS: AsRef<[T]>, T: AsRef<Var>>(xs: TS, dim: u32) -> Var;
     fn reshape<T: AsRef<Var>, S: Into<Shape>>(x: T, new_shape: S) -> Var;
     fn flatten<T: AsRef<Var>>(x: T) -> Var;
     fn transpose<T: AsRef<Var>>(x: T) -> Var;
     fn matmul<T1: AsRef<Var>, T2: AsRef<Var>>(a: T1, b: T2) -> Var;
+    fn abs<T: AsRef<Var>>(x: T) -> Var;
     fn sqrt<T: AsRef<Var>>(x: T) -> Var;
     fn exp<T: AsRef<Var>>(x: T) -> Var;
     fn log<T: AsRef<Var>>(x: T) -> Var;
@@ -37,10 +623,12 @@ pub trait Functions<Var> {
     fn prelu<T: AsRef<Var>>(x: T, a: f32) -> Var;
     fn elu<T: AsRef<Var>>(x: T, a: f32) -> Var;
     fn selu<T: AsRef<Var>>(x: T) -> Var;
+    fn max<T: AsRef<Var>>(x: T, dim: u32) -> Var;
+    fn min<T: AsRef<Var>>(x: T, dim: u32) -> Var;
     fn sum<T: AsRef<Var>>(x: T, dim: u32) -> Var;
-    fn sum_vars<T: AsRef<Var>>(xs: &[T]) -> Var;
+    fn sum_vars<TS: AsRef<[T]>, T: AsRef<Var>>(xs: TS) -> Var;
     fn mean<T: AsRef<Var>>(x: T, dim: u32) -> Var;
-    fn mean_vars<T: AsRef<Var>>(xs: &[T]) -> Var;
+    fn mean_vars<TS: AsRef<[T]>, T: AsRef<Var>>(xs: TS) -> Var;
     fn broadcast<T: AsRef<Var>>(x: T, dim: u32, size: u32) -> Var;
     fn logsumexp<T: AsRef<Var>>(x: T, dim: u32) -> Var;
     fn log_softmax<T: AsRef<Var>>(x: T, dim: u32) -> Var;
@@ -107,527 +695,106 @@ pub trait Functions<Var> {
         beta: f32,
         dev: Option<&mut D>,
     ) -> Var;
+    fn batch_pick<T: AsRef<Var>>(x: T, ids: &[u32]) -> Var;
+    fn batch_slice<T: AsRef<Var>>(x: T, lower: u32, upper: u32) -> Var;
+    fn batch_split<T: AsRef<Var>>(x: T, n: u32) -> Vec<Var>;
+    fn batch_concat<TS: AsRef<[T]>, T: AsRef<Var>>(xs: TS) -> Var;
     fn batch_sum<T: AsRef<Var>>(x: T) -> Var;
     fn batch_mean<T: AsRef<Var>>(x: T) -> Var;
     fn batch_normalize<T: AsRef<Var>>(x: T) -> Var;
 }
 
+#[derive(Debug)]
 pub struct FuncImpls<Type> {
     _phantom: PhantomData<Type>,
 }
 
-pub fn pown<T: AsRef<Var>, Var>(x: T, k: i32) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::pown(x, k)
-}
-
-pub fn input<S: Into<Shape>, Var>(shape: S, data: &[f32]) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::input(shape, data)
-}
-
-pub fn input_on<S: Into<Shape>, D: Device, Var>(shape: S, data: &[f32], dev: Option<&mut D>) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::input_on(shape, data, dev)
-}
-
-pub fn parameter<Var>(param: &mut Parameter) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::parameter(param)
-}
-
-pub fn copy<T: AsRef<Var>, Var>(x: T) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::copy(x)
-}
-
-pub fn copy_on<T: AsRef<Var>, D: Device, Var>(x: T, dev: Option<&mut D>) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::copy_on(x, dev)
-}
-
-pub fn pick<T: AsRef<Var>, Var>(x: T, ids: &[u32], dim: u32) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::pick(x, ids, dim)
-}
-
-pub fn slice<T: AsRef<Var>, Var>(x: T, dim: u32, lower: u32, upper: u32) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::slice(x, dim, lower, upper)
-}
-
-pub fn split<T: AsRef<Var>, Var>(x: T, dim: u32, n: u32) -> Vec<Var>
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::split(x, dim, n)
-}
-
-pub fn concat<T: AsRef<Var>, Var>(xs: &[T], dim: u32) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::concat(xs, dim)
-}
-
-pub fn reshape<T: AsRef<Var>, S: Into<Shape>, Var>(x: T, new_shape: S) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::reshape(x, new_shape)
-}
-
-pub fn flatten<T: AsRef<Var>, Var>(x: T) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::flatten(x)
-}
-
-pub fn transpose<T: AsRef<Var>, Var>(x: T) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::transpose(x)
-}
-
-pub fn matmul<T1: AsRef<Var>, T2: AsRef<Var>, Var>(a: T1, b: T2) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::matmul(a, b)
-}
-
-pub fn sqrt<T: AsRef<Var>, Var>(x: T) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::sqrt(x)
-}
-
-pub fn exp<T: AsRef<Var>, Var>(x: T) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::exp(x)
-}
-
-pub fn log<T: AsRef<Var>, Var>(x: T) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::log(x)
-}
-
-pub fn tanh<T: AsRef<Var>, Var>(x: T) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::tanh(x)
-}
-
-pub fn sigmoid<T: AsRef<Var>, Var>(x: T) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::sigmoid(x)
-}
-
-pub fn softplus<T: AsRef<Var>, Var>(x: T) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::softplus(x)
-}
-
-pub fn sin<T: AsRef<Var>, Var>(x: T) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::sin(x)
-}
-
-pub fn cos<T: AsRef<Var>, Var>(x: T) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::cos(x)
-}
-
-pub fn tan<T: AsRef<Var>, Var>(x: T) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::tan(x)
-}
-
-pub fn relu<T: AsRef<Var>, Var>(x: T) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::relu(x)
-}
-
-pub fn lrelu<T: AsRef<Var>, Var>(x: T) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::lrelu(x)
-}
-
-pub fn prelu<T: AsRef<Var>, Var>(x: T, a: f32) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::prelu(x, a)
-}
-
-pub fn elu<T: AsRef<Var>, Var>(x: T, a: f32) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::elu(x, a)
-}
-
-pub fn selu<T: AsRef<Var>, Var>(x: T) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::selu(x)
-}
-
-pub fn sum<T: AsRef<Var>, Var>(x: T, dim: u32) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::sum(x, dim)
-}
-
-pub fn sum_vars<T: AsRef<Var>, Var>(xs: &[T]) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::sum_vars(xs)
-}
-
-pub fn mean<T: AsRef<Var>, Var>(x: T, dim: u32) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::mean(x, dim)
-}
-
-pub fn mean_vars<T: AsRef<Var>, Var>(xs: &[T]) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::mean_vars(xs)
-}
-
-pub fn broadcast<T: AsRef<Var>, Var>(x: T, dim: u32, size: u32) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::broadcast(x, dim, size)
-}
-
-pub fn logsumexp<T: AsRef<Var>, Var>(x: T, dim: u32) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::logsumexp(x, dim)
-}
-
-pub fn log_softmax<T: AsRef<Var>, Var>(x: T, dim: u32) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::log_softmax(x, dim)
-}
-
-pub fn softmax<T: AsRef<Var>, Var>(x: T, dim: u32) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::softmax(x, dim)
-}
-
-pub fn softmax_cross_entropy<T1: AsRef<Var>, T2: AsRef<Var>, Var>(x: T1, t: T2, dim: u32) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::softmax_cross_entropy(x, t, dim)
-}
-
-pub fn softmax_cross_entropy_with_ids<T: AsRef<Var>, Var>(x: T, ids: &[u32], dim: u32) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::softmax_cross_entropy_with_ids(x, ids, dim)
-}
-
-pub fn stop_gradient<T: AsRef<Var>, Var>(x: T) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::stop_gradient(x)
-}
-
-pub fn conv2d<T1: AsRef<Var>, T2: AsRef<Var>, Var>(
-    x: T1,
-    w: T2,
-    padding0: u32,
-    padding1: u32,
-    stride0: u32,
-    stride1: u32,
-    dilation0: u32,
-    dilation1: u32,
-) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::conv2d(
-        x,
-        w,
-        padding0,
-        padding1,
-        stride0,
-        stride1,
-        dilation0,
-        dilation1,
-    )
-}
-
-pub fn max_pool2d<T: AsRef<Var>, Var>(
-    x: T,
-    window0: u32,
-    window1: u32,
-    padding0: u32,
-    padding1: u32,
-    stride0: u32,
-    stride1: u32,
-) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::max_pool2d(
-        x,
-        window0,
-        window1,
-        padding0,
-        padding1,
-        stride0,
-        stride1,
-    )
-}
-
-pub fn constant<S: Into<Shape>, Var>(shape: S, k: f32) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::constant(shape, k)
-}
-
-pub fn constant_on<S: Into<Shape>, D: Device, Var>(shape: S, k: f32, dev: Option<&mut D>) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::constant_on(shape, k, dev)
-}
-
-pub fn identity<Var>(size: u32) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::identity(size)
-}
-
-pub fn identity_on<D: Device, Var>(size: u32, dev: Option<&mut D>) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::identity_on(size, dev)
-}
-
-pub fn zeros<S: Into<Shape>, Var>(shape: S) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::zeros(shape)
-}
-
-pub fn zeros_on<S: Into<Shape>, D: Device, Var>(shape: S, dev: Option<&mut D>) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::zeros_on(shape, dev)
-}
-
-pub fn ones<S: Into<Shape>, Var>(shape: S) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::ones(shape)
-}
-
-pub fn ones_on<S: Into<Shape>, D: Device, Var>(shape: S, dev: Option<&mut D>) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::ones_on(shape, dev)
-}
-
-pub fn dropout<T: AsRef<Var>, Var>(x: T, rate: f32, enabled: bool) -> Var
-where
-    FuncImpls<Var>: Functions<Var>,
-{
-    <FuncImpls<Var> as Functions<Var>>::dropout(x, rate, enabled)
-}
-
-pub mod random {
-    use super::FuncImpls;
-    use super::Functions;
-    use Device;
-    use Shape;
-
-    pub fn bernoulli<S: Into<Shape>, Var>(shape: S, p: f32) -> Var
-    where
-        FuncImpls<Var>: Functions<Var>,
-    {
-        <FuncImpls<Var> as Functions<Var>>::random_bernoulli(shape, p)
-    }
-
-    pub fn bernoulli_on<S: Into<Shape>, D: Device, Var>(
-        shape: S,
-        p: f32,
-        dev: Option<&mut D>,
-    ) -> Var
-    where
-        FuncImpls<Var>: Functions<Var>,
-    {
-        <FuncImpls<Var> as Functions<Var>>::random_bernoulli_on(shape, p, dev)
-    }
-
-    pub fn uniform<S: Into<Shape>, Var>(shape: S, lower: f32, upper: f32) -> Var
-    where
-        FuncImpls<Var>: Functions<Var>,
-    {
-        <FuncImpls<Var> as Functions<Var>>::random_uniform(shape, lower, upper)
-    }
-
-    pub fn uniform_on<S: Into<Shape>, D: Device, Var>(
-        shape: S,
-        lower: f32,
-        upper: f32,
-        dev: Option<&mut D>,
-    ) -> Var
-    where
-        FuncImpls<Var>: Functions<Var>,
-    {
-        <FuncImpls<Var> as Functions<Var>>::random_uniform_on(shape, lower, upper, dev)
-    }
-
-    pub fn normal<S: Into<Shape>, Var>(shape: S, mean: f32, sd: f32) -> Var
-    where
-        FuncImpls<Var>: Functions<Var>,
-    {
-        <FuncImpls<Var> as Functions<Var>>::random_normal(shape, mean, sd)
-    }
-
-    pub fn normal_on<S: Into<Shape>, D: Device, Var>(
-        shape: S,
-        mean: f32,
-        sd: f32,
-        dev: Option<&mut D>,
-    ) -> Var
-    where
-        FuncImpls<Var>: Functions<Var>,
-    {
-        <FuncImpls<Var> as Functions<Var>>::random_normal_on(shape, mean, sd, dev)
-    }
-
-    pub fn log_normal<S: Into<Shape>, Var>(shape: S, mean: f32, sd: f32) -> Var
-    where
-        FuncImpls<Var>: Functions<Var>,
-    {
-        <FuncImpls<Var> as Functions<Var>>::random_log_normal(shape, mean, sd)
-    }
-
-    pub fn log_normal_on<S: Into<Shape>, D: Device, Var>(
-        shape: S,
-        mean: f32,
-        sd: f32,
-        dev: Option<&mut D>,
-    ) -> Var
-    where
-        FuncImpls<Var>: Functions<Var>,
-    {
-        <FuncImpls<Var> as Functions<Var>>::random_log_normal_on(shape, mean, sd, dev)
-    }
-
-    pub fn gumbel<S: Into<Shape>, Var>(shape: S, mu: f32, beta: f32) -> Var
-    where
-        FuncImpls<Var>: Functions<Var>,
-    {
-        <FuncImpls<Var> as Functions<Var>>::random_gumbel(shape, mu, beta)
-    }
-
-    pub fn gumbel_on<S: Into<Shape>, D: Device, Var>(
-        shape: S,
-        mu: f32,
-        beta: f32,
-        dev: Option<&mut D>,
-    ) -> Var
-    where
-        FuncImpls<Var>: Functions<Var>,
-    {
-        <FuncImpls<Var> as Functions<Var>>::random_gumbel_on(shape, mu, beta, dev)
-    }
-}
-
-pub mod batch {
-    use super::FuncImpls;
-    use super::Functions;
-
-    pub fn sum<T: AsRef<Var>, Var>(x: T) -> Var
-    where
-        FuncImpls<Var>: Functions<Var>,
-    {
-        <FuncImpls<Var> as Functions<Var>>::batch_sum(x)
-    }
-
-    pub fn mean<T: AsRef<Var>, Var>(x: T) -> Var
-    where
-        FuncImpls<Var>: Functions<Var>,
-    {
-        <FuncImpls<Var> as Functions<Var>>::batch_mean(x)
-    }
-
-    pub fn normalize<T: AsRef<Var>, Var>(x: T) -> Var
-    where
-        FuncImpls<Var>: Functions<Var>,
-    {
-        <FuncImpls<Var> as Functions<Var>>::batch_normalize(x)
-    }
-}
-
 impl Functions<Node> for FuncImpls<Node> {
+    #[inline]
+    fn positive<T: AsRef<Node>>(x: T) -> Node {
+        node_funcs::positive(x)
+    }
+
+    #[inline]
+    fn negative<T: AsRef<Node>>(x: T) -> Node {
+        node_funcs::negative(x)
+    }
+
+    #[inline]
+    fn add<T1: AsRef<Node>, T2: AsRef<Node>>(a: T1, b: T2) -> Node {
+        node_funcs::add(a, b)
+    }
+
+    #[inline]
+    fn add_const<T: AsRef<Node>>(x: T, k: f32) -> Node {
+        node_funcs::add_const(x, k)
+    }
+
+    #[inline]
+    fn add_var<T: AsRef<Node>>(k: f32, x: T) -> Node {
+        node_funcs::add_node(k, x)
+    }
+
+    #[inline]
+    fn subtract<T1: AsRef<Node>, T2: AsRef<Node>>(a: T1, b: T2) -> Node {
+        node_funcs::subtract(a, b)
+    }
+
+    #[inline]
+    fn subtract_const<T: AsRef<Node>>(x: T, k: f32) -> Node {
+        node_funcs::subtract_const(x, k)
+    }
+
+    #[inline]
+    fn subtract_var<T: AsRef<Node>>(k: f32, x: T) -> Node {
+        node_funcs::subtract_node(k, x)
+    }
+
+    #[inline]
+    fn multiply<T1: AsRef<Node>, T2: AsRef<Node>>(a: T1, b: T2) -> Node {
+        node_funcs::multiply(a, b)
+    }
+
+    #[inline]
+    fn multiply_const<T: AsRef<Node>>(x: T, k: f32) -> Node {
+        node_funcs::multiply_const(x, k)
+    }
+
+    #[inline]
+    fn multiply_var<T: AsRef<Node>>(k: f32, x: T) -> Node {
+        node_funcs::multiply_node(k, x)
+    }
+
+    #[inline]
+    fn divide<T1: AsRef<Node>, T2: AsRef<Node>>(a: T1, b: T2) -> Node {
+        node_funcs::divide(a, b)
+    }
+
+    #[inline]
+    fn divide_const<T: AsRef<Node>>(x: T, k: f32) -> Node {
+        node_funcs::divide_const(x, k)
+    }
+
+    #[inline]
+    fn divide_var<T: AsRef<Node>>(k: f32, x: T) -> Node {
+        node_funcs::divide_node(k, x)
+    }
+
+    #[inline]
+    fn pow<T1: AsRef<Node>, T2: AsRef<Node>>(a: T1, b: T2) -> Node {
+        node_funcs::pow(a, b)
+    }
+
+    #[inline]
+    fn pow_const<T: AsRef<Node>>(x: T, k: f32) -> Node {
+        node_funcs::pow_const(x, k)
+    }
+
+    #[inline]
+    fn pow_var<T: AsRef<Node>>(k: f32, x: T) -> Node {
+        node_funcs::pow_node(k, x)
+    }
+
     #[inline]
     fn pown<T: AsRef<Node>>(x: T, k: i32) -> Node {
         node_funcs::pown(x, k)
@@ -674,7 +841,7 @@ impl Functions<Node> for FuncImpls<Node> {
     }
 
     #[inline]
-    fn concat<T: AsRef<Node>>(xs: &[T], dim: u32) -> Node {
+    fn concat<TS: AsRef<[T]>, T: AsRef<Node>>(xs: TS, dim: u32) -> Node {
         node_funcs::concat(xs, dim)
     }
 
@@ -696,6 +863,11 @@ impl Functions<Node> for FuncImpls<Node> {
     #[inline]
     fn matmul<T1: AsRef<Node>, T2: AsRef<Node>>(a: T1, b: T2) -> Node {
         node_funcs::matmul(a, b)
+    }
+
+    #[inline]
+    fn abs<T: AsRef<Node>>(x: T) -> Node {
+        node_funcs::abs(x)
     }
 
     #[inline]
@@ -769,12 +941,22 @@ impl Functions<Node> for FuncImpls<Node> {
     }
 
     #[inline]
+    fn max<T: AsRef<Node>>(x: T, dim: u32) -> Node {
+        node_funcs::max(x, dim)
+    }
+
+    #[inline]
+    fn min<T: AsRef<Node>>(x: T, dim: u32) -> Node {
+        node_funcs::min(x, dim)
+    }
+
+    #[inline]
     fn sum<T: AsRef<Node>>(x: T, dim: u32) -> Node {
         node_funcs::sum(x, dim)
     }
 
     #[inline]
-    fn sum_vars<T: AsRef<Node>>(xs: &[T]) -> Node {
+    fn sum_vars<TS: AsRef<[T]>, T: AsRef<Node>>(xs: TS) -> Node {
         node_funcs::sum_nodes(xs)
     }
 
@@ -784,7 +966,7 @@ impl Functions<Node> for FuncImpls<Node> {
     }
 
     #[inline]
-    fn mean_vars<T: AsRef<Node>>(xs: &[T]) -> Node {
+    fn mean_vars<TS: AsRef<[T]>, T: AsRef<Node>>(xs: TS) -> Node {
         node_funcs::mean_nodes(xs)
     }
 
@@ -835,14 +1017,7 @@ impl Functions<Node> for FuncImpls<Node> {
         dilation1: u32,
     ) -> Node {
         node_funcs::conv2d(
-            x,
-            w,
-            padding0,
-            padding1,
-            stride0,
-            stride1,
-            dilation0,
-            dilation1,
+            x, w, padding0, padding1, stride0, stride1, dilation0, dilation1,
         )
     }
 
@@ -979,6 +1154,26 @@ impl Functions<Node> for FuncImpls<Node> {
     }
 
     #[inline]
+    fn batch_pick<T: AsRef<Node>>(x: T, ids: &[u32]) -> Node {
+        node_funcs::batch::pick(x, ids)
+    }
+
+    #[inline]
+    fn batch_slice<T: AsRef<Node>>(x: T, lower: u32, upper: u32) -> Node {
+        node_funcs::batch::slice(x, lower, upper)
+    }
+
+    #[inline]
+    fn batch_split<T: AsRef<Node>>(x: T, n: u32) -> Vec<Node> {
+        node_funcs::batch::split(x, n)
+    }
+
+    #[inline]
+    fn batch_concat<TS: AsRef<[T]>, T: AsRef<Node>>(xs: TS) -> Node {
+        node_funcs::batch::concat(xs)
+    }
+
+    #[inline]
     fn batch_sum<T: AsRef<Node>>(x: T) -> Node {
         node_funcs::batch::sum(x)
     }
@@ -995,6 +1190,91 @@ impl Functions<Node> for FuncImpls<Node> {
 }
 
 impl Functions<Tensor> for FuncImpls<Tensor> {
+    #[inline]
+    fn positive<T: AsRef<Tensor>>(x: T) -> Tensor {
+        tensor_funcs::positive(x)
+    }
+
+    #[inline]
+    fn negative<T: AsRef<Tensor>>(x: T) -> Tensor {
+        tensor_funcs::negative(x)
+    }
+
+    #[inline]
+    fn add<T1: AsRef<Tensor>, T2: AsRef<Tensor>>(a: T1, b: T2) -> Tensor {
+        tensor_funcs::add(a, b)
+    }
+
+    #[inline]
+    fn add_const<T: AsRef<Tensor>>(x: T, k: f32) -> Tensor {
+        tensor_funcs::add_const(x, k)
+    }
+
+    #[inline]
+    fn add_var<T: AsRef<Tensor>>(k: f32, x: T) -> Tensor {
+        tensor_funcs::add_tensor(k, x)
+    }
+
+    #[inline]
+    fn subtract<T1: AsRef<Tensor>, T2: AsRef<Tensor>>(a: T1, b: T2) -> Tensor {
+        tensor_funcs::subtract(a, b)
+    }
+
+    #[inline]
+    fn subtract_const<T: AsRef<Tensor>>(x: T, k: f32) -> Tensor {
+        tensor_funcs::subtract_const(x, k)
+    }
+
+    #[inline]
+    fn subtract_var<T: AsRef<Tensor>>(k: f32, x: T) -> Tensor {
+        tensor_funcs::subtract_tensor(k, x)
+    }
+
+    #[inline]
+    fn multiply<T1: AsRef<Tensor>, T2: AsRef<Tensor>>(a: T1, b: T2) -> Tensor {
+        tensor_funcs::multiply(a, b)
+    }
+
+    #[inline]
+    fn multiply_const<T: AsRef<Tensor>>(x: T, k: f32) -> Tensor {
+        tensor_funcs::multiply_const(x, k)
+    }
+
+    #[inline]
+    fn multiply_var<T: AsRef<Tensor>>(k: f32, x: T) -> Tensor {
+        tensor_funcs::multiply_tensor(k, x)
+    }
+
+    #[inline]
+    fn divide<T1: AsRef<Tensor>, T2: AsRef<Tensor>>(a: T1, b: T2) -> Tensor {
+        tensor_funcs::divide(a, b)
+    }
+
+    #[inline]
+    fn divide_const<T: AsRef<Tensor>>(x: T, k: f32) -> Tensor {
+        tensor_funcs::divide_const(x, k)
+    }
+
+    #[inline]
+    fn divide_var<T: AsRef<Tensor>>(k: f32, x: T) -> Tensor {
+        tensor_funcs::divide_tensor(k, x)
+    }
+
+    #[inline]
+    fn pow<T1: AsRef<Tensor>, T2: AsRef<Tensor>>(a: T1, b: T2) -> Tensor {
+        tensor_funcs::pow(a, b)
+    }
+
+    #[inline]
+    fn pow_const<T: AsRef<Tensor>>(x: T, k: f32) -> Tensor {
+        tensor_funcs::pow_const(x, k)
+    }
+
+    #[inline]
+    fn pow_var<T: AsRef<Tensor>>(k: f32, x: T) -> Tensor {
+        tensor_funcs::pow_tensor(k, x)
+    }
+
     #[inline]
     fn pown<T: AsRef<Tensor>>(x: T, k: i32) -> Tensor {
         tensor_funcs::pown(x, k)
@@ -1041,7 +1321,7 @@ impl Functions<Tensor> for FuncImpls<Tensor> {
     }
 
     #[inline]
-    fn concat<T: AsRef<Tensor>>(xs: &[T], dim: u32) -> Tensor {
+    fn concat<TS: AsRef<[T]>, T: AsRef<Tensor>>(xs: TS, dim: u32) -> Tensor {
         tensor_funcs::concat(xs, dim)
     }
 
@@ -1063,6 +1343,11 @@ impl Functions<Tensor> for FuncImpls<Tensor> {
     #[inline]
     fn matmul<T1: AsRef<Tensor>, T2: AsRef<Tensor>>(a: T1, b: T2) -> Tensor {
         tensor_funcs::matmul(a, b)
+    }
+
+    #[inline]
+    fn abs<T: AsRef<Tensor>>(x: T) -> Tensor {
+        tensor_funcs::abs(x)
     }
 
     #[inline]
@@ -1136,12 +1421,22 @@ impl Functions<Tensor> for FuncImpls<Tensor> {
     }
 
     #[inline]
+    fn max<T: AsRef<Tensor>>(x: T, dim: u32) -> Tensor {
+        tensor_funcs::max(x, dim)
+    }
+
+    #[inline]
+    fn min<T: AsRef<Tensor>>(x: T, dim: u32) -> Tensor {
+        tensor_funcs::min(x, dim)
+    }
+
+    #[inline]
     fn sum<T: AsRef<Tensor>>(x: T, dim: u32) -> Tensor {
         tensor_funcs::sum(x, dim)
     }
 
     #[inline]
-    fn sum_vars<T: AsRef<Tensor>>(xs: &[T]) -> Tensor {
+    fn sum_vars<TS: AsRef<[T]>, T: AsRef<Tensor>>(xs: TS) -> Tensor {
         tensor_funcs::sum_tensors(xs)
     }
 
@@ -1151,7 +1446,7 @@ impl Functions<Tensor> for FuncImpls<Tensor> {
     }
 
     #[inline]
-    fn mean_vars<T: AsRef<Tensor>>(xs: &[T]) -> Tensor {
+    fn mean_vars<TS: AsRef<[T]>, T: AsRef<Tensor>>(xs: TS) -> Tensor {
         tensor_funcs::mean_tensors(xs)
     }
 
@@ -1206,14 +1501,7 @@ impl Functions<Tensor> for FuncImpls<Tensor> {
         dilation1: u32,
     ) -> Tensor {
         tensor_funcs::conv2d(
-            x,
-            w,
-            padding0,
-            padding1,
-            stride0,
-            stride1,
-            dilation0,
-            dilation1,
+            x, w, padding0, padding1, stride0, stride1, dilation0, dilation1,
         )
     }
 
@@ -1347,6 +1635,26 @@ impl Functions<Tensor> for FuncImpls<Tensor> {
         dev: Option<&mut D>,
     ) -> Tensor {
         tensor_funcs::random::gumbel_on(shape, mu, beta, dev)
+    }
+
+    #[inline]
+    fn batch_pick<T: AsRef<Tensor>>(x: T, ids: &[u32]) -> Tensor {
+        tensor_funcs::batch::pick(x, ids)
+    }
+
+    #[inline]
+    fn batch_slice<T: AsRef<Tensor>>(x: T, lower: u32, upper: u32) -> Tensor {
+        tensor_funcs::batch::slice(x, lower, upper)
+    }
+
+    #[inline]
+    fn batch_split<T: AsRef<Tensor>>(x: T, n: u32) -> Vec<Tensor> {
+        tensor_funcs::batch::split(x, n)
+    }
+
+    #[inline]
+    fn batch_concat<TS: AsRef<[T]>, T: AsRef<Tensor>>(xs: TS) -> Tensor {
+        tensor_funcs::batch::concat(xs)
     }
 
     #[inline]

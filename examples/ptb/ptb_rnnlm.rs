@@ -1,3 +1,4 @@
+#[macro_use]
 extern crate primitiv;
 extern crate rand;
 
@@ -5,16 +6,15 @@ use rand::{thread_rng, Rng};
 use std::cmp::min;
 use std::io::{stdout, Write};
 
-use primitiv::Graph;
-use primitiv::Model;
-use primitiv::Node;
-use primitiv::Optimizer;
-use primitiv::Parameter;
-use primitiv::Shape;
 use primitiv::devices as D;
 use primitiv::functions as F;
 use primitiv::initializers as I;
 use primitiv::optimizers as O;
+use primitiv::Graph;
+use primitiv::Node;
+use primitiv::Optimizer;
+use primitiv::Parameter;
+use primitiv::Shape;
 
 mod utils;
 
@@ -22,8 +22,8 @@ const NUM_HIDDEN_UNITS: u32 = 256;
 const BATCH_SIZE: usize = 64;
 const MAX_EPOCH: u32 = 100;
 
+#[derive(Debug, Model)]
 pub struct RNNLM {
-    model: Model,
     pwlookup: Parameter,
     pwxs: Parameter,
     pwsy: Parameter,
@@ -31,8 +31,7 @@ pub struct RNNLM {
 
 impl RNNLM {
     pub fn new(vocab_size: usize) -> Self {
-        let mut m = RNNLM {
-            model: Model::new(),
+        RNNLM {
             pwlookup: Parameter::from_initializer(
                 [NUM_HIDDEN_UNITS, vocab_size as u32],
                 &I::XavierUniform::new(1.0),
@@ -45,11 +44,7 @@ impl RNNLM {
                 [vocab_size as u32, NUM_HIDDEN_UNITS],
                 &I::XavierUniform::new(1.0),
             ),
-        };
-        m.model.add_parameter("pwlookup", &mut m.pwlookup);
-        m.model.add_parameter("pwxs", &mut m.pwxs);
-        m.model.add_parameter("pwsy", &mut m.pwsy);
-        m
+        }
     }
 
     /// Forward function of RNNLM. Input data should be arranged below:
@@ -98,20 +93,6 @@ impl RNNLM {
     }
 }
 
-impl AsRef<Model> for RNNLM {
-    #[inline]
-    fn as_ref(&self) -> &Model {
-        &self.model
-    }
-}
-
-impl AsMut<Model> for RNNLM {
-    #[inline]
-    fn as_mut(&mut self) -> &mut Model {
-        &mut self.model
-    }
-}
-
 fn main() {
     // Loads vocab.
     let vocab = utils::make_vocab("data/ptb.train.txt").unwrap();
@@ -127,13 +108,11 @@ fn main() {
     let num_valid_labels = utils::count_labels(&valid_corpus);
     println!(
         "train: {} sentences, {} labels",
-        num_train_sents,
-        num_train_labels
+        num_train_sents, num_train_labels
     );
     println!(
         "valid: {} sentences, {} labels",
-        num_valid_sents,
-        num_valid_labels
+        num_valid_sents, num_valid_labels
     );
 
     let mut dev = D::Naive::new(); // let mut dev = D::CUDA::new(0);

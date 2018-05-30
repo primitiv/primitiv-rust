@@ -1,8 +1,7 @@
-use primitiv::Model;
-use primitiv::Node;
-use primitiv::Parameter;
-use primitiv::initializers as I;
 use primitiv::functions as F;
+use primitiv::initializers as I;
+use primitiv::Parameter;
+use primitiv::Variable;
 
 /// Hand-written LSTM with input/forget/output gates and no peepholes.
 /// Formulation:
@@ -12,30 +11,26 @@ use primitiv::functions as F;
 ///   j = tanh   (W_xj . x[t] + W_hj . h[t-1] + b_j)
 ///   c[t] = i * j + f * c[t-1]
 ///   h[t] = o * tanh(c[t])
-pub struct LSTM {
-    model: Model,
+#[derive(Model)]
+pub struct LSTM<V: Variable> {
     pw: Parameter,
     pb: Parameter,
-    w: Node,
-    b: Node,
-    h: Node,
-    c: Node,
+    w: V,
+    b: V,
+    h: V,
+    c: V,
 }
 
-impl LSTM {
+impl<V: Variable> LSTM<V> {
     pub fn new() -> Self {
-        let mut m = LSTM {
-            model: Model::new(),
+        LSTM {
             pw: Parameter::new(),
             pb: Parameter::new(),
-            w: Node::new(),
-            b: Node::new(),
-            h: Node::new(),
-            c: Node::new(),
-        };
-        m.model.add_parameter("w", &mut m.pw);
-        m.model.add_parameter("b", &mut m.pb);
-        m
+            w: V::new(),
+            b: V::new(),
+            h: V::new(),
+            c: V::new(),
+        }
     }
 
     /// Initializes the model.
@@ -44,14 +39,12 @@ impl LSTM {
             [4 * out_size, in_size + out_size],
             &I::Uniform::new(-0.1, 0.1),
         );
-        self.pb.init_by_initializer(
-            [4 * out_size],
-            &I::Constant::new(1.0),
-        );
+        self.pb
+            .init_by_initializer([4 * out_size], &I::Constant::new(1.0));
     }
 
     /// Initializes the model.
-    pub fn restart(&mut self, init_c: Option<&Node>, init_h: Option<&Node>) {
+    pub fn restart(&mut self, init_c: Option<&V>, init_h: Option<&V>) {
         let out_size = self.pw.shape().at(0) / 4;
         self.w = F::parameter(&mut self.pw);
         self.b = F::parameter(&mut self.pb);
@@ -64,7 +57,7 @@ impl LSTM {
     }
 
     /// One step forwarding.
-    pub fn forward<N: AsRef<Node>>(&mut self, x: N) -> &Node {
+    pub fn forward<N: AsRef<V>>(&mut self, x: N) -> &V {
         let u = F::matmul(&self.w, F::concat(&vec![x.as_ref(), &self.h], 0)) + &self.b;
         let v = F::split(u, 0, 4);
         let i = F::sigmoid(&v[0]);
@@ -76,25 +69,11 @@ impl LSTM {
         &self.h
     }
 
-    pub fn get_c(&self) -> &Node {
+    pub fn get_c(&self) -> &V {
         &self.c
     }
 
-    pub fn get_h(&self) -> &Node {
+    pub fn get_h(&self) -> &V {
         &self.h
-    }
-}
-
-impl AsRef<Model> for LSTM {
-    #[inline]
-    fn as_ref(&self) -> &Model {
-        &self.model
-    }
-}
-
-impl AsMut<Model> for LSTM {
-    #[inline]
-    fn as_mut(&mut self) -> &mut Model {
-        &mut self.model
     }
 }

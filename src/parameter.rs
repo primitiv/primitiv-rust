@@ -1,11 +1,11 @@
+use devices::AnyDevice;
 use primitiv_sys as _primitiv;
 use std::ffi::CString;
 use std::io;
 use std::path::Path;
-use std::ptr;
+use std::ptr::{self, NonNull};
 use ApiResult;
 use Device;
-use devices::AnyDevice;
 use Initializer;
 use Shape;
 use Tensor;
@@ -14,7 +14,7 @@ use Wrap;
 /// Struct to manage a trainable tensor parameter.
 #[derive(Debug)]
 pub struct Parameter {
-    inner: *mut _primitiv::primitivParameter_t,
+    inner: NonNull<_primitiv::primitivParameter_t>,
     owned: bool,
 }
 
@@ -27,11 +27,7 @@ impl Parameter {
         unsafe {
             let mut parameter_ptr: *mut _primitiv::primitivParameter_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivCreateParameter(&mut parameter_ptr));
-            assert!(!parameter_ptr.is_null());
-            Parameter {
-                inner: parameter_ptr,
-                owned: true,
-            }
+            Parameter::from_raw(parameter_ptr, true)
         }
     }
 
@@ -55,11 +51,7 @@ impl Parameter {
                 device.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
                 &mut parameter_ptr,
             ));
-            assert!(!parameter_ptr.is_null());
-            Parameter {
-                inner: parameter_ptr,
-                owned: true,
-            }
+            Parameter::from_raw(parameter_ptr, true)
         }
     }
 
@@ -82,11 +74,7 @@ impl Parameter {
                 device.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
                 &mut parameter_ptr,
             ));
-            assert!(!parameter_ptr.is_null());
-            Parameter {
-                inner: parameter_ptr,
-                owned: true,
-            }
+            Parameter::from_raw(parameter_ptr, true)
         }
     }
 
@@ -162,9 +150,7 @@ impl Parameter {
                     device.map(|d| d.as_mut_ptr()).unwrap_or(ptr::null_mut()),
                 ),
                 (),
-            ).map_err(|status| {
-                io::Error::new(io::ErrorKind::Other, status.message())
-            })
+            ).map_err(|status| io::Error::new(io::ErrorKind::Other, status.message()))
         }
     }
 
@@ -174,15 +160,9 @@ impl Parameter {
             let path_c = CString::new(path.as_ref().to_str().unwrap()).unwrap();
             let path_ptr = path_c.as_ptr();
             Result::from_api_status(
-                _primitiv::primitivSaveParameter(
-                self.as_ptr(),
-                path_ptr,
-                with_stats as u32,
-                ),
+                _primitiv::primitivSaveParameter(self.as_ptr(), path_ptr, with_stats as u32),
                 (),
-            ).map_err(|status| {
-                io::Error::new(io::ErrorKind::Other, status.message())
-            })
+            ).map_err(|status| io::Error::new(io::ErrorKind::Other, status.message()))
         }
     }
 
@@ -243,7 +223,6 @@ impl Parameter {
                 self.as_ptr(),
                 &mut shape_ptr,
             ));
-            assert!(!shape_ptr.is_null());
             Shape::from_raw(shape_ptr, true)
         }
     }
@@ -256,7 +235,6 @@ impl Parameter {
                 self.as_ptr(),
                 &mut device_ptr,
             ));
-            assert!(!device_ptr.is_null());
             AnyDevice::from_raw(device_ptr, false)
         }
     }
@@ -269,7 +247,6 @@ impl Parameter {
                 self.as_ptr(),
                 &mut tensor_ptr,
             ));
-            assert!(!tensor_ptr.is_null());
             Tensor::from_raw(tensor_ptr as *mut _, false)
         }
     }
@@ -282,7 +259,6 @@ impl Parameter {
                 self.as_ptr(),
                 &mut tensor_ptr,
             ));
-            assert!(!tensor_ptr.is_null());
             Tensor::from_raw(tensor_ptr as *mut _, false)
         }
     }
@@ -298,8 +274,13 @@ impl Parameter {
                 name_ptr,
                 &mut tensor_ptr,
             ));
-            assert!(!tensor_ptr.is_null());
             Tensor::from_raw(tensor_ptr as *mut _, false)
         }
+    }
+}
+
+impl Default for Parameter {
+    fn default() -> Parameter {
+        Parameter::new()
     }
 }

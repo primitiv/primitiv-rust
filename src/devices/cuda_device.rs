@@ -1,13 +1,13 @@
-use primitiv_sys as _primitiv;
-use std::ptr;
-use ApiResult;
 use device::Device;
+use primitiv_sys as _primitiv;
+use std::ptr::{self, NonNull};
+use ApiResult;
 use Wrap;
 
 /// Device class for CUDA.
 #[derive(Debug)]
 pub struct CUDA {
-    inner: *mut _primitiv::primitivDevice_t,
+    inner: NonNull<_primitiv::primitivDevice_t>,
     owned: bool,
 }
 
@@ -22,11 +22,7 @@ impl CUDA {
                 device_id,
                 &mut device_ptr,
             ));
-            assert!(!device_ptr.is_null());
-            CUDA {
-                inner: device_ptr,
-                owned: true,
-            }
+            CUDA::from_raw(device_ptr, true)
         }
     }
 
@@ -39,11 +35,7 @@ impl CUDA {
                 rng_seed,
                 &mut device_ptr,
             ));
-            assert!(!device_ptr.is_null());
-            CUDA {
-                inner: device_ptr,
-                owned: true,
-            }
+            CUDA::from_raw(device_ptr, true)
         }
     }
 

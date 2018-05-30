@@ -1,7 +1,7 @@
 extern crate backtrace;
-use primitiv_sys as _primitiv;
-use libc::c_uint;
 use self::backtrace::Backtrace;
+use libc::c_uint;
+use primitiv_sys as _primitiv;
 use std::env;
 use std::ffi::CString;
 use std::fmt;
@@ -73,9 +73,9 @@ pub(crate) struct Status {
 impl Status {
     fn new(code: Code, message: String, trace: Option<Backtrace>) -> Self {
         Status {
-            code: code,
-            message: message,
-            trace: trace,
+            code,
+            message,
+            trace,
         }
     }
 
@@ -111,11 +111,8 @@ impl Debug for Status {
             self.code().to_int(),
             self.message()
         ));
-        match self.trace {
-            Some(ref trace) => {
-                try!(write!(f, ", backtrace: \"\n{:?}\n\"", trace));
-            }
-            None => {}
+        if let Some(ref trace) = self.trace {
+            try!(write!(f, ", backtrace: \"\n{:?}\n\"", trace));
         }
         try!(write!(f, "}}"));
         Ok(())
@@ -137,7 +134,7 @@ impl<T> ApiResult<T, Status> for result::Result<T, Status> {
                 let mut size: usize = 0;
                 let s = _primitiv::primitivGetMessage(ptr::null_mut(), &mut size as *mut _);
                 assert!(Code::is_ok(s));
-                let buffer = CString::new(Vec::with_capacity(size)).unwrap().into_raw();
+                let buffer = CString::new(vec![b'0'; size]).unwrap().into_raw();
                 let s = _primitiv::primitivGetMessage(buffer, &mut size as *mut _);
                 assert!(Code::is_ok(s));
                 let message = CString::from_raw(buffer).into_string().unwrap();
@@ -161,10 +158,10 @@ pub(crate) type Result<T> = result::Result<T, Status>;
 macro_rules! check_api_status {
     ($status:expr) => {
         match Result::from_api_status($status, 0) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(s) => {
                 panic!("{:?}", s);
-            },
+            }
         }
-    }
+    };
 }

@@ -1,13 +1,13 @@
-use primitiv_sys as _primitiv;
-use std::ptr;
-use ApiResult;
 use device::Device;
+use primitiv_sys as _primitiv;
+use std::ptr::{self, NonNull};
+use ApiResult;
 use Wrap;
 
 /// Device class for the naive function implementations on CPU.
 #[derive(Debug)]
 pub struct Naive {
-    inner: *mut _primitiv::primitivDevice_t,
+    inner: NonNull<_primitiv::primitivDevice_t>,
     owned: bool,
 }
 
@@ -19,11 +19,7 @@ impl Naive {
         unsafe {
             let mut device_ptr: *mut _primitiv::primitivDevice_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivCreateNaiveDevice(&mut device_ptr));
-            assert!(!device_ptr.is_null());
-            Naive {
-                inner: device_ptr,
-                owned: true,
-            }
+            Naive::from_raw(device_ptr, true)
         }
     }
 
@@ -35,11 +31,7 @@ impl Naive {
                 rng_seed,
                 &mut device_ptr,
             ));
-            assert!(!device_ptr.is_null());
-            Naive {
-                inner: device_ptr,
-                owned: true,
-            }
+            Naive::from_raw(device_ptr, true)
         }
     }
 }

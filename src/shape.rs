@@ -2,7 +2,7 @@ use primitiv_sys as _primitiv;
 use std::cmp::{Eq, PartialEq};
 use std::ffi::CString;
 use std::fmt;
-use std::ptr;
+use std::ptr::{self, NonNull};
 use ApiResult;
 use Result;
 use Wrap;
@@ -10,7 +10,7 @@ use Wrap;
 /// Data structure to represent the shape of the node.
 #[derive(Debug)]
 pub struct Shape {
-    inner: *mut _primitiv::primitivShape_t,
+    inner: NonNull<_primitiv::primitivShape_t>,
 }
 
 impl_wrap_owned!(Shape, primitivShape_t);
@@ -22,8 +22,7 @@ impl Shape {
         unsafe {
             let mut shape_ptr: *mut _primitiv::primitivShape_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivCreateShape(&mut shape_ptr));
-            assert!(!shape_ptr.is_null());
-            Shape { inner: shape_ptr }
+            Shape::from_raw(shape_ptr, true)
         }
     }
 
@@ -37,7 +36,7 @@ impl Shape {
                 batch,
                 &mut shape_ptr,
             ));
-            Shape { inner: shape_ptr }
+            Shape::from_raw(shape_ptr, true)
         }
     }
 
@@ -234,7 +233,7 @@ impl Shape {
                 m,
                 &mut shape_ptr,
             ));
-            Shape { inner: shape_ptr }
+            Shape::from_raw(shape_ptr, true)
         }
     }
 
@@ -247,7 +246,7 @@ impl Shape {
                 batch,
                 &mut shape_ptr,
             ));
-            Shape { inner: shape_ptr }
+            Shape::from_raw(shape_ptr, true)
         }
     }
 
@@ -282,14 +281,20 @@ impl Clone for Shape {
     #[inline]
     fn clone_from(&mut self, source: &Self) {
         unsafe {
-            check_api_status!(_primitiv::primitivDeleteShape(self.inner));
+            check_api_status!(_primitiv::primitivDeleteShape(self.as_mut_ptr()));
             let mut shape_ptr: *mut _primitiv::primitivShape_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivCloneShape(
                 source.as_ptr(),
                 &mut shape_ptr,
             ));
-            self.inner = shape_ptr;
+            self.inner = NonNull::new(shape_ptr).expect("pointer must not be null");
         }
+    }
+}
+
+impl Default for Shape {
+    fn default() -> Shape {
+        Shape::new()
     }
 }
 
@@ -318,7 +323,7 @@ impl fmt::Display for Shape {
                 ptr::null_mut(),
                 &mut size as *mut _,
             ));
-            let buffer = CString::new(Vec::with_capacity(size)).unwrap().into_raw();
+            let buffer = CString::new(vec![b'0'; size]).unwrap().into_raw();
             check_api_status!(_primitiv::primitivRepresentShapeAsString(
                 self.as_ptr(),
                 buffer,
@@ -329,40 +334,40 @@ impl fmt::Display for Shape {
     }
 }
 
-macro_rules! impl_array_into_shape {
+macro_rules! impl_shape_from_array {
     ($num:expr) => {
-        impl Into<Shape> for [u32; $num] {
-            fn into(self) -> Shape {
-                Shape::from_dims(&self, 1)
+        impl From<[u32; $num]> for Shape {
+            fn from(dims: [u32; $num]) -> Shape {
+                Shape::from_dims(&dims, 1)
             }
         }
-    }
+    };
 }
-impl_array_into_shape!(0);
-impl_array_into_shape!(1);
-impl_array_into_shape!(2);
-impl_array_into_shape!(3);
-impl_array_into_shape!(4);
-impl_array_into_shape!(5);
-impl_array_into_shape!(6);
-impl_array_into_shape!(7);
-impl_array_into_shape!(8);
+impl_shape_from_array!(0);
+impl_shape_from_array!(1);
+impl_shape_from_array!(2);
+impl_shape_from_array!(3);
+impl_shape_from_array!(4);
+impl_shape_from_array!(5);
+impl_shape_from_array!(6);
+impl_shape_from_array!(7);
+impl_shape_from_array!(8);
 
-macro_rules! impl_tuple_into_shape {
+macro_rules! impl_shape_from_tuple {
     ($num:expr) => {
-        impl Into<Shape> for ([u32; $num], u32) {
-            fn into(self) -> Shape {
-                Shape::from_dims(&self.0, self.1)
+        impl From<([u32; $num], u32)> for Shape {
+            fn from(dims_with_batch: ([u32; $num], u32)) -> Shape {
+                Shape::from_dims(&dims_with_batch.0, dims_with_batch.1)
             }
         }
-    }
+    };
 }
-impl_tuple_into_shape!(0);
-impl_tuple_into_shape!(1);
-impl_tuple_into_shape!(2);
-impl_tuple_into_shape!(3);
-impl_tuple_into_shape!(4);
-impl_tuple_into_shape!(5);
-impl_tuple_into_shape!(6);
-impl_tuple_into_shape!(7);
-impl_tuple_into_shape!(8);
+impl_shape_from_tuple!(0);
+impl_shape_from_tuple!(1);
+impl_shape_from_tuple!(2);
+impl_shape_from_tuple!(3);
+impl_shape_from_tuple!(4);
+impl_shape_from_tuple!(5);
+impl_shape_from_tuple!(6);
+impl_shape_from_tuple!(7);
+impl_shape_from_tuple!(8);

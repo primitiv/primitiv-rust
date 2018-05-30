@@ -1,13 +1,13 @@
-use primitiv_sys as _primitiv;
-use std::ptr;
-use ApiResult;
 use device::Device;
+use primitiv_sys as _primitiv;
+use std::ptr::{self, NonNull};
+use ApiResult;
 use Wrap;
 
 /// Device class for OpenCL.
 #[derive(Debug)]
 pub struct OpenCL {
-    inner: *mut _primitiv::primitivDevice_t,
+    inner: NonNull<_primitiv::primitivDevice_t>,
     owned: bool,
 }
 
@@ -23,11 +23,7 @@ impl OpenCL {
                 device_id,
                 &mut device_ptr,
             ));
-            assert!(!device_ptr.is_null());
-            OpenCL {
-                inner: device_ptr,
-                owned: true,
-            }
+            OpenCL::from_raw(device_ptr, true)
         }
     }
     /// Creates a new OpenCL device.
@@ -40,11 +36,7 @@ impl OpenCL {
                 rng_seed,
                 &mut device_ptr,
             ));
-            assert!(!device_ptr.is_null());
-            OpenCL {
-                inner: device_ptr,
-                owned: true,
-            }
+            OpenCL::from_raw(device_ptr, true)
         }
     }
 

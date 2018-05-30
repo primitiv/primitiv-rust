@@ -1,7 +1,7 @@
-use primitiv_sys as _primitiv;
-use std::ptr;
-use ApiResult;
 use devices::AnyDevice;
+use primitiv_sys as _primitiv;
+use std::ptr::{self, NonNull};
+use ApiResult;
 use Result;
 use Shape;
 use Wrap;
@@ -9,7 +9,7 @@ use Wrap;
 /// Value with any dimensions.
 #[derive(Debug)]
 pub struct Tensor {
-    inner: *mut _primitiv::primitivTensor_t,
+    inner: NonNull<_primitiv::primitivTensor_t>,
     owned: bool,
 }
 
@@ -22,11 +22,7 @@ impl Tensor {
         unsafe {
             let mut tensor_ptr: *mut _primitiv::primitivTensor_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivCreateTensor(&mut tensor_ptr));
-            assert!(!tensor_ptr.is_null());
-            Tensor {
-                inner: tensor_ptr,
-                owned: true,
-            }
+            Tensor::from_raw(tensor_ptr, true)
         }
     }
 
@@ -50,7 +46,6 @@ impl Tensor {
                 self.as_ptr(),
                 &mut shape_ptr,
             ));
-            assert!(!shape_ptr.is_null());
             Shape::from_raw(shape_ptr, true)
         }
     }
@@ -63,7 +58,6 @@ impl Tensor {
                 self.as_ptr(),
                 &mut device_ptr,
             ));
-            assert!(!device_ptr.is_null());
             AnyDevice::from_raw(device_ptr, false)
         }
     }
@@ -174,11 +168,7 @@ impl Tensor {
                 new_shape.as_ptr(),
                 &mut tensor_ptr,
             ));
-            assert!(!tensor_ptr.is_null());
-            Tensor {
-                inner: tensor_ptr,
-                owned: true,
-            }
+            Tensor::from_raw(tensor_ptr, true)
         }
     }
 
@@ -190,11 +180,7 @@ impl Tensor {
                 self.as_ptr(),
                 &mut tensor_ptr,
             ));
-            assert!(!tensor_ptr.is_null());
-            Tensor {
-                inner: tensor_ptr,
-                owned: true,
-            }
+            Tensor::from_raw(tensor_ptr, true)
         }
     }
 
@@ -248,13 +234,13 @@ impl Clone for Tensor {
     #[inline]
     fn clone_from(&mut self, source: &Self) {
         unsafe {
-            check_api_status!(_primitiv::primitivDeleteTensor(self.inner));
+            check_api_status!(_primitiv::primitivDeleteTensor(self.as_mut_ptr()));
             let mut tensor_ptr: *mut _primitiv::primitivTensor_t = ptr::null_mut();
             check_api_status!(_primitiv::primitivCloneTensor(
                 source.as_ptr(),
                 &mut tensor_ptr,
             ));
-            self.inner = tensor_ptr;
+            self.inner = NonNull::new(tensor_ptr).expect("pointer must not be null");
         }
     }
 }
@@ -263,5 +249,11 @@ impl AsRef<Tensor> for Tensor {
     #[inline]
     fn as_ref(&self) -> &Tensor {
         self
+    }
+}
+
+impl Default for Tensor {
+    fn default() -> Tensor {
+        Tensor::new()
     }
 }

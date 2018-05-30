@@ -1,14 +1,15 @@
 pub use super::device::set_default;
 
 mod any_device {
-    use primitiv_sys as _primitiv;
     use device::Device;
+    use primitiv_sys as _primitiv;
+    use std::ptr::NonNull;
     use ApiResult;
     use Wrap;
 
     #[derive(Debug)]
     pub struct AnyDevice {
-        inner: *mut _primitiv::primitivDevice_t,
+        inner: NonNull<_primitiv::primitivDevice_t>,
         owned: bool,
     }
     impl_device!(AnyDevice);

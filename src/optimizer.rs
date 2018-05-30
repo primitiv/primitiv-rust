@@ -1,10 +1,11 @@
+use model_internal;
 use primitiv_sys as _primitiv;
 use std::ffi::CString;
 use std::io;
 use std::path::Path;
 use ApiResult;
-use Parameter;
 use Model;
+use Parameter;
 use Wrap;
 
 /// `Optimizer` trait
@@ -14,14 +15,10 @@ pub trait Optimizer: Wrap<_primitiv::primitivOptimizer_t> + Default {
         unsafe {
             let path_c = CString::new(path.as_ref().to_str().unwrap()).unwrap();
             let path_ptr = path_c.as_ptr();
-            Result::from_api_status(_primitiv::primitivLoadOptimizer(
-                self.as_mut_ptr(),
-                path_ptr,
-                ),
+            Result::from_api_status(
+                _primitiv::primitivLoadOptimizer(self.as_mut_ptr(), path_ptr),
                 (),
-            ).map_err(|status| {
-                io::Error::new(io::ErrorKind::Other, status.message())
-            })
+            ).map_err(|status| io::Error::new(io::ErrorKind::Other, status.message()))
         }
     }
 
@@ -33,9 +30,7 @@ pub trait Optimizer: Wrap<_primitiv::primitivOptimizer_t> + Default {
             Result::from_api_status(
                 _primitiv::primitivSaveOptimizer(self.as_ptr(), path_ptr),
                 (),
-            ).map_err(|status| {
-                io::Error::new(io::ErrorKind::Other, status.message())
-            })
+            ).map_err(|status| io::Error::new(io::ErrorKind::Other, status.message()))
         }
     }
 
@@ -138,7 +133,7 @@ pub trait Optimizer: Wrap<_primitiv::primitivOptimizer_t> + Default {
     }
 
     /// Registers multiple parameters.
-    fn add_parameters(&mut self, params: &mut [&mut Parameter]) {
+    fn add_parameters(&mut self, params: &mut [Parameter]) {
         unsafe {
             let mut param_ptrs = params
                 .iter_mut()
@@ -153,21 +148,35 @@ pub trait Optimizer: Wrap<_primitiv::primitivOptimizer_t> + Default {
     }
 
     /// Registers a model.
-    fn add_model<M: AsMut<Model>>(&mut self, model: &mut M) {
+    fn add_model<M: Model>(&mut self, model: &mut M) {
         unsafe {
+            model.register_parameters();
+            let lock = model_internal::get_entity_mut(model);
+            let mut entity = lock.write().unwrap();
             check_api_status!(_primitiv::primitivAddModelToOptimizer(
                 self.as_mut_ptr(),
-                model.as_mut().as_mut_ptr(),
+                entity.as_mut_ptr(),
             ));
         }
     }
 
     /// Registers multiple models.
-    fn add_models<M: AsMut<Model>>(&mut self, models: &mut [&mut M]) {
+    fn add_models<M: Model>(&mut self, models: &mut [M]) {
         unsafe {
-            let mut model_ptrs = models
+            let locks = models
                 .iter_mut()
-                .map(|model| model.as_mut().as_mut_ptr())
+                .map(|model| {
+                    model.register_parameters();
+                    model_internal::get_entity_mut(model)
+                })
+                .collect::<Vec<_>>();
+            let mut guards = locks
+                .iter()
+                .map(|lock| lock.write().unwrap())
+                .collect::<Vec<_>>();
+            let mut model_ptrs = guards
+                .iter_mut()
+                .map(|entity| entity.as_mut_ptr())
                 .collect::<Vec<_>>();
             check_api_status!(_primitiv::primitivAddModelsToOptimizer(
                 self.as_mut_ptr(),
@@ -255,5 +264,5 @@ macro_rules! impl_optimizer {
         impl_wrap_owned!($name, primitivOptimizer_t);
         impl_drop!($name, primitivDeleteOptimizer);
         impl Optimizer for $name {}
-    }
+    };
 }

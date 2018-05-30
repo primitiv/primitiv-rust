@@ -21,5 +21,5 @@ macro_rules! impl_initializer {
         impl_wrap_owned!($name, primitivInitializer_t);
         impl_drop!($name, primitivDeleteInitializer);
         impl Initializer for $name {}
-    }
+    };
 }

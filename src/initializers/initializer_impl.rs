@@ -1,5 +1,5 @@
 use primitiv_sys as _primitiv;
-use std::ptr;
+use std::ptr::{self, NonNull};
 use ApiResult;
 use Initializer;
 use Wrap;
@@ -7,7 +7,7 @@ use Wrap;
 /// Initializer to generate a same-value tensor.
 #[derive(Debug)]
 pub struct Constant {
-    inner: *mut _primitiv::primitivInitializer_t,
+    inner: NonNull<_primitiv::primitivInitializer_t>,
 }
 
 impl_initializer!(Constant);
@@ -21,8 +21,7 @@ impl Constant {
                 k,
                 &mut initializer_ptr,
             ));
-            assert!(!initializer_ptr.is_null());
-            Constant { inner: initializer_ptr }
+            Constant::from_raw(initializer_ptr, true)
         }
     }
 }
@@ -30,7 +29,7 @@ impl Constant {
 /// Initializer using a parameterized uniform distribution with the range (L,U].
 #[derive(Debug)]
 pub struct Uniform {
-    inner: *mut _primitiv::primitivInitializer_t,
+    inner: NonNull<_primitiv::primitivInitializer_t>,
 }
 
 impl_initializer!(Uniform);
@@ -45,8 +44,7 @@ impl Uniform {
                 upper,
                 &mut initializer_ptr,
             ));
-            assert!(!initializer_ptr.is_null());
-            Uniform { inner: initializer_ptr }
+            Uniform::from_raw(initializer_ptr, true)
         }
     }
 }
@@ -54,7 +52,7 @@ impl Uniform {
 /// Initializer using a parameterized normal distribution N(μ,σ).
 #[derive(Debug)]
 pub struct Normal {
-    inner: *mut _primitiv::primitivInitializer_t,
+    inner: NonNull<_primitiv::primitivInitializer_t>,
 }
 
 impl_initializer!(Normal);
@@ -69,8 +67,7 @@ impl Normal {
                 sd,
                 &mut initializer_ptr,
             ));
-            assert!(!initializer_ptr.is_null());
-            Normal { inner: initializer_ptr }
+            Normal::from_raw(initializer_ptr, true)
         }
     }
 }
@@ -78,7 +75,7 @@ impl Normal {
 /// Identity matrix initializer.
 #[derive(Debug)]
 pub struct Identity {
-    inner: *mut _primitiv::primitivInitializer_t,
+    inner: NonNull<_primitiv::primitivInitializer_t>,
 }
 
 impl_initializer!(Identity);
@@ -91,8 +88,7 @@ impl Identity {
             check_api_status!(_primitiv::primitivCreateIdentityInitializer(
                 &mut initializer_ptr,
             ));
-            assert!(!initializer_ptr.is_null());
-            Identity { inner: initializer_ptr }
+            Identity::from_raw(initializer_ptr, true)
         }
     }
 }
@@ -100,7 +96,7 @@ impl Identity {
 /// The Xavier matrix initialization with the uniform distribution.
 #[derive(Debug)]
 pub struct XavierUniform {
-    inner: *mut _primitiv::primitivInitializer_t,
+    inner: NonNull<_primitiv::primitivInitializer_t>,
 }
 
 impl_initializer!(XavierUniform);
@@ -114,8 +110,7 @@ impl XavierUniform {
                 scale,
                 &mut initializer_ptr,
             ));
-            assert!(!initializer_ptr.is_null());
-            XavierUniform { inner: initializer_ptr }
+            XavierUniform::from_raw(initializer_ptr, true)
         }
     }
 }
@@ -129,7 +124,7 @@ impl Default for XavierUniform {
 /// The Xavier matrix initialization with the normal distribution.
 #[derive(Debug)]
 pub struct XavierNormal {
-    inner: *mut _primitiv::primitivInitializer_t,
+    inner: NonNull<_primitiv::primitivInitializer_t>,
 }
 
 impl_initializer!(XavierNormal);
@@ -143,8 +138,7 @@ impl XavierNormal {
                 scale,
                 &mut initializer_ptr,
             ));
-            assert!(!initializer_ptr.is_null());
-            XavierNormal { inner: initializer_ptr }
+            XavierNormal::from_raw(initializer_ptr, true)
         }
     }
 }
@@ -158,7 +152,7 @@ impl Default for XavierNormal {
 /// The Xavier initialization with the uniform distribution for conv2d filters.
 #[derive(Debug)]
 pub struct XavierUniformConv2D {
-    inner: *mut _primitiv::primitivInitializer_t,
+    inner: NonNull<_primitiv::primitivInitializer_t>,
 }
 
 impl_initializer!(XavierUniformConv2D);
@@ -172,8 +166,7 @@ impl XavierUniformConv2D {
                 scale,
                 &mut initializer_ptr,
             ));
-            assert!(!initializer_ptr.is_null());
-            XavierUniformConv2D { inner: initializer_ptr }
+            XavierUniformConv2D::from_raw(initializer_ptr, true)
         }
     }
 }
@@ -187,7 +180,7 @@ impl Default for XavierUniformConv2D {
 /// The Xavier initialization with the normal distribution for conv2d filters.
 #[derive(Debug)]
 pub struct XavierNormalConv2D {
-    inner: *mut _primitiv::primitivInitializer_t,
+    inner: NonNull<_primitiv::primitivInitializer_t>,
 }
 
 impl_initializer!(XavierNormalConv2D);
@@ -201,8 +194,7 @@ impl XavierNormalConv2D {
                 scale,
                 &mut initializer_ptr,
             ));
-            assert!(!initializer_ptr.is_null());
-            XavierNormalConv2D { inner: initializer_ptr }
+            XavierNormalConv2D::from_raw(initializer_ptr, true)
         }
     }
 }

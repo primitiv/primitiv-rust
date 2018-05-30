@@ -4,13 +4,13 @@ use std::env;
 use std::error::Error;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::{Command, exit};
+use std::process::{exit, Command};
 use std::result::Result;
 
 const FRAMEWORK_LIBRARY: &'static str = "primitiv";
 const LIBRARY: &'static str = "primitiv_c";
 const REPOSITORY: &'static str = "https://github.com/primitiv/primitiv";
-const TAG: &'static str = "1ea9ba875ace79ca884ab448d7c0842d78d4b18d";
+const TAG: &'static str = "441f3d1917c3d74977a5fde1e8af39d697f68cfe";
 
 macro_rules! log {
     ($fmt:expr) => (println!(concat!("primitiv-sys/build.rs:{}: ", $fmt), line!()));
@@ -132,9 +132,9 @@ fn build_from_src() -> Result<(), Box<Error>> {
                 .arg("4")
         });
         run("make", |command| {
-            command.arg("install").arg(
-                format!("--directory={}", build_dir_s),
-            )
+            command
+                .arg("install")
+                .arg(format!("--directory={}", build_dir_s))
         });
     }
     env::set_var("PRIMITIV_LIBRARY_DIR", out_dir.join("lib"));
