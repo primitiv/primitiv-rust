@@ -85,24 +85,24 @@ impl<V: Variable> EncoderDecoder<V> {
     ) {
         self.psrc_lookup.init_by_initializer(
             [embed_size, src_vocab_size as u32],
-            &I::XavierUniform::new(1.0),
+            &I::XavierUniform::default(),
         );
         self.ptrg_lookup.init_by_initializer(
             [embed_size, trg_vocab_size as u32],
-            &I::XavierUniform::new(1.0),
+            &I::XavierUniform::default(),
         );
         self.pwhy.init_by_initializer(
             [trg_vocab_size as u32, hidden_size],
-            &I::XavierUniform::new(1.0),
+            &I::XavierUniform::default(),
         );
         self.pby
-            .init_by_initializer([trg_vocab_size as u32], &I::Constant::new(1.0));
+            .init_by_initializer([trg_vocab_size as u32], &I::Constant::new(0.0));
         self.src_lstm.init(embed_size, hidden_size);
         self.trg_lstm.init(embed_size, hidden_size);
     }
 
-    /// Encodes source sentences and prepare internal states.
-    pub fn encode<Batch, Words>(&mut self, inputs: Batch, train: bool)
+    /// Encodes source sentences and prepares internal states.
+    pub fn encode<Batch, Words>(&mut self, src_batch: Batch, train: bool)
     where
         Batch: AsRef<[Words]>,
         Words: AsRef<[u32]>,
@@ -110,7 +110,7 @@ impl<V: Variable> EncoderDecoder<V> {
         // Reversed encoding.
         let src_lookup = F::parameter::<V>(&mut self.psrc_lookup);
         self.src_lstm.restart(None, None);
-        for it in inputs.as_ref().iter().rev() {
+        for it in src_batch.as_ref().iter().rev() {
             let x = F::pick(&src_lookup, it.as_ref(), 1);
             let x = F::dropout(x, self.dropout_rate, train);
             self.src_lstm.forward(&x);
