@@ -42,3 +42,7 @@ path = "examples/ptb/ptb_rnnlm.rs"
 [[example]]
 name = "encdec"
 path = "examples/encdec/encdec.rs"
+
+[[example]]
+name = "encdec_attention"
+path = "examples/encdec/encdec_attention.rs"
