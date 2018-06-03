@@ -42,36 +42,53 @@ static TRG_TRAIN_FILE: &'static str = "data/train.ja";
 static SRC_VALID_FILE: &'static str = "data/dev.en";
 static TRG_VALID_FILE: &'static str = "data/dev.ja";
 
-/// Encoder-decoder translation model.
+/// Encoder-decoder translation model with dot-attention.
 #[derive(Model)]
-pub struct EncoderDecoder<V: Variable> {
+pub struct AttentionalEncoderDecoder<V: Variable> {
     dropout_rate: f32,
     psrc_lookup: Parameter,
     ptrg_lookup: Parameter,
-    pwhy: Parameter,
+    pwhj: Parameter,
+    pbj: Parameter,
+    pwjy: Parameter,
     pby: Parameter,
     #[primitiv(submodel)]
-    src_lstm: LSTM<V>,
+    src_fw_lstm: LSTM<V>,
+    #[primitiv(submodel)]
+    src_bw_lstm: LSTM<V>,
     #[primitiv(submodel)]
     trg_lstm: LSTM<V>,
     trg_lookup: V,
-    why: V,
+    whj: V,
+    bj: V,
+    wjy: V,
     by: V,
+    concat_fb: V,
+    t_concat_fb: V,
+    feed: V,
 }
 
-impl<V: Variable> EncoderDecoder<V> {
+impl<V: Variable> AttentionalEncoderDecoder<V> {
     pub fn new() -> Self {
-        EncoderDecoder {
+        AttentionalEncoderDecoder {
             dropout_rate: DROPOUT_RATE,
             psrc_lookup: Parameter::new(),
             ptrg_lookup: Parameter::new(),
-            pwhy: Parameter::new(),
+            pwhj: Parameter::new(),
+            pbj: Parameter::new(),
+            pwjy: Parameter::new(),
             pby: Parameter::new(),
-            src_lstm: LSTM::new(),
+            src_fw_lstm: LSTM::new(),
+            src_bw_lstm: LSTM::new(),
             trg_lstm: LSTM::new(),
             trg_lookup: V::new(),
-            why: V::new(),
+            whj: V::new(),
+            bj: V::new(),
+            wjy: V::new(),
             by: V::new(),
+            concat_fb: V::new(),
+            t_concat_fb: V::new(),
+            feed: V::new(),
         }
     }
 
@@ -91,14 +108,19 @@ impl<V: Variable> EncoderDecoder<V> {
             [embed_size, trg_vocab_size as u32],
             &I::XavierUniform::default(),
         );
-        self.pwhy.init_by_initializer(
-            [trg_vocab_size as u32, hidden_size],
+        self.pwhj
+            .init_by_initializer([embed_size, 2 * hidden_size], &I::XavierUniform::default());
+        self.pbj
+            .init_by_initializer([embed_size], &I::Constant::new(0.0));
+        self.pwjy.init_by_initializer(
+            [trg_vocab_size as u32, embed_size],
             &I::XavierUniform::default(),
         );
         self.pby
             .init_by_initializer([trg_vocab_size as u32], &I::Constant::new(0.0));
-        self.src_lstm.init(embed_size, hidden_size);
-        self.trg_lstm.init(embed_size, hidden_size);
+        self.src_fw_lstm.init(embed_size, hidden_size);
+        self.src_bw_lstm.init(embed_size, hidden_size);
+        self.trg_lstm.init(2 * embed_size, hidden_size);
     }
 
     /// Encodes source sentences and prepares internal states.
@@ -107,30 +129,68 @@ impl<V: Variable> EncoderDecoder<V> {
         Batch: AsRef<[Words]>,
         Words: AsRef<[u32]>,
     {
-        // Reversed encoding.
+        // Embedding lookup.
         let src_lookup = F::parameter::<V>(&mut self.psrc_lookup);
-        self.src_lstm.restart(None, None);
-        for it in src_batch.as_ref().iter().rev() {
-            let x = F::pick(&src_lookup, it.as_ref(), 1);
-            let x = F::dropout(x, self.dropout_rate, train);
-            self.src_lstm.forward(&x);
-        }
+        let e_list: Vec<V> = src_batch
+            .as_ref()
+            .iter()
+            .map(|x| {
+                F::dropout(
+                    F::pick(&src_lookup, x.as_ref(), 1),
+                    self.dropout_rate,
+                    train,
+                )
+            })
+            .collect();
+
+        // Forward encoding.
+        self.src_fw_lstm.restart(None, None);
+        let f_list: Vec<V> = e_list
+            .iter()
+            .map(|e| F::dropout(self.src_fw_lstm.forward(e), self.dropout_rate, train))
+            .collect();
+
+        // Backward encoding.
+        self.src_bw_lstm.restart(None, None);
+        let b_list: Vec<V> = e_list
+            .iter()
+            .rev()
+            .map(|e| F::dropout(self.src_bw_lstm.forward(e), self.dropout_rate, train))
+            .collect();
+
+        // Concatenates RNN states.
+        let fb_list: Vec<V> = f_list
+            .into_iter()
+            .zip(b_list.into_iter().rev())
+            .map(|(h_f, h_b)| h_f + h_b)
+            .collect();
+        self.concat_fb = F::concat(fb_list, 1);
+        self.t_concat_fb = F::transpose(&self.concat_fb);
 
         // Initializes decoder states.
+        let embed_size = self.psrc_lookup.shape().at(0);
         self.trg_lookup = F::parameter(&mut self.ptrg_lookup);
-        self.why = F::parameter(&mut self.pwhy);
+        self.whj = F::parameter(&mut self.pwhj);
+        self.bj = F::parameter(&mut self.pbj);
+        self.wjy = F::parameter(&mut self.pwjy);
         self.by = F::parameter(&mut self.pby);
-        self.trg_lstm
-            .restart(Some(self.src_lstm.get_c()), Some(self.src_lstm.get_h()));
+        self.feed = F::zeros([embed_size]);
+        self.trg_lstm.restart(
+            Some(&F::add(self.src_fw_lstm.get_c(), self.src_bw_lstm.get_c())),
+            Some(&F::add(self.src_fw_lstm.get_h(), self.src_bw_lstm.get_h())),
+        );
     }
 
     /// One step decoding.
     pub fn decode_step<Words: AsRef<[u32]>>(&mut self, trg_words: Words, train: bool) -> V {
-        let x = F::pick(&self.trg_lookup, trg_words.as_ref(), 1);
-        let x = F::dropout(x, self.dropout_rate, train);
-        let h = self.trg_lstm.forward(x);
+        let e = F::pick(&self.trg_lookup, trg_words.as_ref(), 1);
+        let e = F::dropout(e, self.dropout_rate, train);
+        let h = self.trg_lstm.forward(F::concat([&e, &self.feed], 0));
         let h = F::dropout(h, self.dropout_rate, train);
-        F::matmul(&self.why, h) + &self.by
+        let atten_probs = F::softmax(F::matmul(&self.t_concat_fb, &h), 0);
+        let c = F::matmul(&self.concat_fb, atten_probs);
+        self.feed = F::tanh(F::matmul(&self.whj, F::concat([h, c], 0)) + &self.bj);
+        F::matmul(&self.wjy, &self.feed) + &self.by
     }
 
     /// Calculates the loss function over given target sentences.
@@ -155,7 +215,7 @@ impl<V: Variable> EncoderDecoder<V> {
 
 /// Training encoder decoder model.
 pub fn train<O: Optimizer>(
-    encdec: &mut EncoderDecoder<Node>,
+    encdec: &mut AttentionalEncoderDecoder<Node>,
     optimizer: &mut O,
     prefix: &str,
     mut best_valid_ppl: f32,
@@ -200,7 +260,12 @@ pub fn train<O: Optimizer>(
 
     // Train/valid loop.
     for epoch in 0..MAX_EPOCH {
-        println!("epoch {}/{}:", epoch + 1, MAX_EPOCH);
+        println!(
+            "epoch {}/{}, lr_scale = {}",
+            epoch + 1,
+            MAX_EPOCH,
+            optimizer.get_learning_rate_scaling()
+        );
         // Shuffles train sentence IDs.
         rng.shuffle(&mut train_ids);
 
@@ -259,12 +324,17 @@ pub fn train<O: Optimizer>(
             optimizer.save(format!("{}.optimizer", prefix)).unwrap();
             save_ppl(format!("{}.valid_ppl", prefix), best_valid_ppl).unwrap();
             println!("done.");
+        } else {
+            // Learning rate decay by 1/sqrt(2)
+            let new_scale = 0.7071 * optimizer.get_learning_rate_scaling();
+            optimizer.set_learning_rate_scaling(new_scale);
         }
     }
 }
 
 /// Generates translation by consuming stdin.
-pub fn test(encdec: &mut EncoderDecoder<Tensor>) {
+pub fn test(encdec: &mut AttentionalEncoderDecoder<Tensor>) {
+    // Loads vocab.
     let src_vocab = make_vocab(SRC_TRAIN_FILE, SRC_VOCAB_SIZE).unwrap();
     let trg_vocab = make_vocab(TRG_TRAIN_FILE, TRG_VOCAB_SIZE).unwrap();
     let inv_trg_vocab = make_inv_vocab(&trg_vocab);
@@ -324,7 +394,7 @@ fn main() {
     eprintln!("done.");
 
     if mode == "train" {
-        let mut encdec = EncoderDecoder::<Node>::new();
+        let mut encdec = AttentionalEncoderDecoder::<Node>::new();
         encdec.init(
             SRC_VOCAB_SIZE,
             TRG_VOCAB_SIZE,
@@ -338,7 +408,7 @@ fn main() {
     } else if mode == "resume" {
         eprint!("loading model/optimizer ... ");
         stdout().flush().unwrap();
-        let mut encdec = EncoderDecoder::<Node>::new();
+        let mut encdec = AttentionalEncoderDecoder::<Node>::new();
         encdec.load(format!("{}.model", prefix), true).unwrap();
         let mut optimizer = O::Adam::default();
         optimizer.load(format!("{}.optimizer", prefix)).unwrap();
@@ -349,7 +419,7 @@ fn main() {
         assert!(mode == "test");
         eprint!("loading model ... ");
         stdout().flush().unwrap();
-        let mut encdec = EncoderDecoder::<Tensor>::new();
+        let mut encdec = AttentionalEncoderDecoder::<Tensor>::new();
         encdec.load(format!("{}.model", prefix), true).unwrap();
         eprintln!("done.");
         test(&mut encdec);
