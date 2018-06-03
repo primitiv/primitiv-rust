@@ -40,7 +40,7 @@ impl<V: Variable> LSTM<V> {
             &I::Uniform::new(-0.1, 0.1),
         );
         self.pb
-            .init_by_initializer([4 * out_size], &I::Constant::new(1.0));
+            .init_by_initializer([4 * out_size], &I::Constant::new(0.0));
     }
 
     /// Initializes the model.
